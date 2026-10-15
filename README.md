@@ -9,6 +9,18 @@ Produit commercialisé à plusieurs établissements (SaaS), avec un serveur loca
 - [Cahier des charges](docs/Cahier_des_charges_Tchop_Life_Management.docx)
 - [Maquettes](docs/maquettes/index.html)
 - [Architecture technique](docs/architecture/README.md) : modèle de données, synchronisation, sécurité, rôles et permissions
+- [Guide de développement](docs/developpement.md) : installation, lancement, comptes de démo
+
+## Démarrage rapide
+
+```bash
+pnpm install
+cp .env.example .env
+pnpm db:up && pnpm db:migrate && pnpm db:seed
+pnpm dev
+```
+
+Application du personnel : http://localhost:5180 · API : http://localhost:3000/api
 
 ## Décisions validées
 

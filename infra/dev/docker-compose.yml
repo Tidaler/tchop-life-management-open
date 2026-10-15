@@ -1,0 +1,21 @@
+# Base PostgreSQL de développement (port 5434 pour ne pas gêner une installation locale).
+name: tchop-dev
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: tchop
+      POSTGRES_PASSWORD: tchop
+      POSTGRES_DB: tchop_dev
+    ports:
+      - '5434:5432'
+    volumes:
+      - tchop-pg:/var/lib/postgresql/data
+      - ./init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tchop -d tchop_dev']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  tchop-pg:

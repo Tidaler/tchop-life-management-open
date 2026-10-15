@@ -1,0 +1,354 @@
+// Schéma de la Phase 0 : plateforme, identité, salle, catalogue, audit.
+// Conventions : docs/architecture/02-modele-donnees.md
+// - identifiants UUID v7 ; tenant_id / site_id sur les données métier ;
+// - montants en FCFA entiers ; textes traduits en jsonb {"fr": ..., "en": ...}.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------- Plateforme
+
+enum TenantStatus {
+  active
+  suspended
+}
+
+model Tenant {
+  id            String       @id @default(uuid(7)) @db.Uuid
+  slug          String       @unique
+  name          String
+  country       String       @default("CM")
+  currency      String       @default("XAF")
+  defaultLocale String       @default("fr") @map("default_locale")
+  status        TenantStatus @default(active)
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  sites Site[]
+  users User[]
+  roles Role[]
+
+  @@map("tenant")
+}
+
+model Site {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  tenantId    String    @map("tenant_id") @db.Uuid
+  slug        String
+  name        String
+  address     String?
+  timezone    String    @default("Africa/Douala")
+  localDomain String?   @map("local_domain")
+  /// Seuils et règles du site (remises, verrouillage automatique, annulations…).
+  settings    Json      @default("{}")
+  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version     Int       @default(1)
+
+  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
+  userRoles       UserSiteRole[]
+  devices         Device[]
+  enrollmentCodes DeviceEnrollmentCode[]
+  zones           Zone[]
+  tables          DiningTable[]
+  qrCodes         QrCode[]
+  categories      Category[]
+  products        Product[]
+
+  @@unique([tenantId, slug])
+  @@map("site")
+}
+
+enum DeviceKind {
+  tablet
+  phone
+  desktop
+}
+
+model Device {
+  id          String     @id @default(uuid(7)) @db.Uuid
+  siteId      String     @map("site_id") @db.Uuid
+  name        String
+  kind        DeviceKind
+  /// SHA-256 du jeton d'appareil ; le jeton lui-même n'est jamais stocké.
+  tokenHash   String     @unique @map("token_hash")
+  lastSeenAt  DateTime?  @map("last_seen_at") @db.Timestamptz(3)
+  revokedAt   DateTime?  @map("revoked_at") @db.Timestamptz(3)
+  createdById String?    @map("created_by") @db.Uuid
+  createdAt   DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site     Site          @relation(fields: [siteId], references: [id])
+  sessions AuthSession[]
+
+  @@index([siteId])
+  @@map("device")
+}
+
+model DeviceEnrollmentCode {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  siteId      String    @map("site_id") @db.Uuid
+  codeHash    String    @unique @map("code_hash")
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(3)
+  usedAt      DateTime? @map("used_at") @db.Timestamptz(3)
+  deviceId    String?   @map("device_id") @db.Uuid
+  createdById String    @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site Site @relation(fields: [siteId], references: [id])
+
+  @@map("device_enrollment_code")
+}
+
+// ---------------------------------------------------------------- Identité et accès
+
+model User {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  tenantId       String    @map("tenant_id") @db.Uuid
+  displayName    String    @map("display_name")
+  /// Identifiant de connexion, unique pour un client.
+  username       String
+  phone          String?
+  email          String?
+  passwordHash   String?   @map("password_hash")
+  pinHash        String?   @map("pin_hash")
+  locale         String    @default("fr")
+  active         Boolean   @default(true)
+  pinFailedCount Int       @default(0) @map("pin_failed_count")
+  pinLockedUntil DateTime? @map("pin_locked_until") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version        Int       @default(1)
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id])
+  siteRoles UserSiteRole[]
+  sessions  AuthSession[]
+
+  @@unique([tenantId, username])
+  @@map("user")
+}
+
+model Role {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  /// Code d'un rôle prédéfini (owner, manager…) ou d'un rôle personnalisé.
+  code      String
+  name      Json
+  isSystem  Boolean  @default(true) @map("is_system")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  permissions RolePermission[]
+  userRoles   UserSiteRole[]
+
+  @@unique([tenantId, code])
+  @@map("role")
+}
+
+enum GrantLevel {
+  full
+  approval
+  threshold
+  read
+}
+
+model RolePermission {
+  roleId     String     @map("role_id") @db.Uuid
+  permission String
+  level      GrantLevel
+
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permission])
+  @@map("role_permission")
+}
+
+model UserSiteRole {
+  id     String  @id @default(uuid(7)) @db.Uuid
+  userId String  @map("user_id") @db.Uuid
+  /// Null : le rôle s'applique à tous les sites du client (propriétaire).
+  siteId String? @map("site_id") @db.Uuid
+  roleId String  @map("role_id") @db.Uuid
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  site Site? @relation(fields: [siteId], references: [id])
+  role Role  @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, siteId])
+  @@map("user_site_role")
+}
+
+enum AuthMethod {
+  password
+  pin
+}
+
+model AuthSession {
+  id               String     @id @default(uuid(7)) @db.Uuid
+  userId           String     @map("user_id") @db.Uuid
+  siteId           String     @map("site_id") @db.Uuid
+  deviceId         String?    @map("device_id") @db.Uuid
+  method           AuthMethod
+  /// Toutes les rotations d'une même connexion partagent la même famille (détection de réutilisation).
+  familyId         String     @map("family_id") @db.Uuid
+  refreshTokenHash String     @unique @map("refresh_token_hash")
+  expiresAt        DateTime   @map("expires_at") @db.Timestamptz(3)
+  rotatedAt        DateTime?  @map("rotated_at") @db.Timestamptz(3)
+  revokedAt        DateTime?  @map("revoked_at") @db.Timestamptz(3)
+  ip               String?
+  userAgent        String?    @map("user_agent")
+  createdAt        DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device Device? @relation(fields: [deviceId], references: [id])
+
+  @@index([familyId])
+  @@index([userId])
+  @@map("auth_session")
+}
+
+// ---------------------------------------------------------------- Salle
+
+model Zone {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  name       String
+  sortOrder  Int       @default(0) @map("sort_order")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int       @default(1)
+
+  site   Site          @relation(fields: [siteId], references: [id])
+  tables DiningTable[]
+
+  @@map("zone")
+}
+
+model DiningTable {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  zoneId     String    @map("zone_id") @db.Uuid
+  label      String
+  seats      Int       @default(4)
+  posX       Int       @default(0) @map("pos_x")
+  posY       Int       @default(0) @map("pos_y")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int       @default(1)
+
+  site    Site     @relation(fields: [siteId], references: [id])
+  zone    Zone     @relation(fields: [zoneId], references: [id])
+  qrCodes QrCode[]
+
+  @@index([siteId])
+  @@map("dining_table")
+}
+
+enum QrMode {
+  menu
+  order
+}
+
+model QrCode {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  tableId    String    @map("table_id") @db.Uuid
+  /// 128 bits aléatoires (base64url) : ne révèle ni la table ni le site.
+  token      String    @unique
+  mode       QrMode    @default(order)
+  active     Boolean   @default(true)
+  replacedAt DateTime? @map("replaced_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site  Site        @relation(fields: [siteId], references: [id])
+  table DiningTable @relation(fields: [tableId], references: [id])
+
+  @@map("qr_code")
+}
+
+// ---------------------------------------------------------------- Catalogue
+
+model Category {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  siteId      String    @map("site_id") @db.Uuid
+  name        Json
+  sortOrder   Int       @default(0) @map("sort_order")
+  visibleOnQr Boolean   @default(true) @map("visible_on_qr")
+  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version     Int       @default(1)
+
+  site     Site      @relation(fields: [siteId], references: [id])
+  products Product[]
+
+  @@map("category")
+}
+
+enum Station {
+  kitchen
+  grill
+  bar
+}
+
+model Product {
+  id          String    @id @default(uuid(7)) @db.Uuid
+  siteId      String    @map("site_id") @db.Uuid
+  categoryId  String    @map("category_id") @db.Uuid
+  name        Json
+  description Json?
+  imageUrl    String?   @map("image_url")
+  /// Prix TTC en FCFA.
+  priceXaf    Int       @map("price_xaf")
+  /// Taux de taxe en points de base (1925 = 19,25 %), à valider avec le comptable.
+  taxRateBp   Int       @default(0) @map("tax_rate_bp")
+  station     Station
+  available   Boolean   @default(true)
+  visibleOnQr Boolean   @default(true) @map("visible_on_qr")
+  sortOrder   Int       @default(0) @map("sort_order")
+  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version     Int       @default(1)
+
+  site     Site     @relation(fields: [siteId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@index([siteId, categoryId])
+  @@map("product")
+}
+
+// ---------------------------------------------------------------- Audit
+
+/// Journal en ajout seul : un déclencheur PostgreSQL interdit toute modification ou suppression.
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  tenantId   String   @map("tenant_id") @db.Uuid
+  siteId     String?  @map("site_id") @db.Uuid
+  actorId    String?  @map("actor_id") @db.Uuid
+  approverId String?  @map("approver_id") @db.Uuid
+  deviceId   String?  @map("device_id") @db.Uuid
+  action     String
+  entity     String?
+  entityId   String?  @map("entity_id")
+  before     Json?
+  after      Json?
+  reason     String?
+  ip         String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([tenantId, createdAt])
+  @@index([siteId, createdAt])
+  @@map("audit_log")
+}

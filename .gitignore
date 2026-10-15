@@ -9,3 +9,7 @@ coverage/
 .DS_Store
 Thumbs.db
 ~$*.docx
+.turbo/
+packages/db/src/generated/
+dev-dist/
+*.tsbuildinfo

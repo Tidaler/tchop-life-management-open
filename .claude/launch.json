@@ -2,10 +2,22 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tchop/web", "dev"],
+      "port": 5180
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tchop/api", "dev"],
+      "port": 3000
+    },
+    {
       "name": "maquettes",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "docs/maquettes"],
-      "port": 5173
+      "runtimeArgs": ["-m", "http.server", "5190", "--directory", "docs/maquettes"],
+      "port": 5190
     }
   ]
 }
