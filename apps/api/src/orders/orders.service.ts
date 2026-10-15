@@ -19,6 +19,7 @@ import { EventsService } from '../events/events.gateway.js';
 import { type KitchenTicketDoc } from '../printing/escpos.js';
 import { PrintService } from '../printing/print.service.js';
 import { PrismaService } from '../prisma.service.js';
+import { StockLedger } from '../stock/stock-ledger.js';
 import { type ModifierSnapshot, type PricedLine, PricingService } from './pricing.service.js';
 
 type Tx = Prisma.TransactionClient;
@@ -49,6 +50,7 @@ export class OrdersService {
     private readonly events: EventsService,
     private readonly print: PrintService,
     private readonly pricing: PricingService,
+    private readonly stock: StockLedger,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -119,6 +121,7 @@ export class OrdersService {
     for (const t of result.tickets) {
       this.events.emit(siteId, { type: 'tickets.changed', ticketId: t.id, station: t.station });
     }
+    this.events.emit(siteId, { type: 'stock.changed' });
     void this.print.processDue();
   }
 
@@ -201,7 +204,7 @@ export class OrdersService {
         },
       });
       tickets.push({ id: ticket.id, station });
-      await tx.orderLine.createMany({
+      const created = await tx.orderLine.createManyAndReturn({
         data: lines.map((l) => ({
           orderId: order.id,
           productId: l.productId,
@@ -216,7 +219,10 @@ export class OrdersService {
           createdById: auth.userId,
           qrRequestId: input.qrRequestId,
         })),
+        select: { id: true, productId: true, quantity: true, modifiers: true },
       });
+      // Sortie de stock selon les recettes, dans la même transaction que la vente.
+      await this.stock.deductSale(tx, auth.siteId, auth.userId, created);
       const doc: KitchenTicketDoc = {
         kind: 'kitchen_ticket',
         stationLabel: STATION_LABELS[station],
@@ -307,6 +313,17 @@ export class OrdersService {
           cancelReason: input.reason,
         },
       });
+      // Stock : réintégré si la préparation n'avait pas commencé (ou sur décision explicite), perte sinon.
+      const restock = input.restock ?? line.status === 'sent';
+      await this.stock.reverseSale(
+        tx,
+        auth.siteId,
+        auth.userId,
+        lineId,
+        restock ? 'restock' : 'loss',
+        input.reason,
+        approverId,
+      );
 
       // Prévenir le poste si le bon est encore en cours.
       if (line.ticket && line.ticket.status !== 'served') {
@@ -353,6 +370,7 @@ export class OrdersService {
           entity: 'order_line',
           entityId: lineId,
           before: { status: line.status, quantity: line.quantity, unitPriceXaf: line.unitPriceXaf },
+          after: { stock: restock ? 'restock' : 'loss' },
           reason: input.reason,
         },
         tx,
@@ -361,6 +379,7 @@ export class OrdersService {
     });
 
     this.events.emit(auth.siteId, { type: 'orders.changed', orderId, tableId: outcome.tableId });
+    this.events.emit(auth.siteId, { type: 'stock.changed' });
     if (outcome.ticket) {
       this.events.emit(auth.siteId, {
         type: 'tickets.changed',

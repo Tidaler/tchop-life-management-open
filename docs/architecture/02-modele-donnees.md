@@ -133,9 +133,9 @@ erDiagram
 
 | Table | Colonnes clés | Remarques |
 |---|---|---|
-| `stock_location` | site, nom (Boissons, Cuisine, Grill, Emballages, Entretien) | Magasins séparés. |
-| `stock_item` | site, nom, unité de base, seuil d'alerte, **coût moyen pondéré**, actif | Ce qui se stocke (Castel 65 cl, poulet, charbon…). |
-| `unit_conversion` | article, unité d'achat (casier, carton, sac), facteur | Ex. 1 casier Castel = 12 bouteilles. |
+| `stock_location` | site, nom (Réserve, Bar, Cuisine, Grill…) | Magasins séparés. |
+| `stock_item` | site, nom, unité de base, **magasin de sortie**, seuil d'alerte, **coût moyen pondéré**, actif | Ce qui se stocke (Castel 65 cl, poulet, charbon…). Les ventes sortent du magasin de sortie de l'article (le plantain d'une grillade sort de la cuisine). |
+| `stock_packaging` (conversion d'unité) | article, conditionnement d'achat (casier, carton, sac), facteur | Ex. 1 casier Castel = 12 bouteilles. |
 | `stock_level` | article, magasin, quantité | **Projection** recalculable à partir des mouvements. |
 | `stock_movement` | site, article, magasin, quantité signée, type, motif, document source, par, approuvé par | Types : `receipt`, `sale`, `sale_cancel`, `transfer_out`, `transfer_in`, `loss`, `breakage`, `internal_use`, `inventory_adjustment`. |
 | `inventory_count` / `inventory_count_line` | magasin, date, statut ; article, théorique, compté, écart | L'écart génère un mouvement `inventory_adjustment`. |
@@ -167,7 +167,7 @@ erDiagram
 
 - **Total d'une addition** = Σ(quantité × prix instantané des lignes) − remises. Calculé par `packages/shared`, utilisé à l'identique par l'API et l'interface.
 - **Déduction de stock** : au passage d'une ligne à l'état `sent`, l'API crée un mouvement `sale` pour chaque ligne de recette du produit (et des options choisies).
-- **Annulation après envoi** : motif obligatoire ; selon le paramètre du site, le stock est **réintégré** (`sale_cancel`, ex. bière non ouverte) ou **compté en perte** (plat déjà préparé).
+- **Annulation après envoi** : motif obligatoire ; le stock est **réintégré** (`sale_cancel`, ex. bière non ouverte) par défaut si la préparation n'avait pas commencé, sinon **compté en perte** (`sale_cancel` + `loss`, plat déjà préparé). La personne qui annule peut changer ce choix ; il est tracé dans le journal.
 - **Stock négatif** : autorisé par défaut, avec alerte. Une vente n'est jamais bloquée à cause d'une erreur de stock ; l'écart remonte à l'inventaire.
 - **Coût moyen pondéré** : recalculé à chaque réception, `(stock × coût + reçu × prix) / (stock + reçu)`.
 - **Clôture** : théorique espèces = fond initial + Σ `payment.montant` en espèces (montant imputé, monnaie déjà déduite) − remboursements en espèces − dépenses payées depuis la caisse.

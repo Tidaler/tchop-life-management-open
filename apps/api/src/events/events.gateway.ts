@@ -11,7 +11,8 @@ export type RealtimeEvent =
   | { type: 'tickets.changed'; ticketId: string; station: string }
   | { type: 'catalog.changed' }
   | { type: 'qr.changed'; tableId: string | null }
-  | { type: 'bills.changed'; orderId: string };
+  | { type: 'bills.changed'; orderId: string }
+  | { type: 'stock.changed' };
 
 const siteRoom = (siteId: string) => `site:${siteId}`;
 

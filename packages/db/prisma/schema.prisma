@@ -69,6 +69,13 @@ model Site {
   printers        Printer[]
   cashRegisters   CashRegister[]
   customers       Customer[]
+  stockLocations  StockLocation[]
+  stockItems      StockItem[]
+  stockMovements  StockMovement[]
+  suppliers       Supplier[]
+  purchaseOrders  PurchaseOrder[]
+  goodsReceipts   GoodsReceipt[]
+  inventoryCounts InventoryCount[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -372,6 +379,7 @@ model Product {
   category       Category               @relation(fields: [categoryId], references: [id])
   modifierGroups ProductModifierGroup[]
   orderLines     OrderLine[]
+  recipeLines    RecipeLine[]
 
   @@index([siteId, categoryId])
   @@map("product")
@@ -411,7 +419,8 @@ model Modifier {
   createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  group ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  group       ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  recipeLines RecipeLine[]
 
   @@index([groupId])
   @@map("modifier")
@@ -518,11 +527,12 @@ model OrderLine {
   /// Demande QR à l'origine de la ligne (suivi affiché au client).
   qrRequestId String? @map("qr_request_id") @db.Uuid
 
-  order     Order           @relation(fields: [orderId], references: [id])
-  product   Product         @relation(fields: [productId], references: [id])
-  ticket    KitchenTicket?  @relation(fields: [ticketId], references: [id])
-  qrRequest QrOrderRequest? @relation(fields: [qrRequestId], references: [id])
-  billLines BillLine[]
+  order          Order           @relation(fields: [orderId], references: [id])
+  product        Product         @relation(fields: [productId], references: [id])
+  ticket         KitchenTicket?  @relation(fields: [ticketId], references: [id])
+  qrRequest      QrOrderRequest? @relation(fields: [qrRequestId], references: [id])
+  billLines      BillLine[]
+  stockMovements StockMovement[]
 
   @@index([orderId])
   @@index([ticketId])
@@ -894,6 +904,338 @@ model PrintJob {
 
   @@index([status, nextAttemptAt])
   @@map("print_job")
+}
+
+// ---------------------------------------------------------------- Stocks et recettes
+
+/// Unité de base d'un article : toutes les quantités de stock sont exprimées dans cette unité.
+enum StockUnit {
+  piece
+  bottle
+  g
+  kg
+  ml
+  l
+}
+
+/// Magasin : réserve, bar, cuisine, grill…
+model StockLocation {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  name       String
+  sortOrder  Int       @default(0) @map("sort_order")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int       @default(1)
+
+  site            Site             @relation(fields: [siteId], references: [id])
+  items           StockItem[]
+  levels          StockLevel[]
+  movements       StockMovement[]
+  goodsReceipts   GoodsReceipt[]
+  inventoryCounts InventoryCount[]
+
+  @@index([siteId])
+  @@map("stock_location")
+}
+
+/// Ce qui se stocke : Castel 65 cl, poulet, charbon…
+model StockItem {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  siteId         String    @map("site_id") @db.Uuid
+  name           String
+  unit           StockUnit
+  /// Magasin d'où sortent les ventes et les consommations de l'article.
+  locationId     String    @map("location_id") @db.Uuid
+  /// Seuil d'alerte, tous magasins confondus (unité de base).
+  alertThreshold Decimal   @default(0) @map("alert_threshold") @db.Decimal(14, 3)
+  /// Coût moyen pondéré d'une unité de base (FCFA), recalculé à chaque réception.
+  avgCostXaf     Decimal   @default(0) @map("avg_cost_xaf") @db.Decimal(14, 4)
+  archivedAt     DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version        Int       @default(1)
+
+  site           Site                 @relation(fields: [siteId], references: [id])
+  location       StockLocation        @relation(fields: [locationId], references: [id])
+  packagings     StockPackaging[]
+  levels         StockLevel[]
+  movements      StockMovement[]
+  recipeLines    RecipeLine[]
+  orderLines     PurchaseOrderLine[]
+  receiptLines   GoodsReceiptLine[]
+  inventoryLines InventoryCountLine[]
+
+  @@index([siteId])
+  @@map("stock_item")
+}
+
+/// Conditionnement d'achat : 1 casier Castel = 12 bouteilles, 1 sac de charbon = 25 kg.
+model StockPackaging {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  itemId     String    @map("item_id") @db.Uuid
+  name       String
+  factor     Decimal   @db.Decimal(14, 3)
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  item StockItem @relation(fields: [itemId], references: [id])
+
+  @@index([itemId])
+  @@map("stock_packaging")
+}
+
+/// Projection : quantité par article et par magasin, tenue à jour avec chaque mouvement
+/// (et recalculable à partir des mouvements).
+model StockLevel {
+  itemId     String   @map("item_id") @db.Uuid
+  locationId String   @map("location_id") @db.Uuid
+  quantity   Decimal  @default(0) @db.Decimal(14, 3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  item     StockItem     @relation(fields: [itemId], references: [id])
+  location StockLocation @relation(fields: [locationId], references: [id])
+
+  @@id([itemId, locationId])
+  @@index([locationId])
+  @@map("stock_level")
+}
+
+enum StockMovementType {
+  receipt
+  sale
+  sale_cancel
+  transfer_out
+  transfer_in
+  loss
+  breakage
+  internal_use
+  inventory_adjustment
+}
+
+/// Mouvement de stock, en ajout seul (déclencheur) : une erreur se corrige par un mouvement inverse.
+model StockMovement {
+  id               String            @id @default(uuid(7)) @db.Uuid
+  siteId           String            @map("site_id") @db.Uuid
+  itemId           String            @map("item_id") @db.Uuid
+  locationId       String            @map("location_id") @db.Uuid
+  type             StockMovementType
+  /// Quantité signée, en unité de base (sortie négative).
+  quantity         Decimal           @db.Decimal(14, 3)
+  /// Coût moyen de l'article au moment du mouvement (valorisation des pertes et des ventes).
+  unitCostXaf      Decimal           @map("unit_cost_xaf") @db.Decimal(14, 4)
+  reason           String?
+  orderLineId      String?           @map("order_line_id") @db.Uuid
+  goodsReceiptId   String?           @map("goods_receipt_id") @db.Uuid
+  inventoryCountId String?           @map("inventory_count_id") @db.Uuid
+  /// Regroupe les mouvements d'une même opération (les deux côtés d'un transfert).
+  groupId          String?           @map("group_id") @db.Uuid
+  createdById      String            @map("created_by") @db.Uuid
+  approvedById     String?           @map("approved_by") @db.Uuid
+  createdAt        DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site      Site          @relation(fields: [siteId], references: [id])
+  item      StockItem     @relation(fields: [itemId], references: [id])
+  location  StockLocation @relation(fields: [locationId], references: [id])
+  orderLine OrderLine?    @relation(fields: [orderLineId], references: [id])
+
+  @@index([siteId, createdAt])
+  @@index([itemId, createdAt])
+  @@index([orderLineId])
+  @@map("stock_movement")
+}
+
+/// Recette d'un produit vendu : chaque ligne déduit un article. Option liée : la ligne ne compte
+/// que si le client a choisi cette option (ex. supplément frites).
+model RecipeLine {
+  id         String  @id @default(uuid(7)) @db.Uuid
+  productId  String  @map("product_id") @db.Uuid
+  itemId     String  @map("item_id") @db.Uuid
+  modifierId String? @map("modifier_id") @db.Uuid
+  quantity   Decimal @db.Decimal(14, 3)
+
+  product  Product   @relation(fields: [productId], references: [id])
+  item     StockItem @relation(fields: [itemId], references: [id])
+  modifier Modifier? @relation(fields: [modifierId], references: [id])
+
+  @@index([productId])
+  @@index([itemId])
+  @@map("recipe_line")
+}
+
+// ---------------------------------------------------------------- Achats
+
+model Supplier {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  name       String
+  phone      String?
+  contact    String?
+  note       String?
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int       @default(1)
+
+  site           Site            @relation(fields: [siteId], references: [id])
+  purchaseOrders PurchaseOrder[]
+  goodsReceipts  GoodsReceipt[]
+
+  @@index([siteId])
+  @@map("supplier")
+}
+
+enum PurchaseOrderStatus {
+  open
+  received
+  cancelled
+}
+
+model PurchaseOrder {
+  id          String              @id @default(uuid(7)) @db.Uuid
+  siteId      String              @map("site_id") @db.Uuid
+  supplierId  String              @map("supplier_id") @db.Uuid
+  number      Int
+  status      PurchaseOrderStatus @default(open)
+  note        String?
+  createdById String              @map("created_by") @db.Uuid
+  closedAt    DateTime?           @map("closed_at") @db.Timestamptz(3)
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version     Int                 @default(1)
+
+  site     Site                @relation(fields: [siteId], references: [id])
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  lines    PurchaseOrderLine[]
+  receipts GoodsReceipt[]
+
+  @@unique([siteId, number])
+  @@index([siteId, status])
+  @@map("purchase_order")
+}
+
+model PurchaseOrderLine {
+  id               String  @id @default(uuid(7)) @db.Uuid
+  purchaseOrderId  String  @map("purchase_order_id") @db.Uuid
+  itemId           String  @map("item_id") @db.Uuid
+  /// Conditionnement commandé (instantané) : nom et nombre d'unités de base.
+  unitName         String  @map("unit_name")
+  factor           Decimal @db.Decimal(14, 3)
+  quantity         Decimal @db.Decimal(14, 3)
+  /// Prix convenu par conditionnement (FCFA).
+  unitPriceXaf     Int     @map("unit_price_xaf")
+  receivedQuantity Decimal @default(0) @map("received_quantity") @db.Decimal(14, 3)
+
+  purchaseOrder PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
+  item          StockItem          @relation(fields: [itemId], references: [id])
+  receiptLines  GoodsReceiptLine[]
+
+  @@index([purchaseOrderId])
+  @@map("purchase_order_line")
+}
+
+/// Réception d'une livraison : figée une fois enregistrée (déclencheur), elle génère les entrées en stock.
+model GoodsReceipt {
+  id              String   @id @default(uuid(7)) @db.Uuid
+  siteId          String   @map("site_id") @db.Uuid
+  number          Int
+  supplierId      String?  @map("supplier_id") @db.Uuid
+  purchaseOrderId String?  @map("purchase_order_id") @db.Uuid
+  locationId      String   @map("location_id") @db.Uuid
+  /// N° du bon de livraison ou de la facture du fournisseur.
+  reference       String?
+  note            String?
+  totalXaf        Int      @map("total_xaf")
+  idempotencyKey  String   @map("idempotency_key")
+  createdById     String   @map("created_by") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site          Site               @relation(fields: [siteId], references: [id])
+  supplier      Supplier?          @relation(fields: [supplierId], references: [id])
+  purchaseOrder PurchaseOrder?     @relation(fields: [purchaseOrderId], references: [id])
+  location      StockLocation      @relation(fields: [locationId], references: [id])
+  lines         GoodsReceiptLine[]
+
+  @@unique([siteId, number])
+  @@unique([siteId, idempotencyKey])
+  @@index([siteId, createdAt])
+  @@map("goods_receipt")
+}
+
+model GoodsReceiptLine {
+  id                  String  @id @default(uuid(7)) @db.Uuid
+  receiptId           String  @map("receipt_id") @db.Uuid
+  itemId              String  @map("item_id") @db.Uuid
+  purchaseOrderLineId String? @map("purchase_order_line_id") @db.Uuid
+  unitName            String  @map("unit_name")
+  factor              Decimal @db.Decimal(14, 3)
+  /// Quantité reçue en conditionnements, et convertie en unité de base.
+  quantity            Decimal @db.Decimal(14, 3)
+  baseQuantity        Decimal @map("base_quantity") @db.Decimal(14, 3)
+  unitPriceXaf        Int     @map("unit_price_xaf")
+  totalXaf            Int     @map("total_xaf")
+
+  receipt           GoodsReceipt       @relation(fields: [receiptId], references: [id])
+  item              StockItem          @relation(fields: [itemId], references: [id])
+  purchaseOrderLine PurchaseOrderLine? @relation(fields: [purchaseOrderLineId], references: [id])
+
+  @@index([receiptId])
+  @@map("goods_receipt_line")
+}
+
+// ---------------------------------------------------------------- Inventaires
+
+enum InventoryStatus {
+  open
+  closed
+  cancelled
+}
+
+/// Inventaire d'un magasin : les écarts constatés à la clôture deviennent des mouvements d'ajustement.
+model InventoryCount {
+  id           String          @id @default(uuid(7)) @db.Uuid
+  siteId       String          @map("site_id") @db.Uuid
+  number       Int
+  locationId   String          @map("location_id") @db.Uuid
+  status       InventoryStatus @default(open)
+  note         String?
+  /// Valeur nette des écarts (FCFA, au coût moyen), connue à la clôture.
+  varianceXaf  Int?            @map("variance_xaf")
+  createdById  String          @map("created_by") @db.Uuid
+  closedById   String?         @map("closed_by") @db.Uuid
+  approvedById String?         @map("approved_by") @db.Uuid
+  closedAt     DateTime?       @map("closed_at") @db.Timestamptz(3)
+  createdAt    DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version      Int             @default(1)
+
+  site     Site                 @relation(fields: [siteId], references: [id])
+  location StockLocation        @relation(fields: [locationId], references: [id])
+  lines    InventoryCountLine[]
+
+  @@unique([siteId, number])
+  @@index([siteId, status])
+  @@map("inventory_count")
+}
+
+model InventoryCountLine {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  countId     String   @map("count_id") @db.Uuid
+  itemId      String   @map("item_id") @db.Uuid
+  /// Quantité comptée ; vide tant que l'article n'a pas été compté.
+  countedQty  Decimal? @map("counted_qty") @db.Decimal(14, 3)
+  /// Théorique et écart, figés à la clôture.
+  expectedQty Decimal? @map("expected_qty") @db.Decimal(14, 3)
+  varianceQty Decimal? @map("variance_qty") @db.Decimal(14, 3)
+  countedById String?  @map("counted_by") @db.Uuid
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  count InventoryCount @relation(fields: [countId], references: [id])
+  item  StockItem      @relation(fields: [itemId], references: [id])
+
+  @@unique([countId, itemId])
+  @@map("inventory_count_line")
 }
 
 // ---------------------------------------------------------------- Audit

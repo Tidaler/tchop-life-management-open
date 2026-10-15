@@ -2,6 +2,7 @@ import { type DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ApprovalController } from './approval/approval.controller.js';
 import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
 import { BillsService } from './cash/bills.service.js';
@@ -37,6 +38,17 @@ import { SiteLinkGateway } from './link/site-link.gateway.js';
 import { PrismaService } from './prisma.service.js';
 import { PublicMenuController, QrRequestsController } from './qr/qr.controllers.js';
 import { QrRequestsService } from './qr/qr-requests.service.js';
+import { InventoryService } from './stock/inventory.service.js';
+import { PurchasesService } from './stock/purchases.service.js';
+import { RecipesService } from './stock/recipes.service.js';
+import { StockLedger } from './stock/stock-ledger.js';
+import {
+  InventoryController,
+  PurchasesController,
+  RecipesController,
+  StockController,
+} from './stock/stock.controllers.js';
+import { StockService } from './stock/stock.service.js';
 
 const reflector = new Reflector();
 
@@ -84,6 +96,11 @@ export class AppModule {
         CashController,
         BillsController,
         CustomersController,
+        ApprovalController,
+        StockController,
+        RecipesController,
+        PurchasesController,
+        InventoryController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -107,6 +124,11 @@ export class AppModule {
         CashService,
         BillsService,
         CustomersService,
+        StockLedger,
+        StockService,
+        RecipesService,
+        PurchasesService,
+        InventoryService,
         // Menu QR : servi par le site lui-même, ou par le cloud qui relaie vers les sites.
         ...(config.API_MODE === 'cloud'
           ? [

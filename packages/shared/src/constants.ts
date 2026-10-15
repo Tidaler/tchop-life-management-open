@@ -94,8 +94,41 @@ export const REFERENCE_REQUIRED: readonly PaymentMethod[] = ['mtn_momo', 'orange
 /** Moyens acceptés pour régler une ardoise (on ne rembourse pas une ardoise par une autre ardoise). */
 export const SETTLEMENT_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card'] as const;
 
-/** Seuils d'approbation par défaut (paramètres du site, docs/architecture/05-roles-permissions.md). */
-export const DEFAULT_THRESHOLDS = { discountPercent: 10, discountXaf: 2000 } as const;
+/** Unités de base des articles de stock. */
+export const STOCK_UNITS = ['piece', 'bottle', 'g', 'kg', 'ml', 'l'] as const;
+export type StockUnit = (typeof STOCK_UNITS)[number];
+
+export const STOCK_MOVEMENT_TYPES = [
+  'receipt',
+  'sale',
+  'sale_cancel',
+  'transfer_out',
+  'transfer_in',
+  'loss',
+  'breakage',
+  'internal_use',
+  'inventory_adjustment',
+] as const;
+export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
+
+/** Sorties déclarées à la main : perte, casse, consommation interne (repas du personnel, charbon…). */
+export const LOSS_TYPES = ['loss', 'breakage', 'internal_use'] as const;
+export type LossType = (typeof LOSS_TYPES)[number];
+
+/** Quantité de stock arrondie au millième (précision des colonnes numeric(14,3)). */
+export const roundQty = (value: number): number => Math.round(value * 1000) / 1000;
+
+/**
+ * Seuils d'approbation par défaut (paramètres du site, docs/architecture/05-roles-permissions.md) :
+ * remise, perte ou casse déclarée par un rôle limité au seuil, écart net d'un inventaire (valeurs en FCFA).
+ */
+export const DEFAULT_THRESHOLDS = {
+  discountPercent: 10,
+  discountXaf: 2000,
+  stockLossXaf: 10000,
+  inventoryVarianceXaf: 10000,
+} as const;
+export type Thresholds = { -readonly [K in keyof typeof DEFAULT_THRESHOLDS]: number };
 
 /** Montant d'une remise, plafonné au sous-total. */
 export function discountAmount(

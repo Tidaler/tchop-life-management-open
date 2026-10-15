@@ -513,6 +513,8 @@ function CancelDialog({
     enabled: needs,
   });
   const [reason, setReason] = useState('');
+  // Marchandise intacte (préparation non commencée) : remise en stock par défaut ; sinon perte.
+  const [restock, setRestock] = useState(line.status === 'sent');
   const [approverId, setApproverId] = useState('');
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -522,7 +524,7 @@ function CancelDialog({
     mutationFn: () =>
       api(`/orders/${order.id}/lines/${line.id}/cancel`, {
         method: 'POST',
-        body: { reason, ...(needs ? { approval: { userId: approver, pin } } : {}) },
+        body: { reason, restock, ...(needs ? { approval: { userId: approver, pin } } : {}) },
       }),
     onSuccess: onDone,
     onError: (e) => {
@@ -556,6 +558,10 @@ function CancelDialog({
             onChange={(e) => setReason(e.target.value)}
           />
         </div>
+        <label className="check" style={{ marginBottom: 12 }}>
+          <input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} />
+          {t('order.restock')}
+        </label>
         {needs && (
           <>
             <div className="section-label">{t('order.approval')}</div>

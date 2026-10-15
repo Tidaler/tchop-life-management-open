@@ -53,6 +53,7 @@ const MATRIX: Record<Permission, string> = {
   'recipe.edit': 'FF___R_',
   // Stocks et achats
   'stock.view': 'FF__RFR',
+  'stock.item.manage': 'FF___F_',
   'stock.receive': 'FF___F_',
   'stock.transfer': 'FF___F_',
   'stock.loss': 'FF__AT_',
