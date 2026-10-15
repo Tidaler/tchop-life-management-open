@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { lazy, type ReactNode, Suspense } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { deviceStore } from './api';
 import { useI18n } from './i18n';
@@ -7,13 +7,15 @@ import { AvailabilityPage } from './pages/AvailabilityPage';
 import { CatalogPage } from './pages/CatalogPage';
 import { DevicesPage } from './pages/DevicesPage';
 import { FloorSetupPage } from './pages/FloorSetupPage';
-import { QrPrintPage } from './pages/QrPrintPage';
 import { EnrollPage } from './pages/EnrollPage';
 import { HomePage, PlaceholderPage } from './pages/HomePage';
 import { PasswordLoginPage } from './pages/PasswordLoginPage';
 import { PinLoginPage } from './pages/PinLoginPage';
 import { Shell } from './pages/Shell';
 import { useSession } from './session';
+
+// La bibliothèque QR n'est chargée que sur la page d'impression.
+const QrPrintPage = lazy(() => import('./pages/QrPrintPage').then((m) => ({ default: m.QrPrintPage })));
 
 function Loading() {
   const { t } = useI18n();
@@ -91,7 +93,9 @@ const router = createBrowserRouter([
         path: 'floor-setup/qr',
         element: (
           <RequireScreen path="/floor-setup">
-            <QrPrintPage />
+            <Suspense fallback={<Loading />}>
+              <QrPrintPage />
+            </Suspense>
           </RequireScreen>
         ),
       },

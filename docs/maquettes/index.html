@@ -246,7 +246,7 @@ table.grid tr:last-child td{border-bottom:0}
 <body>
 
 <header class="topbar">
-  <div class="logo"><div class="mark">🔥</div><div>TCHOP LIFE<small>Le Grill d'Akwa · Douala</small></div></div>
+  <div class="logo"><div class="mark">🔥</div><div>TCHOP LIFE<small>Gestion de l'établissement</small></div></div>
   <nav class="nav" id="nav">
     <button data-screen="serveur" class="active">Serveur</button>
     <button data-screen="caisse">Caisse</button>
@@ -816,7 +816,7 @@ function cashOut() {
   $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
     <div class="row between" style="margin-bottom:12px"><h2>Reçu imprimé ✓</h2><button class="btn ghost" data-close>✕</button></div>
     <div class="receipt">
-      <div class="c"><b>LE GRILL D'AKWA</b><br>Akwa, Douala · NIU M0000000000X<br>Tél. 6XX XX XX XX</div><hr>
+      <div class="c"><b>TCHOP LIFE</b><br>NIU M0000000000X<br>Tél. 6XX XX XX XX</div><hr>
       <div class="r"><span>Reçu n° R-${n}</span><span>${new Date().toLocaleDateString('fr-FR')} ${nowHM()}</span></div>
       <div class="r"><span>Table ${t.id}</span><span>Caisse : Mireille N.</span></div><hr>
       ${lines.map(l => `<div class="r"><span>${l.qty} x ${item(l.id).fr}</span><span>${(l.qty * item(l.id).price).toLocaleString('fr-FR')}</span></div>`).join('')}<hr>
@@ -915,7 +915,7 @@ function renderQr() {
   const L = ui.qrLang, T = QT[L];
   const nm = m => m[L], ds = m => L === 'fr' ? m.dfr : m.den;
   const cartCount = ui.qrCart.reduce((s, l) => s + l.qty, 0);
-  const head = `<div class="ph-head"><div class="row between"><div><div class="rest">Le Grill d'Akwa</div><div class="tbl">${T.table}</div></div>
+  const head = `<div class="ph-head"><div class="row between"><div><div class="rest">TCHOP LIFE</div><div class="tbl">${T.table}</div></div>
     <div class="lang"><button data-lang="fr" class="${L === 'fr' ? 'active' : ''}">FR</button><button data-lang="en" class="${L === 'en' ? 'active' : ''}">EN</button></div></div></div>`;
   let body = '';
   if (ui.qrView === 'menu') {

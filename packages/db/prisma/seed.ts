@@ -126,14 +126,13 @@ async function main() {
 
     await db.$transaction(
       async (tx) => {
-        await tx.tenant.create({ data: { id: DEMO_TENANT_ID, slug: 'grill-akwa', name: "Le Grill d'Akwa" } });
+        await tx.tenant.create({ data: { id: DEMO_TENANT_ID, slug: 'tchop-life', name: 'TCHOP LIFE' } });
         await tx.site.create({
           data: {
             id: DEMO_SITE_ID,
             tenantId: DEMO_TENANT_ID,
-            slug: 'akwa',
-            name: "Le Grill d'Akwa · Akwa",
-            address: 'Akwa, Douala',
+            slug: 'principal',
+            name: 'TCHOP LIFE',
             settings: { autoLockSeconds: { cashier: 60, waiter: 180, backOffice: 600 } },
           },
         });

@@ -4,16 +4,24 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
 import { useI18n } from '../i18n';
 
-export function Brand({ subtitle }: { subtitle?: string }) {
+/**
+ * Logo et nom de l'application. Le sous-titre (site, appareil) omet ce qui répète déjà le nom affiché :
+ * l'établissement s'appelle lui aussi TCHOP LIFE.
+ */
+export function Brand({ subtitle }: { subtitle?: (string | undefined)[] }) {
   const { t } = useI18n();
+  const name = t('app.name');
+  const rest = (subtitle ?? []).filter(
+    (part): part is string => !!part && part.toLowerCase() !== name.toLowerCase(),
+  );
   return (
     <div className="brand">
       <div className="mark" aria-hidden>
         TL
       </div>
       <div>
-        {t('app.name')}
-        {subtitle && <small>{subtitle}</small>}
+        {name}
+        {rest.length > 0 && <small>{rest.join(' · ')}</small>}
       </div>
     </div>
   );
