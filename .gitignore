@@ -13,3 +13,4 @@ Thumbs.db
 packages/db/src/generated/
 dev-dist/
 *.tsbuildinfo
+data/

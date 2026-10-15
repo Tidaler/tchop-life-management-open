@@ -126,14 +126,13 @@ async function main() {
 
     await db.$transaction(
       async (tx) => {
-        await tx.tenant.create({ data: { id: DEMO_TENANT_ID, slug: 'grill-akwa', name: "Le Grill d'Akwa" } });
+        await tx.tenant.create({ data: { id: DEMO_TENANT_ID, slug: 'tchop-life', name: 'TCHOP LIFE' } });
         await tx.site.create({
           data: {
             id: DEMO_SITE_ID,
             tenantId: DEMO_TENANT_ID,
-            slug: 'akwa',
-            name: "Le Grill d'Akwa · Akwa",
-            address: 'Akwa, Douala',
+            slug: 'principal',
+            name: 'TCHOP LIFE',
             settings: { autoLockSeconds: { cashier: 60, waiter: 180, backOffice: 600 } },
           },
         });
@@ -207,6 +206,49 @@ async function main() {
             },
           });
         }
+
+        // Options des grillades : accompagnement obligatoire, piment facultatif.
+        const side = await tx.modifierGroup.create({
+          data: {
+            siteId: DEMO_SITE_ID,
+            name: { fr: 'Accompagnement', en: 'Side' },
+            minSelect: 1,
+            maxSelect: 1,
+            modifiers: {
+              create: [
+                { name: { fr: 'Miondo', en: 'Miondo' }, sortOrder: 0 },
+                { name: { fr: 'Plantain frit', en: 'Fried plantain' }, sortOrder: 1 },
+                { name: { fr: 'Bâton de manioc', en: 'Cassava stick' }, sortOrder: 2 },
+                { name: { fr: 'Frites', en: 'French fries' }, priceDeltaXaf: 300, sortOrder: 3 },
+              ],
+            },
+          },
+        });
+        const chili = await tx.modifierGroup.create({
+          data: {
+            siteId: DEMO_SITE_ID,
+            name: { fr: 'Piment', en: 'Chili' },
+            minSelect: 0,
+            maxSelect: 1,
+            sortOrder: 1,
+            modifiers: {
+              create: [
+                { name: { fr: 'Sans piment', en: 'No chili' }, sortOrder: 0 },
+                { name: { fr: 'Piment fort', en: 'Hot chili' }, sortOrder: 1 },
+              ],
+            },
+          },
+        });
+        const grilled = await tx.product.findMany({
+          where: { siteId: DEMO_SITE_ID, station: 'grill' },
+          select: { id: true },
+        });
+        await tx.productModifierGroup.createMany({
+          data: grilled.flatMap((p) => [
+            { productId: p.id, groupId: side.id, sortOrder: 0 },
+            { productId: p.id, groupId: chili.id, sortOrder: 1 },
+          ]),
+        });
       },
       { timeout: 60_000 },
     );

@@ -15,7 +15,7 @@ export function Shell() {
       <header>
         <OfflineBanner />
         <div className="topbar">
-          <Brand subtitle={me.site.name} />
+          <Brand subtitle={[me.site.name]} />
           <nav className="nav">
             <NavLink to="/" end>
               {t('nav.home')}

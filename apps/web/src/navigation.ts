@@ -53,5 +53,14 @@ export const SCREENS: Screen[] = [
     access: 'read',
     phase: 'Phase 6',
   },
+  {
+    path: '/availability',
+    label: 'nav.availability',
+    icon: '✅',
+    permission: 'product.availability',
+    access: 'write',
+  },
+  { path: '/catalog', label: 'nav.catalog', icon: '📋', permission: 'catalog.edit', access: 'write' },
+  { path: '/floor-setup', label: 'nav.floorSetup', icon: '🪑', permission: 'floor.manage', access: 'write' },
   { path: '/devices', label: 'nav.devices', icon: '📱', permission: 'device.manage', access: 'read' },
 ];

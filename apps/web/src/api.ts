@@ -65,10 +65,12 @@ function headers(json: boolean): Headers {
 
 async function send(path: string, method: string, body: unknown): Promise<Response> {
   try {
+    // FormData (envoi de photo) : le navigateur pose lui-même l'en-tête multipart.
+    const isForm = body instanceof FormData;
     return await fetch(`/api${path}`, {
       method,
-      headers: headers(body !== undefined),
-      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: headers(body !== undefined && !isForm),
+      body: body === undefined ? undefined : isForm ? body : JSON.stringify(body),
       credentials: 'same-origin',
     });
   } catch {

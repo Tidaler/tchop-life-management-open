@@ -39,6 +39,17 @@ pnpm dev
 3. **Verrouiller**, ouvrir `/enroll`, saisir le code : le navigateur devient un appareil enregistré.
 4. L'écran PIN affiche le personnel du site. Se connecter par exemple en serveur ou en caissière.
 
+### Écrans disponibles (Phase 1)
+
+| Écran | Pour qui | Contenu |
+|---|---|---|
+| Catalogue | Gérant, propriétaire | Catégories, produits (FR/EN, prix, poste, photo), groupes d'options |
+| Disponibilités | Cuisine/bar, magasinier, gérant | Marquer un produit épuisé en un geste |
+| Plan de salle | Gérant, propriétaire | Zones, tables, mode du QR code, remplacement d'un QR code |
+| Plan de salle › Imprimer les QR codes | Gérant, propriétaire | Planche de cartes QR bilingues à imprimer et découper |
+
+Les photos sont stockées dans `apps/api/data/media` (variable `MEDIA_DIR`), réencodées en WebP de 800 px maximum.
+
 ### Comptes de démonstration
 
 Ces comptes n'existent que dans les données de démo (`packages/db/prisma/seed.ts`). Ne jamais les utiliser en production.
@@ -65,7 +76,7 @@ Après 5 PIN faux, le compte est bloqué 5 minutes.
 | `pnpm typecheck` | Vérification TypeScript |
 | `pnpm test` | Tests : rôles et permissions, traductions, API de bout en bout (sur la base `tchop_test`) |
 | `pnpm format` | Formate le code avec Prettier |
-| `pnpm db:reset` | Supprime et recrée la base de développement, puis relance le seed (**efface toutes les données**) |
+| `pnpm db:reset` | Supprime et recrée la base de développement, puis relance le seed (**efface toutes les données** ; les fichiers photo restent dans `MEDIA_DIR`) |
 | `pnpm db:down` | Arrête PostgreSQL |
 
 ## Organisation

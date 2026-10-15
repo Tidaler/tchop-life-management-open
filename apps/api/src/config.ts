@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { z } from 'zod';
 
 const boolFromEnv = z.enum(['true', 'false', '1', '0']).transform((v) => v === 'true' || v === '1');
@@ -19,6 +20,13 @@ const configSchema = z
     AUTH_RATE_LIMIT: z.coerce.number().int().positive().default(10),
     /** Valeur de « trust proxy » d'Express (Caddy devant l'API sur le serveur local). */
     TRUST_PROXY: z.string().default('loopback'),
+    /** Dossier des photos de produits. */
+    MEDIA_DIR: z
+      .string()
+      .default('data/media')
+      .transform((dir) => resolve(dir)),
+    /** Adresse publique du menu client, encodée dans les QR codes (servie par le cloud). */
+    PUBLIC_MENU_URL: z.url().default('https://menu.tchoplife.app'),
   })
   .refine((c) => c.API_MODE !== 'site' || c.SITE_ID, {
     message: 'SITE_ID est obligatoire en mode site',
