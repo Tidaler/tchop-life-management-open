@@ -5,6 +5,8 @@ export interface PublicMenu {
   site: { name: string };
   table: { label: string };
   ordering: boolean;
+  /** Menu de commande, mais l'établissement est momentanément injoignable (relais par le cloud). */
+  orderingPaused?: boolean;
   categories: { id: string; name: Translated }[];
   products: {
     id: string;

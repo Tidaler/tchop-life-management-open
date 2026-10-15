@@ -794,6 +794,51 @@ model CustomerLedgerEntry {
   @@map("customer_ledger_entry")
 }
 
+// ---------------------------------------------------------------- Cloud (relais du menu QR)
+// Ces tables ne servent que dans la base du cloud (API_MODE=cloud).
+
+/// Serveur local autorisé à se connecter au cloud. Le secret n'est conservé que sous forme d'empreinte.
+model SiteLink {
+  siteId     String    @id @map("site_id") @db.Uuid
+  name       String
+  secretHash String    @map("secret_hash")
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("site_link")
+}
+
+/// Menu public d'un site, tel que le serveur local l'a envoyé (champs publics uniquement).
+model CloudMenuSnapshot {
+  siteId    String   @id @map("site_id") @db.Uuid
+  payload   Json
+  hash      String
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("cloud_menu_snapshot")
+}
+
+/// Aiguillage d'un QR code vers son site : seule l'empreinte du jeton est connue du cloud.
+model CloudQrRoute {
+  tokenHash  String @id @map("token_hash")
+  siteId     String @map("site_id") @db.Uuid
+  tableLabel String @map("table_label")
+  mode       QrMode
+
+  @@index([siteId])
+  @@map("cloud_qr_route")
+}
+
+/// Photo du menu servie par le cloud : nom du fichier → site qui la détient.
+model CloudMediaRoute {
+  name   String @id
+  siteId String @map("site_id") @db.Uuid
+
+  @@index([siteId])
+  @@map("cloud_media_route")
+}
+
 // ---------------------------------------------------------------- Impression
 
 enum PrinterRole {

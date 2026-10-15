@@ -57,6 +57,8 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
   ) {}
 
   onApplicationBootstrap(): void {
+    // Les demandes vivent sur le serveur local : rien à faire expirer dans le cloud.
+    if (this.config.API_MODE !== 'site') return;
     this.timer = setInterval(
       () => void this.expireStale().catch((e) => this.logger.error(String(e))),
       60_000,
@@ -92,14 +94,25 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
   /** Menu public : uniquement ce qui est visible sur le menu QR, sans aucune donnée interne. */
   async menu(token: string) {
     const qr = await this.resolveQr(token);
-    const [categories, products, groups] = await Promise.all([
+    return {
+      ...(await this.siteMenu(qr.siteId)),
+      table: { label: qr.table.label },
+      ordering: qr.mode === 'order',
+      orderingPaused: false,
+    };
+  }
+
+  /** Partie du menu commune à toutes les tables du site (aussi envoyée au cloud). */
+  async siteMenu(siteId: string) {
+    const [site, categories, products, groups] = await Promise.all([
+      this.prisma.site.findUniqueOrThrow({ where: { id: siteId } }),
       this.prisma.category.findMany({
-        where: { siteId: qr.siteId, archivedAt: null, visibleOnQr: true },
+        where: { siteId, archivedAt: null, visibleOnQr: true },
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
       }),
       this.prisma.product.findMany({
         where: {
-          siteId: qr.siteId,
+          siteId,
           archivedAt: null,
           visibleOnQr: true,
           category: { visibleOnQr: true, archivedAt: null },
@@ -108,7 +121,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
         include: { modifierGroups: { orderBy: { sortOrder: 'asc' }, select: { groupId: true } } },
       }),
       this.prisma.modifierGroup.findMany({
-        where: { siteId: qr.siteId, archivedAt: null },
+        where: { siteId, archivedAt: null },
         include: {
           modifiers: { where: { archivedAt: null, available: true }, orderBy: { sortOrder: 'asc' } },
         },
@@ -116,9 +129,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
     ]);
     const used = new Set(products.flatMap((p) => p.modifierGroups.map((g) => g.groupId)));
     return {
-      site: { name: qr.site.name },
-      table: { label: qr.table.label },
-      ordering: qr.mode === 'order',
+      site: { name: site.name },
       categories: categories.map((c) => ({ id: c.id, name: c.name })),
       products: products.map((p) => ({
         id: p.id,
@@ -139,6 +150,28 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
           maxSelect: g.maxSelect,
           modifiers: g.modifiers.map((m) => ({ id: m.id, name: m.name, priceDeltaXaf: m.priceDeltaXaf })),
         })),
+    };
+  }
+
+  /**
+   * Ce que le cloud doit savoir pour servir le menu : le menu public, l'aiguillage des QR codes actifs
+   * (empreinte du jeton seulement, jamais le jeton) et les noms des photos.
+   */
+  async linkSnapshot(siteId: string) {
+    const [menu, qrs] = await Promise.all([
+      this.siteMenu(siteId),
+      this.prisma.qrCode.findMany({
+        where: { siteId, active: true, table: { archivedAt: null } },
+        include: { table: { select: { label: true } } },
+      }),
+    ]);
+    const media = menu.products
+      .map((p) => (p.imageUrl?.startsWith('/api/media/') ? p.imageUrl.slice('/api/media/'.length) : null))
+      .filter((n): n is string => !!n);
+    return {
+      menu,
+      routes: qrs.map((q) => ({ tokenHash: sha256(q.token), tableLabel: q.table.label, mode: q.mode })),
+      media,
     };
   }
 

@@ -172,6 +172,21 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Rapprochement des paiements électroniques réservé à `payment.verify` (gérant, comptable) | `bills.service.ts` |
 | Clients à ardoise : données minimales, téléphone jamais journalisé | `customers.service.ts` |
 
+### Phase 3b — Relais par le cloud
+
+| Règle | Où |
+|---|---|
+| Connexion toujours sortante depuis le serveur local (aucun port ouvert dans l'établissement), en WebSocket ; HTTPS obligatoire vers le cloud en production | `site-link.client.ts`, `config.ts` |
+| Chaque site s'authentifie avec son identifiant et un secret de 256 bits, affiché une seule fois ; le cloud n'en garde que l'empreinte, comparée en temps constant | `register-site.ts`, `site-link.gateway.ts` |
+| Plus de 10 échecs par minute depuis une même adresse : refus immédiat ; une seule connexion active par site | `site-link.gateway.ts` |
+| Révocation ou renouvellement du secret : nouvelles connexions refusées, connexion en cours coupée à la revérification (30 s), menu du site plus servi | `site-link.gateway.ts`, `cloud-menu.service.ts` |
+| L'identité du site vient de la connexion authentifiée, jamais du message ; copie du menu validée par schéma, taille limitée | `site-link.gateway.ts`, `protocol.ts` |
+| Le cloud ne stocke que l'empreinte des jetons QR ; un jeton déjà attribué à un site ne peut pas être détourné par un autre | `site-link.gateway.ts` |
+| Le serveur local ne fait pas confiance au cloud : mêmes contrôles que l'API publique locale (schéma, prix recalculés, plafonds, disponibilité), jeton QR obligatoirement de ce site | `site-link.client.ts` |
+| Seuls le code et le message d'erreur repartent vers le cloud ; photos relayées limitées en taille, noms de fichiers contrôlés | `site-link.client.ts`, `media.controller.ts` |
+| Site injoignable : menu servi depuis la copie, commande suspendue (503 `SITE_OFFLINE`) avec un message au client | `cloud-menu.service.ts`, `apps/menu` |
+| Mêmes limites de débit sur le menu public du cloud que sur celui du site | `qr.controllers.ts` |
+
 ### À mettre en place au déploiement (non testé automatiquement)
 
 - En-têtes HTTP posés par le serveur web (Caddy) : HSTS, `frame-ancestors 'none'`, `X-Content-Type-Options`, CSP en en-tête.

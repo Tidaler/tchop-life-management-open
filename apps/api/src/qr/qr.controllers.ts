@@ -17,6 +17,7 @@ import { Public, PublicOrderRateLimited, PublicRateLimited, RequirePermission } 
 import { newOpaqueToken } from '../common/crypto.js';
 import { type AppRequest, type AuthContext, CurrentAuth } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
+import { PUBLIC_MENU_BACKEND, type PublicMenuBackend } from '../link/cloud-menu.service.js';
 import { QrRequestsService } from './qr-requests.service.js';
 
 /** Cookie anonyme du client : il relie ses demandes à son navigateur, sans rien savoir de lui. */
@@ -30,7 +31,7 @@ const CLIENT_COOKIE_MAX_AGE_MS = 6 * 3_600_000;
 @Controller('public/menu/:token')
 export class PublicMenuController {
   constructor(
-    private readonly qr: QrRequestsService,
+    @Inject(PUBLIC_MENU_BACKEND) private readonly qr: PublicMenuBackend,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 

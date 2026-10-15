@@ -31,6 +31,9 @@ import { APP_CONFIG, type AppConfig } from './config.js';
 import { DevicesController } from './devices/devices.controller.js';
 import { DevicesService } from './devices/devices.service.js';
 import { HealthController } from './health/health.controller.js';
+import { CloudMenuService, PUBLIC_MENU_BACKEND } from './link/cloud-menu.service.js';
+import { SiteLinkClient } from './link/site-link.client.js';
+import { SiteLinkGateway } from './link/site-link.gateway.js';
 import { PrismaService } from './prisma.service.js';
 import { PublicMenuController, QrRequestsController } from './qr/qr.controllers.js';
 import { QrRequestsService } from './qr/qr-requests.service.js';
@@ -104,6 +107,14 @@ export class AppModule {
         CashService,
         BillsService,
         CustomersService,
+        // Menu QR : servi par le site lui-même, ou par le cloud qui relaie vers les sites.
+        ...(config.API_MODE === 'cloud'
+          ? [
+              SiteLinkGateway,
+              CloudMenuService,
+              { provide: PUBLIC_MENU_BACKEND, useExisting: CloudMenuService },
+            ]
+          : [SiteLinkClient, { provide: PUBLIC_MENU_BACKEND, useExisting: QrRequestsService }]),
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },

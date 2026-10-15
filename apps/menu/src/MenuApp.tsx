@@ -211,13 +211,15 @@ function Menu({
           ? 'menu.tooMany'
           : code === 'ORDER_TOO_LARGE'
             ? 'menu.tooLarge'
-            : code === 'PRODUCT_UNAVAILABLE' || code === 'NOT_FOUND'
-              ? 'menu.soldOut'
-              : e instanceof MenuError && e.status === 429
-                ? 'menu.slowDown'
-                : code === 'NETWORK'
-                  ? 'menu.offline'
-                  : 'menu.error';
+            : code === 'SITE_OFFLINE'
+              ? 'menu.offline'
+              : code === 'PRODUCT_UNAVAILABLE' || code === 'NOT_FOUND'
+                ? 'menu.soldOut'
+                : e instanceof MenuError && e.status === 429
+                  ? 'menu.slowDown'
+                  : code === 'NETWORK'
+                    ? 'menu.offline'
+                    : 'menu.error';
       setMessage(t(key));
       if (code === 'PRODUCT_UNAVAILABLE' || code === 'NOT_FOUND') load();
     } finally {
@@ -242,7 +244,11 @@ function Menu({
       </header>
 
       {loadError && <div className="banner warn">{t('menu.offline')}</div>}
-      {!menu.ordering && <div className="banner">{t('menu.browseOnly')}</div>}
+      {menu.orderingPaused ? (
+        <div className="banner warn">{t('menu.offline')}</div>
+      ) : (
+        !menu.ordering && <div className="banner">{t('menu.browseOnly')}</div>
+      )}
       {orders.length > 0 && view === 'menu' && (
         <button className="banner link" onClick={() => setView('orders')}>
           {t('menu.myOrders')} · {t(`qrStatus.${orders[0]!.status}`)} →

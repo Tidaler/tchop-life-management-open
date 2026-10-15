@@ -85,6 +85,22 @@ Après 5 PIN faux, le compte est bloqué 5 minutes.
 | `pnpm db:reset` | Supprime et recrée la base de développement, puis relance le seed (**efface toutes les données** ; les fichiers photo restent dans `MEDIA_DIR`) |
 | `pnpm db:down` | Arrête PostgreSQL |
 
+## Relais par le cloud (test en local)
+
+Le menu QR peut être servi depuis Internet par une instance « cloud » de l'API, reliée au serveur local.
+Pour l'essayer sur un seul PC :
+
+1. Créer une base pour le cloud (par exemple `tchop_cloud`) et y appliquer les migrations :
+   `DATABASE_URL=postgresql://tchop:tchop@localhost:5434/tchop_cloud pnpm --filter @tchop/db exec prisma migrate deploy`.
+2. Enregistrer le site sur le cloud (le secret ne s'affiche qu'une fois) :
+   `DATABASE_URL=…/tchop_cloud pnpm --filter @tchop/api cloud:register-site -- --site <SITE_ID> --name "TCHOP LIFE"`.
+3. Lancer le cloud sur un autre port : `API_MODE=cloud API_PORT=3100 DATABASE_URL=…/tchop_cloud` (sans `SITE_ID`).
+4. Sur le serveur local, renseigner `CLOUD_URL=http://localhost:3100` et `SITE_LINK_SECRET=<secret>` dans `.env`,
+   puis relancer l'API. `GET /api/health` indique `cloud: connected`.
+
+Révoquer un site : `cloud:register-site -- --site <SITE_ID> --revoke`. Relancer `cloud:register-site` avec `--name`
+renouvelle le secret (l'ancien est refusé).
+
 ## Organisation
 
 ```
