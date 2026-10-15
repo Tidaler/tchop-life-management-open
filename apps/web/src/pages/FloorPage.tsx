@@ -5,7 +5,8 @@ import { Link } from 'react-router';
 import { api } from '../api';
 import { errorMessage } from '../components/common';
 import { useI18n } from '../i18n';
-import { type OpenOrder, useOpenOrders } from '../orders';
+import { type OpenOrder, useOpenOrders, useQrRequests } from '../orders';
+import { useSession } from '../session';
 import { type FloorZone } from './FloorSetupPage';
 
 export const useFloor = () => useQuery({ queryKey: ['floor'], queryFn: () => api<FloorZone[]>('/floor') });
@@ -21,6 +22,9 @@ export function FloorPage() {
   const { t, locale } = useI18n();
   const floor = useFloor();
   const orders = useOpenOrders();
+  const { can } = useSession();
+  const qr = useQrRequests(can('qr_request.handle', 'read'));
+  const qrTables = new Set((qr.data ?? []).map((r) => r.tableId));
   const [zoneId, setZoneId] = useState<string | null>(null);
 
   const byTable = new Map<string, OpenOrder>(
@@ -57,10 +61,17 @@ export function FloorPage() {
       <div className="tables-grid">
         {zone?.tables.map((table) => {
           const order = byTable.get(table.id);
-          const state = !order ? 'free' : order.readyCount > 0 ? 'ready' : 'busy';
+          const state = qrTables.has(table.id)
+            ? 'qr'
+            : !order
+              ? 'free'
+              : order.readyCount > 0
+                ? 'ready'
+                : 'busy';
           return (
             <Link key={table.id} to={`/floor/${table.id}`} className={`floor-table ${state}`}>
               <b>{table.label}</b>
+              {qrTables.has(table.id) && <span className="pill qr">📱 {t('floor.qrPending')}</span>}
               {order ? (
                 <>
                   <span>

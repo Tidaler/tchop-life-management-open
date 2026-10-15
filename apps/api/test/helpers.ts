@@ -27,6 +27,8 @@ export function testConfig(overrides: Record<string, string> = {}) {
     JWT_SECRET: 'test-secret-0123456789abcdef0123456789',
     COOKIE_SECURE: 'false',
     AUTH_RATE_LIMIT: '1000',
+    PUBLIC_RATE_LIMIT: '1000',
+    PUBLIC_ORDER_RATE_LIMIT: '1000',
     WEB_ORIGIN: '',
     MEDIA_DIR: join(tmpdir(), 'tchop-test-media'),
     PUBLIC_MENU_URL: 'https://menu.test.local',

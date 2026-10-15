@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { type Prisma, type Station } from '@tchop/db';
 import {
   businessDay,
@@ -19,15 +19,11 @@ import { EventsService } from '../events/events.gateway.js';
 import { type KitchenTicketDoc } from '../printing/escpos.js';
 import { PrintService } from '../printing/print.service.js';
 import { PrismaService } from '../prisma.service.js';
+import { type ModifierSnapshot, type PricedLine, PricingService } from './pricing.service.js';
 
 type Tx = Prisma.TransactionClient;
 
-export interface ModifierSnapshot {
-  groupId: string;
-  modifierId: string;
-  name: Translated;
-  priceDeltaXaf: number;
-}
+export type { ModifierSnapshot } from './pricing.service.js';
 
 const STATION_LABELS: Record<Station, string> = { kitchen: 'Cuisine', grill: 'Grill', bar: 'Bar' };
 
@@ -38,6 +34,12 @@ const orderInclude = {
 
 type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 
+export interface DispatchResult {
+  orderId: string;
+  tableId: string;
+  tickets: { id: string; station: Station }[];
+}
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -46,6 +48,7 @@ export class OrdersService {
     private readonly approval: ApprovalService,
     private readonly events: EventsService,
     private readonly print: PrintService,
+    private readonly pricing: PricingService,
     @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
@@ -95,7 +98,7 @@ export class OrdersService {
     const replay = await this.findReplay(auth, input.idempotencyKey);
     if (replay) return this.get(auth, replay);
 
-    let result: { orderId: string; tickets: { id: string; station: Station }[]; tableId: string };
+    let result: DispatchResult;
     try {
       result = await this.prisma.$transaction((tx) => this.sendInTx(tx, auth, input), { timeout: 15_000 });
     } catch (error) {
@@ -106,26 +109,61 @@ export class OrdersService {
       result = await this.prisma.$transaction((tx) => this.sendInTx(tx, auth, input), { timeout: 15_000 });
     }
 
-    this.events.emit(auth.siteId, {
-      type: 'orders.changed',
-      orderId: result.orderId,
-      tableId: result.tableId,
-    });
-    for (const t of result.tickets) {
-      this.events.emit(auth.siteId, { type: 'tickets.changed', ticketId: t.id, station: t.station });
-    }
-    void this.print.processDue();
+    this.afterDispatch(auth.siteId, result);
     return this.get(auth, result.orderId);
   }
 
-  private async sendInTx(tx: Tx, auth: AuthContext, input: SendOrderInput) {
+  /** Prévient les écrans et lance l'impression, une fois la transaction validée. */
+  afterDispatch(siteId: string, result: DispatchResult): void {
+    this.events.emit(siteId, { type: 'orders.changed', orderId: result.orderId, tableId: result.tableId });
+    for (const t of result.tickets) {
+      this.events.emit(siteId, { type: 'tickets.changed', ticketId: t.id, station: t.station });
+    }
+    void this.print.processDue();
+  }
+
+  private async sendInTx(tx: Tx, auth: AuthContext, input: SendOrderInput): Promise<DispatchResult> {
+    const priced = await this.pricing.price(tx, auth.siteId, input.lines);
+    const result = await this.dispatch(tx, auth, {
+      tableId: input.tableId,
+      priced,
+      guests: input.guests,
+      source: 'staff',
+    });
+    await tx.idempotencyKey.create({
+      data: {
+        siteId: auth.siteId,
+        key: input.idempotencyKey,
+        userId: auth.userId,
+        route: 'orders.send',
+        response: { orderId: result.orderId },
+      },
+    });
+    return result;
+  }
+
+  /**
+   * Enregistre des lignes déjà chiffrées sur la commande ouverte de la table (créée si besoin),
+   * crée un bon par poste et met les impressions en file. À appeler dans une transaction.
+   */
+  async dispatch(
+    tx: Tx,
+    auth: AuthContext,
+    input: {
+      tableId: string;
+      priced: PricedLine[];
+      guests?: number;
+      source: 'staff' | 'qr';
+      qrRequestId?: string;
+    },
+  ): Promise<DispatchResult> {
+    const { priced } = input;
     const site = await tx.site.findUniqueOrThrow({ where: { id: auth.siteId } });
     const table = await tx.diningTable.findFirst({
       where: { id: input.tableId, siteId: auth.siteId, archivedAt: null },
     });
     if (!table) throw notFound('Table');
 
-    const priced = await this.priceLines(tx, auth, input);
     const day = businessDay(new Date(), site.timezone, this.config.BUSINESS_DAY_CUTOFF_HOUR);
 
     let order = await tx.order.findFirst({
@@ -140,6 +178,7 @@ export class OrdersService {
           tableId: table.id,
           waiterId: auth.userId,
           guests: input.guests,
+          source: input.source,
         },
       });
       await this.log(tx, auth, 'order.opened', order.id, { number: order.number, table: table.label });
@@ -175,6 +214,7 @@ export class OrdersService {
           station,
           ticketId: ticket.id,
           createdById: auth.userId,
+          qrRequestId: input.qrRequestId,
         })),
       });
       const doc: KitchenTicketDoc = {
@@ -197,16 +237,9 @@ export class OrdersService {
     }
 
     await tx.order.update({ where: { id: order.id }, data: { version: { increment: 1 } } });
-    await tx.idempotencyKey.create({
-      data: {
-        siteId: auth.siteId,
-        key: input.idempotencyKey,
-        userId: auth.userId,
-        route: 'orders.send',
-        response: { orderId: order.id },
-      },
-    });
     await this.log(tx, auth, 'order.lines_sent', order.id, {
+      source: input.source,
+      qrRequestId: input.qrRequestId,
       tickets: tickets.length,
       lines: priced.map((l) => ({
         product: pickText(l.name, 'fr'),
@@ -215,66 +248,6 @@ export class OrdersService {
       })),
     });
     return { orderId: order.id, tickets, tableId: table.id };
-  }
-
-  /** Vérifie produits et options, puis calcule le prix unitaire (base + suppléments). */
-  private async priceLines(tx: Tx, auth: AuthContext, input: SendOrderInput) {
-    const ids = [...new Set(input.lines.map((l) => l.productId))];
-    const products = await tx.product.findMany({
-      where: { id: { in: ids }, siteId: auth.siteId, archivedAt: null },
-      include: {
-        modifierGroups: {
-          include: { group: { include: { modifiers: { where: { archivedAt: null } } } } },
-        },
-      },
-    });
-    const byId = new Map(products.map((p) => [p.id, p]));
-
-    return input.lines.map((line) => {
-      const product = byId.get(line.productId);
-      if (!product) throw notFound('Produit');
-      if (!product.available) {
-        throw new ConflictException({
-          code: 'PRODUCT_UNAVAILABLE',
-          message: `${pickText(product.name as Translated, 'fr')} est épuisé`,
-          productId: product.id,
-        });
-      }
-      const invalid = (message: string) =>
-        new BadRequestException({ code: 'INVALID_OPTIONS', message, productId: product.id });
-
-      const groups = product.modifierGroups.map((pg) => pg.group).filter((g) => !g.archivedAt);
-      const chosen = new Set(line.modifierIds);
-      const modifiers: ModifierSnapshot[] = [];
-      for (const group of groups) {
-        const picked = group.modifiers.filter((m) => chosen.has(m.id));
-        if (picked.length < group.minSelect || picked.length > group.maxSelect) {
-          throw invalid(`${pickText(group.name as Translated, 'fr')} : choix incomplet ou en trop`);
-        }
-        for (const m of picked) {
-          if (!m.available) throw invalid(`${pickText(m.name as Translated, 'fr')} n'est plus disponible`);
-          chosen.delete(m.id);
-          modifiers.push({
-            groupId: group.id,
-            modifierId: m.id,
-            name: m.name as Translated,
-            priceDeltaXaf: m.priceDeltaXaf,
-          });
-        }
-      }
-      if (chosen.size > 0) throw invalid('Option inconnue pour ce produit');
-
-      return {
-        productId: product.id,
-        name: product.name as Translated,
-        unitPriceXaf: product.priceXaf + modifiers.reduce((s, m) => s + m.priceDeltaXaf, 0),
-        taxRateBp: product.taxRateBp,
-        quantity: line.quantity,
-        modifiers,
-        note: line.note || null,
-        station: product.station,
-      };
-    });
   }
 
   private async findReplay(auth: AuthContext, key: string): Promise<string | null> {

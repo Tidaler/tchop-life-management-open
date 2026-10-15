@@ -1,14 +1,11 @@
 import { z } from 'zod';
-
-export const STATIONS = ['kitchen', 'grill', 'bar'] as const;
-export type Station = (typeof STATIONS)[number];
+import { STATIONS } from './constants.js';
 
 /** Texte affiché aux clients en français et en anglais ; l'anglais retombe sur le français s'il est vide. */
 export const translatedSchema = z.object({
   fr: z.string().trim().min(1).max(120),
   en: z.string().trim().max(120).default(''),
 });
-export type Translated = z.infer<typeof translatedSchema>;
 
 const longTranslatedSchema = z.object({
   fr: z.string().trim().max(400).default(''),
@@ -96,7 +93,3 @@ export const modifierGroupUpdateSchema = z
   .object({ ...versioned, ...modifierGroupFields })
   .refine(selectRange, { message: 'Choix minimum incohérent', path: ['minSelect'] });
 export type ModifierGroupUpdateInput = z.infer<typeof modifierGroupUpdateSchema>;
-
-/** Texte dans la langue demandée, avec repli sur le français. */
-export const pickText = (text: { fr: string; en?: string } | null | undefined, locale: 'fr' | 'en'): string =>
-  (locale === 'en' && text?.en) || text?.fr || '';

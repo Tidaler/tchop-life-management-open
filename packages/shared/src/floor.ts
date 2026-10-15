@@ -1,7 +1,5 @@
 import { z } from 'zod';
-
-export const QR_MODES = ['menu', 'order'] as const;
-export type QrMode = (typeof QR_MODES)[number];
+import { QR_MODES } from './constants.js';
 
 const versioned = { version: z.number().int().positive() };
 
