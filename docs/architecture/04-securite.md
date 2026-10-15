@@ -104,3 +104,58 @@ Les actions sensibles exigent, **au moment de l'action**, le PIN d'un utilisateu
 - Le **super-administrateur** de la plateforme gère les clients, les licences et les sites, mais **n'accède pas aux données d'un client** sans autorisation explicite et limitée dans le temps de son propriétaire.
 - Les accès à la console d'administration exigent une double authentification et sont tracés.
 - Les secrets (clés de chiffrement, certificats, jetons d'API) sont stockés dans un coffre de secrets, jamais dans le code ni dans Git.
+
+## Mise en œuvre par phase
+
+Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/api/test`), sauf mention contraire.
+
+### Phase 0 — Fondations
+
+| Règle | Où |
+|---|---|
+| Mots de passe et PIN en Argon2id ; réponse identique pour un compte inconnu | `auth/password.ts`, `auth.service.ts` |
+| Blocage 5 minutes après 5 PIN faux | `auth.service.ts` |
+| Jeton d'accès 15 min + rafraîchissement en cookie `HttpOnly`, `Secure`, `SameSite=Strict`, rotation et révocation de la famille en cas de réutilisation | `tokens.service.ts`, `auth.controller.ts` |
+| Session PIN liée à l'appareil qui l'a ouverte | `auth.guard.ts` |
+| Appareils enregistrés par code à 6 chiffres, à usage unique, valable 10 minutes ; révocation immédiate | `devices.service.ts` |
+| Toute route déclare sa politique d'accès, sinon refus (`NO_ACCESS_POLICY`) | `auth.guard.ts` |
+| Limitation des tentatives de connexion par adresse IP | `app.module.ts` |
+| Journal d'audit en ajout seul (déclencheur PostgreSQL) | migration `audit_log_append_only` |
+
+### Phase 1 — Catalogue et salle
+
+| Règle | Où |
+|---|---|
+| Verrou optimiste (`VERSION_CONFLICT`) sur toutes les fiches modifiables | `catalog.service.ts`, `floor.service.ts` |
+| Changement de prix soumis à `price.edit` et tracé | `catalog.service.ts` |
+| Photos réencodées en WebP (le fichier envoyé n'est jamais servi tel quel), 5 Mo maximum, noms de fichiers aléatoires, pas d'accès à un chemin arbitraire | `media/` |
+| Jetons de QR code de 128 bits ; un seul QR actif par table ; remplacement immédiat | `floor.service.ts`, migration `salle_contraintes` |
+
+### Phase 2 — Commandes et cuisine
+
+| Règle | Où |
+|---|---|
+| Prix, nom et options figés à la vente et toujours recalculés par le serveur | `pricing.service.ts` |
+| Clé d'idempotence : un renvoi ne crée pas de doublon | `orders.service.ts` |
+| Une seule commande ouverte par table (index partiel), numéros séquentiels sans trou | migration `commandes_cuisine_impression`, `counters.ts` |
+| Annulation : motif obligatoire, PIN d'un **autre** gérant selon le rôle ; un PIN d'approbation faux compte dans le blocage | `approval.service.ts` |
+| Temps réel authentifié comme l'API (jeton d'accès + appareil) ; les événements ne transportent aucune donnée métier | `events.gateway.ts` |
+
+### Phase 3a — Commande par QR code
+
+| Règle | Où |
+|---|---|
+| Le jeton du QR ne donne accès qu'au menu de sa table ; réponse 404 identique pour un jeton invalide, inconnu, remplacé ou retiré | `qr-requests.service.ts` |
+| Menu public sans donnée interne (pas de serveur, taxe, version ni produit masqué) | `qr-requests.service.ts` |
+| Cookie client anonyme (`HttpOnly`, `SameSite=Strict`, chemin `/api/public`), stocké en empreinte SHA-256 ; un client ne voit que ses demandes, pour cette table | `qr.controllers.ts` |
+| Plafonds : 30 articles, 500 000 FCFA, 3 demandes en attente par table (verrou sur la table contre les envois simultanés) | `qr-requests.service.ts` |
+| Limites de débit dédiées : lecture du menu et envoi de commandes | `app.module.ts` |
+| Validation par le personnel, une seule fois ; expiration après 10 minutes ; prix et disponibilités recontrôlés | `qr-requests.service.ts` |
+| Le motif d'un refus reste interne ; aucune donnée personnelle du client n'est journalisée | `qr-requests.service.ts` |
+| CSP stricte sur les pages compilées (menu et application du personnel) ; photos du menu limitées aux fichiers du serveur | `packages/shared/src/csp.ts`, `apps/menu/src/api.ts` |
+| Démarrage refusé en production avec une configuration de développement (cookies, secret JWT, HTTPS du menu) | `config.ts` |
+
+### À mettre en place au déploiement (non testé automatiquement)
+
+- En-têtes HTTP posés par le serveur web (Caddy) : HSTS, `frame-ancestors 'none'`, `X-Content-Type-Options`, CSP en en-tête.
+- Disque chiffré, pare-feu, Wi-Fi personnel séparé du Wi-Fi clients, mises à jour signées.
