@@ -84,3 +84,37 @@ export function qrClientStatus(requestStatus: string, lineStatuses: string[]): Q
   if (live.some((s) => s !== 'sent')) return 'preparing';
   return 'accepted';
 }
+
+export const PAYMENT_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card', 'customer_credit'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+/** Moyens dont la référence de transaction est obligatoire (preuve à rapprocher du relevé de l'opérateur). */
+export const REFERENCE_REQUIRED: readonly PaymentMethod[] = ['mtn_momo', 'orange_money'];
+
+/** Moyens acceptés pour régler une ardoise (on ne rembourse pas une ardoise par une autre ardoise). */
+export const SETTLEMENT_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card'] as const;
+
+/** Seuils d'approbation par défaut (paramètres du site, docs/architecture/05-roles-permissions.md). */
+export const DEFAULT_THRESHOLDS = { discountPercent: 10, discountXaf: 2000 } as const;
+
+/** Montant d'une remise, plafonné au sous-total. */
+export function discountAmount(
+  subtotalXaf: number,
+  discount: { type: 'percent' | 'amount'; value: number },
+): number {
+  const raw =
+    discount.type === 'percent'
+      ? Math.round((subtotalXaf * discount.value) / 100)
+      : Math.round(discount.value);
+  return Math.max(0, Math.min(subtotalXaf, raw));
+}
+
+/** Une remise dépasse le seuil si elle excède le pourcentage OU le montant autorisés sans approbation. */
+export function discountOverThreshold(
+  subtotalXaf: number,
+  amountXaf: number,
+  thresholds: { discountPercent: number; discountXaf: number } = DEFAULT_THRESHOLDS,
+): boolean {
+  if (amountXaf <= 0) return false;
+  return amountXaf > thresholds.discountXaf || amountXaf * 100 > subtotalXaf * thresholds.discountPercent;
+}

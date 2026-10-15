@@ -45,7 +45,7 @@ Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 | 2 — Commandes et cuisine | Prise de commande avec options et notes, écran de préparation en temps réel, annulation avec approbation, changement de table, impression ESC/POS des bons | Livrée |
 | 3a — Commande par QR code (site) | Menu public sécurisé, demandes validées par le personnel, suivi par le client | Livrée |
 | 3b — Relais par le cloud | Menu servi par le cloud, relais vers le serveur local | À venir (hébergeur et domaine à choisir) |
-| 4 — Caisse | Sessions, encaissements, reçus, ardoises, clôture | À venir |
+| 4 — Caisse | Sessions, additions séparables, remises avec seuil, encaissements multi-moyens, reçus, ardoises, clôture et rapport Z | Livrée |
 | 5 — Stocks et recettes | Articles, recettes, réceptions, inventaires, achats | À venir |
 | 6 — Pilotage | Dépenses, tableau de bord, rapports, consultation à distance | À venir |
 

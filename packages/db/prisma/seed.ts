@@ -133,9 +133,14 @@ async function main() {
             tenantId: DEMO_TENANT_ID,
             slug: 'principal',
             name: 'TCHOP LIFE',
-            settings: { autoLockSeconds: { cashier: 60, waiter: 180, backOffice: 600 } },
+            settings: {
+              autoLockSeconds: { cashier: 60, waiter: 180, backOffice: 600 },
+              // Seuils d'approbation (docs/architecture/05-roles-permissions.md).
+              thresholds: { discountPercent: 10, discountXaf: 2000 },
+            },
           },
         });
+        await tx.cashRegister.create({ data: { siteId: DEMO_SITE_ID, name: 'Caisse principale' } });
 
         const roleIds = {} as Record<RoleCode, string>;
         for (const code of ROLE_CODES) {

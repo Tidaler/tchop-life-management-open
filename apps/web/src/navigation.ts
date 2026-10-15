@@ -33,7 +33,6 @@ export const SCREENS: Screen[] = [
     icon: '💰',
     permission: 'payment.record',
     access: 'write',
-    phase: 'Phase 4',
   },
   {
     path: '/stock',

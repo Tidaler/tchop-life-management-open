@@ -4,6 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
+import { BillsService } from './cash/bills.service.js';
+import { BillsController, CashController, CustomersController } from './cash/cash.controllers.js';
+import { CashService } from './cash/cash.service.js';
+import { CustomersService } from './customers/customers.service.js';
 import { EventsGateway, EventsService } from './events/events.gateway.js';
 import { OrdersController, TicketsController } from './orders/orders.controller.js';
 import { OrdersService } from './orders/orders.service.js';
@@ -74,6 +78,9 @@ export class AppModule {
         PrintersController,
         PublicMenuController,
         QrRequestsController,
+        CashController,
+        BillsController,
+        CustomersController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -94,6 +101,9 @@ export class AppModule {
         TicketsService,
         PricingService,
         QrRequestsService,
+        CashService,
+        BillsService,
+        CustomersService,
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },

@@ -155,6 +155,23 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | CSP stricte sur les pages compilées (menu et application du personnel) ; photos du menu limitées aux fichiers du serveur | `packages/shared/src/csp.ts`, `apps/menu/src/api.ts` |
 | Démarrage refusé en production avec une configuration de développement (cookies, secret JWT, HTTPS du menu) | `config.ts` |
 
+### Phase 4 — Caisse
+
+| Règle | Où |
+|---|---|
+| Aucun encaissement sans session de caisse ouverte du caissier ; une seule session ouverte par caisse et par caissier (index partiels) | `cash.service.ts`, migration `caisse_ardoises` |
+| Montants recalculés par le serveur ; paiement plafonné au reste dû (espèces : monnaie calculée) ; montants positifs garantis par la base | `bills.service.ts`, contraintes `CHECK` |
+| Clé d'idempotence sur chaque paiement et chaque règlement d'ardoise | `bills.service.ts`, `customers.service.ts` |
+| Référence MoMo / Orange Money obligatoire et utilisable une seule fois (paiements et règlements confondus) ; format contrôlé | `paymentSchema`, index `payment_reference_once` |
+| Une ligne n'est facturée qu'une fois (verrou sur la commande) ; une ligne facturée ne s'annule plus directement | `bills.service.ts`, `orders.service.ts` |
+| Remise : permission `discount.apply`, motif obligatoire, approbation d'un autre gérant au-delà du seuil du site | `bills.service.ts` |
+| Annulation de paiement : motif, approbation selon le rôle, interdite sur une addition soldée | `bills.service.ts` |
+| Ardoise : plafond par client, approbation obligatoire au-delà, solde = somme des écritures, écritures en ajout seul (déclencheur) | `bills.service.ts`, migration `caisse_ardoises` |
+| Reçus numérotés sans trou ; contenu figé, non modifiable ni supprimable (déclencheur) ; réimpression tracée et marquée DUPLICATA | `bills.service.ts`, `escpos.ts` |
+| Clôture : écart calculé, commentaire obligatoire en cas d'écart, verrou contre tout paiement pendant la clôture ; clôturer la session d'un autre demande les droits de gérant | `cash.service.ts` |
+| Rapprochement des paiements électroniques réservé à `payment.verify` (gérant, comptable) | `bills.service.ts` |
+| Clients à ardoise : données minimales, téléphone jamais journalisé | `customers.service.ts` |
+
 ### À mettre en place au déploiement (non testé automatiquement)
 
 - En-têtes HTTP posés par le serveur web (Caddy) : HSTS, `frame-ancestors 'none'`, `X-Content-Type-Options`, CSP en en-tête.

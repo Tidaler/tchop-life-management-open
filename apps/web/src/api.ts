@@ -130,5 +130,7 @@ export async function api<T>(path: string, options: { method?: string; body?: un
 
   if (!res.ok) throw await toError(res);
   if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  // Une réponse vide (ex. aucune session de caisse ouverte) vaut null.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : null) as T;
 }
