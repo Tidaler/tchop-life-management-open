@@ -1,0 +1,990 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TCHOP LIFE — Maquettes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f2ee; --surface:#fff; --surface-2:#faf8f5; --border:#e6e0d8; --text:#1f1a16; --muted:#6f655c;
+  --brand:#d9480f; --brand-hover:#c03d0b; --brand-soft:#fff0e6; --brand-ink:#9a3412;
+  --ok:#2b8a3e; --ok-soft:#e6f6ea; --warn:#c77c02; --warn-soft:#fff4d6; --danger:#c92a2a; --danger-soft:#fdeaea;
+  --info:#1c6ed6; --info-soft:#e7f1fc; --violet:#7048e8; --violet-soft:#f0ebff;
+  --radius:12px; --shadow:0 1px 2px rgba(31,26,22,.05),0 6px 16px rgba(31,26,22,.05);
+  --kds-bg:#16130f; --kds-surface:#221e19; --kds-border:#3a332b; --kds-text:#f3eee8; --kds-muted:#a99e92;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.4}
+button{font:inherit;cursor:pointer;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+
+/* ---------- Barre du haut ---------- */
+.topbar{position:sticky;top:0;z-index:20;background:#1f1a16;color:#fff;display:flex;align-items:center;gap:16px;padding:0 16px;height:56px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+.logo .mark{width:30px;height:30px;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-size:16px}
+.logo small{display:block;font-weight:500;font-size:11px;color:#bfb5aa;letter-spacing:0}
+.nav{display:flex;gap:4px;overflow-x:auto;flex:1;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav button{background:transparent;border:0;color:#d6cdc3;padding:8px 12px;border-radius:8px;white-space:nowrap;font-weight:500;position:relative}
+.nav button:hover{background:#2e2721;color:#fff}
+.nav button.active{background:var(--brand);color:#fff}
+.nav .badge{position:absolute;top:2px;right:2px;background:#ffd43b;color:#1f1a16;font-size:10px;font-weight:700;border-radius:10px;padding:0 5px;min-width:16px;text-align:center}
+.sync{display:flex;align-items:center;gap:6px;font-size:12px;color:#d6cdc3;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:#51cf66;display:inline-block}
+.dot.off{background:#ff8787}
+.mockbar{background:var(--brand-soft);color:var(--brand-ink);font-size:12px;padding:6px 16px;border-bottom:1px solid #f7d9c4}
+
+main{padding:16px;max-width:1440px;margin:0 auto}
+.screen{display:none}
+.screen.active{display:block}
+h2{font-size:18px;margin:0}
+h3{font-size:15px;margin:0}
+.muted{color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pill.libre{background:#f1efec;color:var(--muted)}
+.pill.occupee{background:var(--info-soft);color:var(--info)}
+.pill.addition{background:var(--warn-soft);color:var(--warn)}
+.pill.qr{background:var(--violet-soft);color:var(--violet)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.danger{background:var(--danger-soft);color:var(--danger)}
+.btn{border:1px solid var(--border);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:600}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.primary:hover{background:var(--brand-hover)}
+.btn.success{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.ghost{border-color:transparent;background:transparent}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.block{width:100%}
+.row{display:flex;align-items:center;gap:8px}
+.between{justify-content:space-between}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:6px 12px;white-space:nowrap;font-weight:500}
+.chip.active{background:#1f1a16;color:#fff;border-color:#1f1a16}
+.empty{padding:32px 16px;text-align:center;color:var(--muted)}
+
+/* ---------- Serveur ---------- */
+.pos{display:grid;grid-template-columns:1fr 400px;gap:16px;align-items:start}
+.pane{padding:16px}
+.legend{display:flex;gap:8px;flex-wrap:wrap}
+.tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px;margin-top:14px}
+.table{border:2px solid var(--border);background:var(--surface);border-radius:14px;padding:12px;text-align:left;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;gap:6px;transition:transform .08s}
+.table:hover{transform:translateY(-1px)}
+.table .num{font-size:20px;font-weight:800}
+.table .meta{font-size:12px;color:var(--muted)}
+.table.st-occupee{border-color:#a5c8f5;background:#f6faff}
+.table.st-addition{border-color:#f5cf6b;background:#fffbf0}
+.table.st-qr{border-color:#b9a4f7;background:#f8f5ff;animation:pulse 1.6s infinite}
+.table.selected{outline:3px solid var(--brand);outline-offset:2px}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(112,72,232,.35)}50%{box-shadow:0 0 0 6px rgba(112,72,232,0)}}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.item{border:1px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;text-align:left;display:flex;flex-direction:column;gap:6px}
+.item:hover{border-color:var(--brand)}
+.item .emo{font-size:26px;height:44px;border-radius:8px;background:var(--surface-2);display:grid;place-items:center}
+.item .nm{font-weight:600;font-size:13px}
+.item .pr{color:var(--brand-ink);font-weight:700;font-size:13px}
+.item .st{font-size:11px;color:var(--muted)}
+.ticket{position:sticky;top:72px;display:flex;flex-direction:column;max-height:calc(100vh - 120px)}
+.ticket-head{padding:14px 16px;border-bottom:1px solid var(--border)}
+.ticket-body{padding:12px 16px;overflow:auto;flex:1}
+.ticket-foot{padding:12px 16px;border-top:1px solid var(--border);display:grid;gap:8px}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:12px 0 6px}
+.line{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px dashed var(--border)}
+.line:last-child{border-bottom:0}
+.line .q{font-weight:700;min-width:26px}
+.line .n{flex:1}
+.line .n small{display:block;color:var(--warn);font-size:12px}
+.line .p{font-weight:600;white-space:nowrap}
+.qty{display:flex;align-items:center;gap:4px}
+.qty button{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-weight:700}
+.note-input{width:100%;margin-top:4px;border:1px solid var(--border);border-radius:8px;padding:5px 8px;font-size:12px}
+.qr-alert{background:var(--violet-soft);border:1px solid #d3c6fb;border-radius:12px;padding:12px;margin-bottom:8px}
+.qr-alert h4{margin:0 0 6px;color:var(--violet);font-size:13px}
+.total{display:flex;justify-content:space-between;font-size:16px;font-weight:800}
+
+/* ---------- Caisse ---------- */
+.caisse{display:grid;grid-template-columns:280px 1fr 380px;gap:16px;align-items:start}
+.session{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;padding:12px 16px;margin-bottom:16px}
+.session b{font-weight:700}
+.bill-list button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:10px 12px;border-radius:10px;gap:8px}
+.bill-list button:hover{background:var(--surface-2)}
+.bill-list button.selected{background:var(--brand-soft)}
+.methods{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.method{border:2px solid var(--border);background:var(--surface);border-radius:12px;padding:10px;text-align:left;font-weight:600;display:flex;gap:8px;align-items:center}
+.method.active{border-color:var(--brand);background:var(--brand-soft)}
+.method .ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff;flex-shrink:0}
+.field{display:grid;gap:4px;margin-top:10px}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{border:1px solid var(--border);border-radius:10px;padding:9px 10px;background:var(--surface);width:100%}
+.amount{font-size:20px;font-weight:700}
+.hint{font-size:12px;margin-top:6px;padding:8px 10px;border-radius:8px}
+.hint.ok{background:var(--ok-soft);color:var(--ok)}
+.hint.danger{background:var(--danger-soft);color:var(--danger)}
+.hint.info{background:var(--info-soft);color:var(--info)}
+.paylines .line .n{font-size:13px}
+
+/* ---------- KDS ---------- */
+.kds{background:var(--kds-bg);color:var(--kds-text);border-radius:16px;padding:16px;min-height:calc(100vh - 140px)}
+.kds .chip{background:var(--kds-surface);color:var(--kds-text);border-color:var(--kds-border)}
+.kds .chip.active{background:var(--brand);border-color:var(--brand)}
+.kds-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.kds-col h3{display:flex;justify-content:space-between;padding:8px 4px;color:var(--kds-muted);font-size:13px;text-transform:uppercase;letter-spacing:.6px}
+.kticket{background:var(--kds-surface);border:1px solid var(--kds-border);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.kticket .kh{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid var(--kds-border)}
+.kticket .kh b{font-size:16px}
+.kticket .kb{padding:8px 12px}
+.kticket .kl{display:flex;gap:8px;padding:4px 0;font-size:15px}
+.kticket .kl .q{font-weight:800;color:#ffa94d;min-width:28px}
+.kticket .kl small{display:block;color:#ffd43b;font-size:12px}
+.kticket .kf{padding:8px 12px 12px}
+.timer{font-variant-numeric:tabular-nums;font-weight:700;font-size:13px;padding:2px 8px;border-radius:6px;background:#2f2a24}
+.timer.late{background:#5c1d1d;color:#ffa8a8}
+.station{font-size:11px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:5px}
+.station.cuisine{background:#1d3b5c;color:#a5d8ff}
+.station.grill{background:#5c2e14;color:#ffc078}
+.station.bar{background:#1f4d2c;color:#b2f2bb}
+.src-qr{font-size:11px;color:#b197fc;font-weight:600}
+
+/* ---------- Menu QR ---------- */
+.qr-wrap{display:grid;grid-template-columns:400px 1fr;gap:24px;align-items:start}
+.phone{width:380px;height:780px;border-radius:44px;background:#111;padding:12px;box-shadow:0 20px 50px rgba(0,0,0,.25);margin:0 auto}
+.phone-screen{width:100%;height:100%;border-radius:34px;background:#fff;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.ph-head{background:linear-gradient(135deg,#d9480f,#9a3412);color:#fff;padding:26px 16px 14px}
+.ph-head .rest{font-weight:800;font-size:18px}
+.ph-head .tbl{font-size:12px;opacity:.9}
+.lang{display:flex;background:rgba(255,255,255,.18);border-radius:999px;padding:2px}
+.lang button{border:0;background:transparent;color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px}
+.lang button.active{background:#fff;color:var(--brand-ink)}
+.ph-body{flex:1;overflow:auto;padding:12px 14px 90px}
+.ph-cats{position:sticky;top:-12px;background:#fff;padding:10px 0 8px;margin-top:-12px;z-index:2}
+.mitem{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0ece7}
+.mitem .ph{width:64px;height:64px;border-radius:12px;background:#faf3ec;display:grid;place-items:center;font-size:30px;flex-shrink:0}
+.mitem .info{flex:1;min-width:0}
+.mitem .info b{display:block;font-size:14px}
+.mitem .info span{display:block;font-size:12px;color:var(--muted)}
+.mitem .price{font-weight:700;color:var(--brand-ink);font-size:13px;margin-top:4px}
+.add{width:34px;height:34px;border-radius:50%;border:0;background:var(--brand);color:#fff;font-size:20px;font-weight:700;align-self:center;flex-shrink:0}
+.incart{font-size:12px;font-weight:700;color:var(--brand);text-align:center}
+.unavail{opacity:.45}
+.cartbar{position:absolute;left:12px;right:12px;bottom:14px;background:#1f1a16;color:#fff;border-radius:16px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border:0;font-weight:700}
+.offline-banner{background:var(--warn-soft);color:var(--warn);font-size:12px;padding:10px 12px;border-radius:10px;margin-bottom:10px;font-weight:600}
+.steps{display:grid;gap:0;margin:16px 0}
+.step{display:flex;gap:12px;align-items:flex-start;position:relative;padding-bottom:18px}
+.step:last-child{padding-bottom:0}
+.step .b{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);background:#fff;flex-shrink:0;display:grid;place-items:center;font-size:12px;font-weight:700;z-index:1}
+.step:not(:last-child)::after{content:"";position:absolute;left:11px;top:24px;bottom:0;width:2px;background:var(--border)}
+.step.done .b{background:var(--ok);border-color:var(--ok);color:#fff}
+.step.current .b{border-color:var(--brand);color:var(--brand)}
+.step.current b{color:var(--brand)}
+.explain{padding:20px}
+.explain ol{padding-left:18px;margin:8px 0}
+.explain li{margin:6px 0}
+.switch{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border);border-radius:12px;margin-top:12px;background:var(--surface-2)}
+.switch input{width:18px;height:18px;accent-color:var(--brand)}
+
+/* ---------- Tableau de bord ---------- */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:24px;font-weight:800;margin-top:4px}
+.kpi .d{font-size:12px;margin-top:2px}
+.up{color:var(--ok)} .down{color:var(--danger)}
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px}
+.dash-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:200px;margin-top:16px;padding-bottom:22px;position:relative}
+.bar{flex:1;background:var(--brand);border-radius:6px 6px 0 0;position:relative;min-width:12px;opacity:.9}
+.bar:hover{opacity:1}
+.bar span{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted)}
+.bar em{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--muted);font-style:normal;opacity:0;white-space:nowrap}
+.bar:hover em{opacity:1}
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);gap:8px}
+.list-row:last-child{border-bottom:0}
+.meter{height:6px;background:#f1efec;border-radius:3px;overflow:hidden;margin-top:4px}
+.meter i{display:block;height:100%;background:var(--brand)}
+
+/* ---------- Stocks ---------- */
+table.grid{width:100%;border-collapse:collapse}
+table.grid th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+table.grid td{padding:10px;border-bottom:1px solid var(--border)}
+table.grid tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.stock-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;align-items:start}
+.scroll-x{overflow-x:auto}
+
+/* ---------- Modale & toast ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(20,16,12,.5);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:16px;width:100%;max-width:460px;max-height:90vh;overflow:auto;padding:20px}
+.receipt{font-family:"Courier New",monospace;font-size:13px;background:#fffdf8;border:1px dashed #cfc6ba;padding:16px;border-radius:8px}
+.receipt .c{text-align:center}
+.receipt hr{border:0;border-top:1px dashed #b9ae9f;margin:8px 0}
+.receipt .r{display:flex;justify-content:space-between;gap:8px}
+.toasts{position:fixed;bottom:16px;right:16px;display:grid;gap:8px;z-index:60}
+.toast{background:#1f1a16;color:#fff;padding:12px 16px;border-radius:12px;box-shadow:var(--shadow);max-width:340px;font-size:13px;animation:slide .25s ease-out}
+@keyframes slide{from{transform:translateY(10px);opacity:0}}
+
+@media (max-width:1100px){
+  .pos,.caisse,.stock-grid,.dash-grid{grid-template-columns:1fr}
+  .ticket{position:static;max-height:none}
+  .qr-wrap{grid-template-columns:1fr}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .dash-grid3{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .kds-cols{grid-template-columns:1fr}
+  .sync{display:none}
+  .logo small{display:none}
+  main{padding:12px}
+  .phone{width:100%;max-width:380px;height:720px;border-radius:36px;padding:8px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo"><div class="mark">🔥</div><div>TCHOP LIFE<small>Le Grill d'Akwa · Douala</small></div></div>
+  <nav class="nav" id="nav">
+    <button data-screen="serveur" class="active">Serveur</button>
+    <button data-screen="caisse">Caisse</button>
+    <button data-screen="kds">Cuisine / Bar</button>
+    <button data-screen="qr">Menu QR (client)</button>
+    <button data-screen="dashboard">Tableau de bord</button>
+    <button data-screen="stocks">Stocks &amp; recettes</button>
+  </nav>
+  <div class="sync" id="syncStatus"><span class="dot"></span>Serveur local · Cloud synchronisé</div>
+</header>
+<div class="mockbar">Maquette interactive, données fictives. Les écrans sont reliés : une commande envoyée depuis le menu QR arrive chez le serveur, puis en cuisine, puis à la caisse.</div>
+
+<main>
+
+<!-- ================= SERVEUR ================= -->
+<section class="screen active" id="screen-serveur">
+  <div class="pos">
+    <div class="card pane">
+      <div id="planView">
+        <div class="row between" style="flex-wrap:wrap;gap:10px">
+          <h2>Plan de salle</h2>
+          <div class="legend">
+            <span class="pill libre">Libre</span><span class="pill occupee">Occupée</span>
+            <span class="pill qr">Commande QR à valider</span><span class="pill addition">Addition demandée</span>
+          </div>
+        </div>
+        <div class="chips" id="zoneChips" style="margin-top:12px"></div>
+        <div class="tables" id="tablesGrid"></div>
+      </div>
+      <div id="catalogView" class="hidden">
+        <div class="row between">
+          <button class="btn ghost" id="backToPlan">← Plan de salle</button>
+          <span class="muted" id="catalogTable"></span>
+        </div>
+        <div class="chips" id="posCats" style="margin-top:8px"></div>
+        <div class="items" id="posItems"></div>
+      </div>
+    </div>
+    <aside class="card ticket" id="ticketPanel"></aside>
+  </div>
+</section>
+
+<!-- ================= CAISSE ================= -->
+<section class="screen" id="screen-caisse">
+  <div class="card session">
+    <span class="pill ok">● Caisse ouverte</span>
+    <span>Caissière : <b>Mireille N.</b></span>
+    <span>Ouverture : <b>17:02</b></span>
+    <span>Fond initial : <b id="fondInit"></b></span>
+    <span>Encaissé : <b id="sessionTotal"></b></span>
+    <span style="flex:1"></span>
+    <button class="btn" id="openCloture">Clôturer la caisse</button>
+  </div>
+  <div class="caisse">
+    <div class="card pane">
+      <h3>Additions</h3>
+      <div class="bill-list" id="billList" style="margin-top:8px"></div>
+    </div>
+    <div class="card pane" id="billDetail"></div>
+    <div class="card pane" id="payPanel"></div>
+  </div>
+</section>
+
+<!-- ================= KDS ================= -->
+<section class="screen" id="screen-kds">
+  <div class="kds">
+    <div class="row between" style="flex-wrap:wrap;gap:10px">
+      <h2>Écran de préparation</h2>
+      <div class="chips" id="kdsFilter"></div>
+    </div>
+    <div class="kds-cols">
+      <div class="kds-col"><h3>Nouvelles <span id="cnt-new"></span></h3><div id="col-new"></div></div>
+      <div class="kds-col"><h3>En préparation <span id="cnt-prep"></span></h3><div id="col-prep"></div></div>
+      <div class="kds-col"><h3>Prêtes à servir <span id="cnt-ready"></span></h3><div id="col-ready"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MENU QR ================= -->
+<section class="screen" id="screen-qr">
+  <div class="qr-wrap">
+    <div class="phone"><div class="phone-screen" id="phone"></div></div>
+    <div class="card explain">
+      <h2>Parcours client par QR code</h2>
+      <p class="muted">Le client scanne le QR code de la <b>table T7</b> avec l'appareil photo de son téléphone. Le menu s'ouvre dans le navigateur, sans installation.</p>
+      <ol>
+        <li>Le client choisit ses articles et envoie sa commande.</li>
+        <li>La commande arrive chez le <b>serveur</b> (onglet Serveur, table T7 en violet), qui la valide ou la refuse.</li>
+        <li>Une fois validée, les bons partent en <b>cuisine, grill ou bar</b>.</li>
+        <li>Le client suit l'avancement sur son téléphone et peut demander l'addition.</li>
+        <li>Le paiement se fait à la <b>caisse</b>.</li>
+      </ol>
+      <label class="switch"><input type="checkbox" id="offlineToggle"> <span><b>Simuler une coupure Internet dans l'établissement</b><br><span class="muted">La commande QR est suspendue ; le reste de l'application continue de fonctionner grâce au serveur local.</span></span></label>
+      <p class="muted" style="font-size:12px;margin-top:14px">Sécurité : le QR code contient seulement un identifiant de table aléatoire. Il ne donne accès ni aux fonctions internes, ni aux autres tables, ni aux rapports. Un QR code désactivé ne permet plus de commander.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TABLEAU DE BORD ================= -->
+<section class="screen" id="screen-dashboard">
+  <div class="row between" style="margin-bottom:12px;flex-wrap:wrap;gap:8px">
+    <h2>Tableau de bord · Aujourd'hui</h2>
+    <div class="chips"><button class="chip active">Aujourd'hui</button><button class="chip">7 jours</button><button class="chip">Mois</button><button class="chip">Tous les sites</button></div>
+  </div>
+  <div class="kpis">
+    <div class="card kpi"><div class="l">Chiffre d'affaires</div><div class="v" id="kpiCA"></div><div class="d up">▲ 12 % vs vendredi dernier</div></div>
+    <div class="card kpi"><div class="l">Commandes</div><div class="v">142</div><div class="d up">▲ 9 % · dont 38 par QR</div></div>
+    <div class="card kpi"><div class="l">Panier moyen</div><div class="v">2 645 FCFA</div><div class="d down">▼ 3 %</div></div>
+    <div class="card kpi"><div class="l">Dépenses du jour</div><div class="v">48 500 FCFA</div><div class="d muted">Gaz, glace, transport</div></div>
+  </div>
+  <div class="dash-grid">
+    <div class="card pane">
+      <div class="row between"><h3>Ventes par heure</h3><span class="muted" style="font-size:12px">FCFA</span></div>
+      <div class="bars" id="hourBars"></div>
+    </div>
+    <div class="card pane">
+      <h3>Meilleures ventes</h3>
+      <div id="topProducts" style="margin-top:8px"></div>
+    </div>
+  </div>
+  <div class="dash-grid3">
+    <div class="card pane">
+      <h3>Alertes de stock</h3>
+      <div style="margin-top:8px">
+        <div class="list-row"><span>Guinness 65 cl</span><span class="pill danger">18 btl · seuil 48</span></div>
+        <div class="list-row"><span>Poulet entier</span><span class="pill danger">4 kg · seuil 10</span></div>
+        <div class="list-row"><span>Jameson 70 cl</span><span class="pill addition">3 btl · seuil 4</span></div>
+        <div class="list-row"><span>Charbon</span><span class="pill addition">2 sacs · seuil 3</span></div>
+      </div>
+    </div>
+    <div class="card pane">
+      <h3>Ventes par moyen de paiement</h3>
+      <div id="payBreakdown" style="margin-top:8px"></div>
+    </div>
+    <div class="card pane">
+      <h3>Établissement</h3>
+      <div style="margin-top:8px">
+        <div class="list-row"><span>Serveur local</span><span class="pill ok">En ligne</span></div>
+        <div class="list-row"><span>Synchronisation cloud</span><span class="pill ok">Il y a 2 min</span></div>
+        <div class="list-row"><span>Dernière sauvegarde</span><span class="muted">Cette nuit, 03:00</span></div>
+        <div class="list-row"><span>Imprimantes</span><span class="muted">Caisse ✓ · Cuisine ✓ · Bar ✓</span></div>
+        <div class="list-row"><span>Ardoises en cours</span><span><b>76 500 FCFA</b></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STOCKS ================= -->
+<section class="screen" id="screen-stocks">
+  <div class="stock-grid">
+    <div class="card pane">
+      <div class="row between" style="flex-wrap:wrap;gap:8px">
+        <h2>Stock</h2>
+        <div class="chips"><button class="chip active">Tout</button><button class="chip">Boissons</button><button class="chip">Cuisine</button><button class="chip">Grill</button><button class="chip">Emballages</button><button class="chip">Entretien</button></div>
+      </div>
+      <div class="scroll-x" style="margin-top:12px">
+        <table class="grid">
+          <thead><tr><th>Article</th><th>Magasin</th><th class="num">Quantité</th><th class="num">Seuil</th><th class="num">Coût unitaire</th><th>État</th></tr></thead>
+          <tbody>
+            <tr><td>Castel 65 cl</td><td>Boissons</td><td class="num">164 btl</td><td class="num">60</td><td class="num">520</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>33 Export 65 cl</td><td>Boissons</td><td class="num">92 btl</td><td class="num">60</td><td class="num">520</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>Guinness 65 cl</td><td>Boissons</td><td class="num">18 btl</td><td class="num">48</td><td class="num">780</td><td><span class="pill danger">Bas</span></td></tr>
+            <tr><td>Johnnie Walker Red 70 cl</td><td>Boissons</td><td class="num">7 btl</td><td class="num">4</td><td class="num">11 000</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>Jameson 70 cl</td><td>Boissons</td><td class="num">3 btl</td><td class="num">4</td><td class="num">13 500</td><td><span class="pill addition">Attention</span></td></tr>
+            <tr><td>Poisson (bar)</td><td>Grill</td><td class="num">14 pièces</td><td class="num">8</td><td class="num">2 200</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>Poulet entier</td><td>Grill</td><td class="num">4 kg</td><td class="num">10</td><td class="num">2 600 / kg</td><td><span class="pill danger">Bas</span></td></tr>
+            <tr><td>Plantain mûr</td><td>Cuisine</td><td class="num">38 doigts</td><td class="num">20</td><td class="num">75</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>Huile de palme</td><td>Cuisine</td><td class="num">6 L</td><td class="num">3</td><td class="num">1 200 / L</td><td><span class="pill ok">OK</span></td></tr>
+            <tr><td>Charbon</td><td>Grill</td><td class="num">2 sacs</td><td class="num">3</td><td class="num">3 500</td><td><span class="pill addition">Attention</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div class="card pane">
+        <div class="row between"><h3>Fiche recette · Poulet braisé (½)</h3><span class="pill grill" style="background:#fff0e6;color:var(--brand-ink)">Grill</span></div>
+        <p class="muted" style="font-size:12px;margin:6px 0 4px">À chaque vente, ces quantités sont déduites automatiquement du stock.</p>
+        <div class="list-row"><span>Poulet entier</span><b>0,6 kg</b></div>
+        <div class="list-row"><span>Épices braisé (mélange maison)</span><b>30 g</b></div>
+        <div class="list-row"><span>Plantain mûr</span><b>2 doigts</b></div>
+        <div class="list-row"><span>Charbon</span><b>0,05 sac</b></div>
+        <div class="list-row"><span>Boîte à emporter <span class="muted">(si à emporter)</span></span><b>1</b></div>
+        <div class="list-row" style="margin-top:4px"><span class="muted">Coût matière estimé</span><b>2 010 FCFA</b></div>
+        <div class="list-row"><span class="muted">Prix de vente · Marge</span><b>3 500 FCFA · 43 %</b></div>
+      </div>
+      <div class="card pane">
+        <h3>Réception fournisseur</h3>
+        <p class="muted" style="font-size:12px;margin:6px 0 4px">Achat au casier, stock et vente à la bouteille.</p>
+        <div class="list-row"><span>Castel 65 cl · 5 casiers × 12</span><b>+60 btl</b></div>
+        <div class="list-row"><span>Guinness 65 cl · 4 casiers × 12</span><b>+48 btl</b></div>
+        <div class="list-row"><span>Commandé / reçu</span><span class="pill addition">Guinness : 5 commandés, 4 reçus</span></div>
+        <button class="btn primary block" style="margin-top:12px">Valider la réception</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="toasts" id="toasts"></div>
+<div id="modalRoot"></div>
+
+<script>
+// ---------------- Données ----------------
+const fmt = n => Math.round(n).toLocaleString('fr-FR').replace(/[  ]/g, ' ') + ' FCFA';
+const nowHM = () => new Date().toTimeString().slice(0, 5);
+
+const CATS = [
+  {id:'grill', fr:'Grillades', en:'Grill'},
+  {id:'plats', fr:'Plats', en:'Dishes'},
+  {id:'snacks', fr:'Accompagnements', en:'Sides'},
+  {id:'bieres', fr:'Bières', en:'Beers'},
+  {id:'soft', fr:'Sucreries & eaux', en:'Soft drinks & water'},
+  {id:'spiritueux', fr:'Spiritueux (bouteille)', en:'Spirits (bottle)'},
+];
+const MENU = [
+  {id:'p1', cat:'grill', st:'grill', e:'🐟', price:4500, fr:'Poisson braisé', en:'Grilled fish', dfr:'Bar braisé, piment et miondo', den:'Grilled sea bass, chili and miondo'},
+  {id:'p2', cat:'grill', st:'grill', e:'🍗', price:3500, fr:'Poulet braisé (½)', en:'Grilled chicken (½)', dfr:'Mariné aux épices maison, plantain', den:'House-spiced, with plantain'},
+  {id:'p3', cat:'grill', st:'grill', e:'🥩', price:1500, fr:'Soya de bœuf', en:'Beef suya', dfr:'Portion de 200 g, oignons', den:'200 g portion, onions'},
+  {id:'p4', cat:'grill', st:'grill', e:'🍢', price:1500, fr:'Brochettes de porc (x3)', en:'Pork skewers (x3)', dfr:'Sauce piquante à part', den:'Hot sauce on the side'},
+  {id:'p5', cat:'plats', st:'cuisine', e:'🍲', price:4000, fr:'Poulet DG', en:'Chicken DG', dfr:'Poulet, plantain, légumes', den:'Chicken, plantain, vegetables'},
+  {id:'p6', cat:'plats', st:'cuisine', e:'🥬', price:3500, fr:'Ndolé crevettes', en:'Ndolé with shrimp', dfr:'Servi avec miondo ou plantain', den:'Served with miondo or plantain', off:true},
+  {id:'p7', cat:'snacks', st:'cuisine', e:'🍌', price:1000, fr:'Plantain frit', en:'Fried plantain', dfr:'Portion', den:'Portion'},
+  {id:'p8', cat:'snacks', st:'cuisine', e:'🍟', price:1000, fr:'Frites', en:'French fries', dfr:'Portion', den:'Portion'},
+  {id:'b1', cat:'bieres', st:'bar', e:'🍺', price:700, fr:'Castel 65 cl', en:'Castel 65 cl', dfr:'Bien glacée', den:'Ice cold'},
+  {id:'b2', cat:'bieres', st:'bar', e:'🍺', price:700, fr:'33 Export 65 cl', en:'33 Export 65 cl', dfr:'Bien glacée', den:'Ice cold'},
+  {id:'b3', cat:'bieres', st:'bar', e:'🍺', price:1000, fr:'Guinness 65 cl', en:'Guinness 65 cl', dfr:'', den:''},
+  {id:'b4', cat:'bieres', st:'bar', e:'🍺', price:800, fr:'Mützig 65 cl', en:'Mützig 65 cl', dfr:'', den:''},
+  {id:'s1', cat:'soft', st:'bar', e:'🥤', price:500, fr:'Top Ananas', en:'Top Pineapple', dfr:'35 cl', den:'35 cl'},
+  {id:'s2', cat:'soft', st:'bar', e:'💧', price:500, fr:'Eau minérale 1,5 L', en:'Mineral water 1.5 L', dfr:'', den:''},
+  {id:'w1', cat:'spiritueux', st:'bar', e:'🥃', price:15000, fr:'Johnnie Walker Red', en:'Johnnie Walker Red', dfr:'Bouteille 70 cl', den:'70 cl bottle'},
+  {id:'w2', cat:'spiritueux', st:'bar', e:'🥃', price:18000, fr:'Jameson', en:'Jameson', dfr:'Bouteille 70 cl', den:'70 cl bottle'},
+  {id:'w3', cat:'spiritueux', st:'bar', e:'🥃', price:30000, fr:'Chivas Regal 12 ans', en:'Chivas Regal 12 yrs', dfr:'Bouteille 70 cl', den:'70 cl bottle'},
+];
+const item = id => MENU.find(m => m.id === id);
+const lineTotal = lines => lines.reduce((s, l) => s + l.qty * item(l.id).price, 0);
+
+const ZONES = [{id:'salle', name:'Salle'}, {id:'terrasse', name:'Terrasse'}, {id:'vip', name:'Salon VIP'}, {id:'comptoir', name:'Comptoir'}];
+const tables = [];
+for (let i = 1; i <= 12; i++) tables.push({id:'T' + i, zone:'salle'});
+for (let i = 13; i <= 20; i++) tables.push({id:'T' + i, zone:'terrasse'});
+for (let i = 1; i <= 4; i++) tables.push({id:'VIP' + i, zone:'vip'});
+for (let i = 1; i <= 6; i++) tables.push({id:'C' + i, zone:'comptoir'});
+tables.forEach(t => Object.assign(t, {sent:[], draft:[], qr:[], bill:false, since:null, waiter:null}));
+const table = id => tables.find(t => t.id === id);
+const status = t => t.qr.length ? 'qr' : t.bill ? 'addition' : t.sent.length ? 'occupee' : 'libre';
+const STATUS_LABEL = {libre:'Libre', occupee:'Occupée', qr:'Commande QR', addition:'Addition'};
+
+function seed(id, lines, opts = {}) {
+  const t = table(id);
+  t.sent = lines.map(([i, q, note]) => ({id:i, qty:q, note:note || ''}));
+  Object.assign(t, {since:opts.since || '19:30', waiter:opts.waiter || 'Joël', bill:!!opts.bill});
+}
+seed('T2', [['p1', 1, 'bien pimenté'], ['b1', 3]], {since:'19:42'});
+seed('T4', [['p5', 2], ['b3', 2], ['s1', 1]], {since:'20:05', waiter:'Aïcha'});
+seed('T5', [['p3', 2], ['b2', 4], ['p7', 2]], {since:'18:50', bill:true});
+seed('T14', [['p2', 1], ['p4', 2], ['b4', 3]], {since:'20:12', waiter:'Aïcha'});
+seed('VIP2', [['w1', 1], ['s2', 2], ['p3', 3]], {since:'19:15', waiter:'Brice', bill:true});
+seed('C3', [['b2', 2]], {since:'20:20', waiter:'Brice'});
+table('T9').qr = [{id:'p2', qty:2, note:''}, {id:'b1', qty:2, note:''}, {id:'s1', qty:1, note:'sans glaçon'}];
+
+let ticketNum = 41;
+const minutesAgo = m => new Date(Date.now() - m * 60000);
+const tickets = [
+  {num:38, table:'T4', st:'cuisine', items:[{n:'Poulet DG', q:2}], created:minutesAgo(17), status:'prep'},
+  {num:39, table:'T14', st:'grill', items:[{n:'Poulet braisé (½)', q:1}, {n:'Brochettes de porc (x3)', q:2, note:'sauce à part'}], created:minutesAgo(9), status:'prep'},
+  {num:40, table:'T14', st:'bar', items:[{n:'Mützig 65 cl', q:3}], created:minutesAgo(9), status:'ready'},
+  {num:41, table:'C3', st:'bar', items:[{n:'33 Export 65 cl', q:2}], created:minutesAgo(2), status:'new'},
+];
+
+const CLIENTS = [
+  {id:'c1', name:'M. Ebode (habitué)', plafond:50000, solde:12500},
+  {id:'c2', name:'Mme Ngo Biyong', plafond:30000, solde:0},
+  {id:'c3', name:'Dr Fotso', plafond:100000, solde:64000},
+];
+const METHODS = {
+  especes:{label:'Espèces', ic:'CFA', color:'#2b8a3e'},
+  mtn:{label:'MTN MoMo', ic:'MTN', color:'#e0a800'},
+  orange:{label:'Orange Money', ic:'OM', color:'#f76707'},
+  carte:{label:'Carte', ic:'CB', color:'#1c6ed6'},
+  ardoise:{label:'Ardoise client', ic:'✎', color:'#7048e8'},
+};
+const session = {fond:25000, totals:{especes:186500, mtn:74000, orange:41500, carte:30000, ardoise:12000}};
+
+// ---------------- État UI ----------------
+const ui = {
+  screen:'serveur', zone:'salle', selTable:null, posMode:'plan', posCat:'grill', editNote:null,
+  caisseTable:'T5', payMethod:'especes', payments:[], payGiven:'', payRef:'', payClient:'c1',
+  kdsFilter:'all',
+  qrLang:'fr', qrCat:'grill', qrCart:[], qrView:'menu', qrSent:false, offline:false,
+};
+
+// ---------------- Utilitaires ----------------
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast'; el.innerHTML = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3800);
+}
+function addLine(list, id, qty = 1) {
+  const l = list.find(x => x.id === id && !x.note);
+  if (l) l.qty += qty; else list.push({id, qty, note:''});
+}
+function sendToStations(t, lines, fromQr) {
+  const byStation = {};
+  lines.forEach(l => { const s = item(l.id).st; (byStation[s] = byStation[s] || []).push(l); });
+  Object.entries(byStation).forEach(([st, ls]) => {
+    tickets.push({num:++ticketNum, table:t.id, st, fromQr, created:new Date(), status:'new',
+      items:ls.map(l => ({n:item(l.id).fr, q:l.qty, note:l.note}))});
+  });
+  lines.forEach(l => {
+    const ex = t.sent.find(x => x.id === l.id && x.note === l.note);
+    if (ex) ex.qty += l.qty; else t.sent.push({...l});
+  });
+  if (!t.since) t.since = nowHM();
+  return Object.keys(byStation);
+}
+const STATION_NAME = {cuisine:'Cuisine', grill:'Grill', bar:'Bar'};
+
+// ---------------- Navigation ----------------
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => {
+  ui.screen = b.dataset.screen;
+  document.querySelectorAll('#nav button').forEach(x => x.classList.toggle('active', x === b));
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === 'screen-' + ui.screen));
+  window.scrollTo(0, 0);
+  render();
+});
+
+// ---------------- Serveur ----------------
+function renderServeur() {
+  $('#zoneChips').innerHTML = ZONES.map(z => {
+    const n = tables.filter(t => t.zone === z.id && status(t) !== 'libre').length;
+    return `<button class="chip ${ui.zone === z.id ? 'active' : ''}" data-zone="${z.id}">${z.name}${n ? ' · ' + n : ''}</button>`;
+  }).join('') + `<button class="chip" id="addTable">+ Ajouter une table</button>`;
+  $('#tablesGrid').innerHTML = tables.filter(t => t.zone === ui.zone).map(t => {
+    const s = status(t);
+    const meta = s === 'libre' ? 'Libre' : s === 'qr' ? '📱 Commande QR'
+      : `${t.waiter || ''} · ${t.since || ''}<br><b>${fmt(lineTotal(t.sent))}</b>`;
+    return `<button class="table st-${s} ${ui.selTable === t.id ? 'selected' : ''}" data-table="${t.id}">
+      <span class="num">${t.id}</span><span class="meta">${meta}</span></button>`;
+  }).join('');
+
+  $('#planView').classList.toggle('hidden', ui.posMode !== 'plan');
+  $('#catalogView').classList.toggle('hidden', ui.posMode !== 'catalog');
+  if (ui.posMode === 'catalog') {
+    $('#catalogTable').textContent = 'Table ' + ui.selTable;
+    $('#posCats').innerHTML = CATS.map(c => `<button class="chip ${ui.posCat === c.id ? 'active' : ''}" data-poscat="${c.id}">${c.fr}</button>`).join('');
+    $('#posItems').innerHTML = MENU.filter(m => m.cat === ui.posCat).map(m => `
+      <button class="item ${m.off ? 'unavail' : ''}" data-additem="${m.id}" ${m.off ? 'disabled' : ''}>
+        <span class="emo">${m.e}</span><span class="nm">${m.fr}</span>
+        <span class="row between"><span class="pr">${fmt(m.price)}</span><span class="st">${m.off ? 'Indisponible' : STATION_NAME[m.st]}</span></span>
+      </button>`).join('');
+  }
+  renderTicket();
+}
+
+function renderTicket() {
+  const p = $('#ticketPanel');
+  const t = ui.selTable && table(ui.selTable);
+  if (!t) { p.innerHTML = `<div class="empty">Sélectionnez une table pour prendre ou consulter une commande.</div>`; return; }
+  const s = status(t);
+  const lineHtml = (l, i, editable) => {
+    const m = item(l.id);
+    return `<div class="line">
+      ${editable ? `<div class="qty"><button data-dq="${i}" data-d="-1">−</button><span class="q" style="text-align:center">${l.qty}</span><button data-dq="${i}" data-d="1">+</button></div>` : `<span class="q">${l.qty}×</span>`}
+      <div class="n">${m.fr}${l.note ? `<small>↳ ${esc(l.note)}</small>` : ''}
+        ${editable && ui.editNote === i ? `<input class="note-input" data-note="${i}" placeholder="Ex. bien cuit, sans piment…" value="${esc(l.note)}">` : ''}
+      </div>
+      ${editable ? `<button class="btn ghost" style="padding:2px 6px" data-editnote="${i}" title="Ajouter une note">✎</button>` : ''}
+      <span class="p">${fmt(m.price * l.qty)}</span></div>`;
+  };
+  p.innerHTML = `
+    <div class="ticket-head">
+      <div class="row between"><h2>Table ${t.id}</h2><span class="pill ${s}">${STATUS_LABEL[s]}</span></div>
+      <div class="muted" style="font-size:12px;margin-top:2px">${ZONES.find(z => z.id === t.zone).name}${t.waiter ? ' · Serveur : ' + t.waiter : ''}${t.since ? ' · depuis ' + t.since : ''}</div>
+    </div>
+    <div class="ticket-body">
+      ${t.qr.length ? `<div class="qr-alert"><h4>📱 Commande reçue par QR code · à valider</h4>
+        ${t.qr.map(l => lineHtml(l, 0, false)).join('')}
+        <div class="row" style="margin-top:8px"><button class="btn success" id="qrAccept" style="flex:1">Valider et envoyer</button><button class="btn" id="qrReject">Refuser</button></div></div>` : ''}
+      ${t.sent.length ? `<div class="section-label">Déjà envoyé</div>${t.sent.map(l => lineHtml(l, 0, false)).join('')}` : ''}
+      <div class="section-label">Nouvelle commande</div>
+      ${t.draft.length ? t.draft.map((l, i) => lineHtml(l, i, true)).join('') : `<div class="muted" style="font-size:13px;padding:6px 0">Aucun article. ${ui.posMode === 'plan' ? 'Appuyez sur « Ajouter des articles ».' : 'Touchez un article pour l\'ajouter.'}</div>`}
+    </div>
+    <div class="ticket-foot">
+      <div class="total"><span>Total table</span><span>${fmt(lineTotal(t.sent) + lineTotal(t.draft))}</span></div>
+      ${ui.posMode === 'plan' ? `<button class="btn" id="goCatalog">+ Ajouter des articles</button>` : ''}
+      <button class="btn primary" id="sendDraft" ${t.draft.length ? '' : 'disabled'}>Envoyer en préparation${t.draft.length ? ' (' + t.draft.reduce((s, l) => s + l.qty, 0) + ')' : ''}</button>
+      <button class="btn" id="askBill" ${t.sent.length && !t.bill ? '' : 'disabled'}>${t.bill ? 'Addition demandée ✓' : 'Demander l\'addition'}</button>
+    </div>`;
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (d.zone) { ui.zone = d.zone; render(); }
+  else if (b.id === 'addTable') {
+    const prefix = {salle:'T', terrasse:'T', vip:'VIP', comptoir:'C'}[ui.zone];
+    const n = prefix === 'T' ? tables.filter(t => /^T\d+$/.test(t.id)).length + 1 : tables.filter(t => t.zone === ui.zone).length + 1;
+    tables.push({id:prefix + n, zone:ui.zone, sent:[], draft:[], qr:[], bill:false, since:null, waiter:null});
+    toast(`Table <b>${prefix + n}</b> ajoutée. Son QR code est généré automatiquement.`); render();
+  }
+  else if (d.table) { ui.selTable = d.table; ui.editNote = null; render(); }
+  else if (b.id === 'goCatalog') { ui.posMode = 'catalog'; render(); }
+  else if (b.id === 'backToPlan') { ui.posMode = 'plan'; ui.editNote = null; render(); }
+  else if (d.poscat) { ui.posCat = d.poscat; render(); }
+  else if (d.additem) { const t = table(ui.selTable); addLine(t.draft, d.additem); if (!t.waiter) t.waiter = 'Joël'; render(); }
+  else if (d.dq !== undefined) {
+    const t = table(ui.selTable), l = t.draft[+d.dq];
+    l.qty += +d.d; if (l.qty <= 0) { t.draft.splice(+d.dq, 1); ui.editNote = null; }
+    render();
+  }
+  else if (d.editnote !== undefined) { ui.editNote = ui.editNote === +d.editnote ? null : +d.editnote; render(); const inp = document.querySelector(`[data-note="${d.editnote}"]`); if (inp) inp.focus(); }
+  else if (b.id === 'sendDraft') {
+    const t = table(ui.selTable);
+    const sts = sendToStations(t, t.draft, false);
+    t.draft = []; ui.editNote = null; ui.posMode = 'plan';
+    toast(`Bons imprimés et envoyés : <b>${sts.map(s => STATION_NAME[s]).join(', ')}</b>`); render();
+  }
+  else if (b.id === 'askBill') { table(ui.selTable).bill = true; toast(`Addition de la table <b>${ui.selTable}</b> transmise à la caisse.`); render(); }
+  else if (b.id === 'qrAccept') {
+    const t = table(ui.selTable);
+    const sts = sendToStations(t, t.qr, true);
+    t.qr = []; if (!t.waiter) t.waiter = 'Joël';
+    toast(`Commande QR validée, envoyée : <b>${sts.map(s => STATION_NAME[s]).join(', ')}</b>`); render();
+  }
+  else if (b.id === 'qrReject') {
+    const t = table(ui.selTable); t.qr = []; if (t.id === 'T7') ui.qrRejected = true;
+    toast('Commande QR refusée. Le client en est informé sur son téléphone.'); render();
+  }
+  // ---- Caisse
+  else if (d.bill) { ui.caisseTable = d.bill; ui.payments = []; ui.payGiven = ''; ui.payRef = ''; render(); }
+  else if (d.method) { ui.payMethod = d.method; ui.payGiven = ''; ui.payRef = ''; render(); }
+  else if (b.id === 'addPayment') addPayment();
+  else if (d.rmpay !== undefined) { ui.payments.splice(+d.rmpay, 1); render(); }
+  else if (b.id === 'cashOut') cashOut();
+  else if (b.id === 'openCloture') openCloture();
+  else if (d.close !== undefined) { $('#modalRoot').innerHTML = ''; }
+  // ---- KDS
+  else if (d.kfilter) { ui.kdsFilter = d.kfilter; render(); }
+  else if (d.advance) {
+    const tk = tickets.find(x => x.num === +d.advance);
+    tk.status = {new:'prep', prep:'ready', ready:'served'}[tk.status];
+    if (tk.status === 'served') toast(`Bon n° ${tk.num} servi à la table <b>${tk.table}</b>.`);
+    render();
+  }
+  // ---- QR
+  else if (d.lang) { ui.qrLang = d.lang; render(); }
+  else if (d.qcat) { ui.qrCat = d.qcat; render(); }
+  else if (d.qadd) { addLine(ui.qrCart, d.qadd); render(); }
+  else if (d.qq !== undefined) { const l = ui.qrCart[+d.qq]; l.qty += +d.d; if (l.qty <= 0) ui.qrCart.splice(+d.qq, 1); if (!ui.qrCart.length) ui.qrView = 'menu'; render(); }
+  else if (b.id === 'qrOpenCart') { ui.qrView = 'cart'; render(); }
+  else if (b.id === 'qrBack') { ui.qrView = ui.qrSent ? 'status' : 'menu'; render(); }
+  else if (b.id === 'qrToMenu') { ui.qrView = 'menu'; render(); }
+  else if (b.id === 'qrSend') {
+    const t = table('T7');
+    ui.qrCart.forEach(l => addLine(t.qr, l.id, l.qty));
+    ui.qrCart = []; ui.qrSent = true; ui.qrRejected = false; ui.qrView = 'status';
+    toast('📱 Nouvelle commande QR, <b>table T7</b>. Visible dans l\'onglet Serveur.'); render();
+  }
+  else if (b.id === 'qrBill') { table('T7').bill = true; toast('📱 La table <b>T7</b> demande l\'addition.'); render(); }
+});
+document.addEventListener('input', e => {
+  const d = e.target.dataset;
+  if (d.note !== undefined) { table(ui.selTable).draft[+d.note].note = e.target.value; }
+  else if (e.target.id === 'payGiven') { ui.payGiven = e.target.value; updatePayHint(); }
+  else if (e.target.id === 'payRef') { ui.payRef = e.target.value; }
+  else if (e.target.id === 'counted' || e.target.id === 'clotureNote') updateCloture();
+});
+document.addEventListener('change', e => {
+  if (e.target.id === 'payClient') { ui.payClient = e.target.value; render(); }
+  else if (e.target.id === 'offlineToggle') {
+    ui.offline = e.target.checked;
+    $('#syncStatus').innerHTML = ui.offline ? '<span class="dot off"></span>Internet coupé · Serveur local actif' : '<span class="dot"></span>Serveur local · Cloud synchronisé';
+    toast(ui.offline ? 'Internet coupé. Caisse, commandes, cuisine et impression continuent sur le serveur local.' : 'Internet rétabli. Synchronisation avec le cloud en cours…');
+    render();
+  }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.dataset && e.target.dataset.note !== undefined) { ui.editNote = null; render(); }
+});
+
+// ---------------- Caisse ----------------
+const paid = () => ui.payments.reduce((s, p) => s + p.amount, 0);
+function renderCaisse() {
+  $('#fondInit').textContent = fmt(session.fond);
+  $('#sessionTotal').textContent = fmt(Object.values(session.totals).reduce((a, b) => a + b, 0));
+  const open = tables.filter(t => t.sent.length).sort((a, b) => b.bill - a.bill);
+  if (!open.find(t => t.id === ui.caisseTable)) ui.caisseTable = open[0] ? open[0].id : null;
+  $('#billList').innerHTML = open.length ? open.map(t => `
+    <button data-bill="${t.id}" class="${ui.caisseTable === t.id ? 'selected' : ''}">
+      <span><b>Table ${t.id}</b><br><span class="muted" style="font-size:12px">${t.waiter || ''} · ${t.since || ''}</span></span>
+      <span style="text-align:right"><b>${fmt(lineTotal(t.sent))}</b><br>${t.bill ? '<span class="pill addition">Addition</span>' : '<span class="pill occupee">En cours</span>'}</span>
+    </button>`).join('') : '<div class="empty">Aucune addition ouverte.</div>';
+
+  const t = ui.caisseTable && table(ui.caisseTable);
+  if (!t) { $('#billDetail').innerHTML = '<div class="empty">Aucune table à encaisser.</div>'; $('#payPanel').innerHTML = ''; return; }
+  const total = lineTotal(t.sent);
+  $('#billDetail').innerHTML = `
+    <div class="row between"><h2>Addition · Table ${t.id}</h2><button class="btn" title="Réimprimer">🖨 Pré-addition</button></div>
+    <div class="muted" style="font-size:12px;margin:2px 0 10px">Serveur : ${t.waiter || '-'} · Ouverte à ${t.since || '-'}</div>
+    ${t.sent.map(l => { const m = item(l.id); return `<div class="line"><span class="q">${l.qty}×</span><div class="n">${m.fr}${l.note ? `<small>↳ ${esc(l.note)}</small>` : ''}<br><span class="muted" style="font-size:12px">${fmt(m.price)} l'unité</span></div><span class="p">${fmt(l.qty * m.price)}</span></div>`; }).join('')}
+    <div class="row between" style="margin-top:14px"><span class="muted">Remise</span><button class="btn ghost" style="padding:2px 6px;color:var(--brand-ink)">+ Appliquer une remise</button></div>
+    <div class="total" style="margin-top:10px;font-size:20px"><span>Total à payer</span><span>${fmt(total)}</span></div>
+    <p class="muted" style="font-size:12px">TVA et taxes configurables selon l'établissement (à valider avec le comptable).</p>`;
+
+  const remaining = total - paid();
+  const m = ui.payMethod;
+  const client = CLIENTS.find(c => c.id === ui.payClient);
+  $('#payPanel').innerHTML = `
+    <h3>Encaissement</h3>
+    <div class="methods" style="margin-top:10px">
+      ${Object.entries(METHODS).map(([k, v]) => `<button class="method ${m === k ? 'active' : ''}" data-method="${k}"><span class="ic" style="background:${v.color}">${v.ic}</span>${v.label}</button>`).join('')}
+    </div>
+    ${m === 'ardoise' ? `
+      <div class="field"><label>Client</label><select id="payClient">${CLIENTS.map(c => `<option value="${c.id}" ${c.id === ui.payClient ? 'selected' : ''}>${c.name}</option>`).join('')}</select></div>
+      <div class="hint info">Solde actuel : <b>${fmt(client.solde)}</b> · Plafond : ${fmt(client.plafond)} · Disponible : <b>${fmt(client.plafond - client.solde)}</b></div>` : ''}
+    <div class="field"><label>${m === 'especes' ? 'Montant reçu du client' : 'Montant'}</label>
+      <input id="payGiven" class="amount" inputmode="numeric" placeholder="${Math.max(remaining, 0)}" value="${esc(ui.payGiven)}"></div>
+    ${['mtn', 'orange', 'carte'].includes(m) ? `<div class="field"><label>Référence de transaction ${m === 'carte' ? '(facultatif)' : ''}</label><input id="payRef" placeholder="${m === 'carte' ? 'N° d\'autorisation' : 'Ex. MP241015.1830.A12345'}" value="${esc(ui.payRef)}"></div>
+      <div class="hint info">${m === 'carte' ? 'Vérifier le ticket du terminal de paiement.' : 'Vérifier la réception du paiement sur le téléphone de l\'établissement avant de valider.'}</div>` : ''}
+    <div id="payHint"></div>
+    <button class="btn block" id="addPayment" style="margin-top:10px" ${remaining <= 0 ? 'disabled' : ''}>Ajouter ce paiement</button>
+    <div class="section-label">Paiements</div>
+    <div class="paylines">${ui.payments.length ? ui.payments.map((p, i) => `<div class="line"><div class="n">${METHODS[p.method].label}${p.ref ? `<small style="color:var(--muted)">Réf. ${esc(p.ref)}</small>` : ''}${p.client ? `<small style="color:var(--muted)">${esc(p.client)}</small>` : ''}</div><span class="p">${fmt(p.amount)}</span><button class="btn ghost" style="padding:0 6px" data-rmpay="${i}">✕</button></div>`).join('') : '<div class="muted" style="font-size:13px">Aucun paiement. Paiement mixte possible (ex. espèces + MoMo).</div>'}</div>
+    <div class="total" style="margin-top:12px"><span>${remaining > 0 ? 'Reste à payer' : 'Soldé'}</span><span style="color:${remaining > 0 ? 'var(--danger)' : 'var(--ok)'}">${fmt(Math.max(remaining, 0))}</span></div>
+    <button class="btn success block" id="cashOut" style="margin-top:10px;padding:12px" ${remaining <= 0 && ui.payments.length ? '' : 'disabled'}>Valider et imprimer le reçu</button>`;
+  updatePayHint();
+}
+function updatePayHint() {
+  const el = $('#payHint'); if (!el) return;
+  const t = table(ui.caisseTable); const remaining = lineTotal(t.sent) - paid();
+  const v = parseInt(String(ui.payGiven).replace(/\D/g, ''), 10);
+  let h = '';
+  if (ui.payMethod === 'especes' && v > remaining && remaining > 0) h = `<div class="hint ok">Monnaie à rendre : <b>${fmt(v - remaining)}</b></div>`;
+  if (ui.payMethod === 'ardoise') {
+    const c = CLIENTS.find(c => c.id === ui.payClient); const amt = isNaN(v) ? remaining : v;
+    if (c.solde + amt > c.plafond) h = `<div class="hint danger">Plafond dépassé : autorisation du gérant requise.</div>`;
+  }
+  el.innerHTML = h;
+}
+function addPayment() {
+  const t = table(ui.caisseTable); const remaining = lineTotal(t.sent) - paid();
+  let v = parseInt(String(ui.payGiven).replace(/\D/g, ''), 10); if (isNaN(v)) v = remaining;
+  const m = ui.payMethod;
+  if ((m === 'mtn' || m === 'orange') && !ui.payRef.trim()) { toast('Saisissez la référence de la transaction Mobile Money.'); return; }
+  if (m === 'ardoise') {
+    const c = CLIENTS.find(c => c.id === ui.payClient);
+    if (c.solde + Math.min(v, remaining) > c.plafond) { toast('Plafond de l\'ardoise dépassé : un gérant doit autoriser.'); return; }
+  }
+  const amount = Math.min(v, remaining);
+  ui.payments.push({method:m, amount, given:v, ref:ui.payRef.trim(), client:m === 'ardoise' ? CLIENTS.find(c => c.id === ui.payClient).name : ''});
+  ui.payGiven = ''; ui.payRef = ''; render();
+}
+function cashOut() {
+  const t = table(ui.caisseTable); const total = lineTotal(t.sent);
+  ui.payments.forEach(p => {
+    session.totals[p.method] += p.amount;
+    if (p.method === 'ardoise') CLIENTS.find(c => c.name === p.client).solde += p.amount;
+  });
+  const cash = ui.payments.find(p => p.method === 'especes' && p.given > p.amount);
+  const lines = t.sent.map(l => ({...l}));
+  const pays = ui.payments.slice();
+  const n = 1000 + Math.floor(Math.random() * 9000);
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
+    <div class="row between" style="margin-bottom:12px"><h2>Reçu imprimé ✓</h2><button class="btn ghost" data-close>✕</button></div>
+    <div class="receipt">
+      <div class="c"><b>LE GRILL D'AKWA</b><br>Akwa, Douala · NIU M0000000000X<br>Tél. 6XX XX XX XX</div><hr>
+      <div class="r"><span>Reçu n° R-${n}</span><span>${new Date().toLocaleDateString('fr-FR')} ${nowHM()}</span></div>
+      <div class="r"><span>Table ${t.id}</span><span>Caisse : Mireille N.</span></div><hr>
+      ${lines.map(l => `<div class="r"><span>${l.qty} x ${item(l.id).fr}</span><span>${(l.qty * item(l.id).price).toLocaleString('fr-FR')}</span></div>`).join('')}<hr>
+      <div class="r"><b>TOTAL</b><b>${fmt(total)}</b></div>
+      ${pays.map(p => `<div class="r"><span>${METHODS[p.method].label}${p.ref ? ' (' + esc(p.ref) + ')' : ''}</span><span>${(p.method === 'especes' ? p.given : p.amount).toLocaleString('fr-FR')}</span></div>`).join('')}
+      ${cash ? `<div class="r"><span>Monnaie rendue</span><span>${(cash.given - cash.amount).toLocaleString('fr-FR')}</span></div>` : ''}
+      <hr><div class="c">Merci de votre visite !<br>Thank you, come again!</div>
+    </div>
+    <button class="btn primary block" style="margin-top:14px" data-close>Fermer</button></div></div>`;
+  Object.assign(t, {sent:[], draft:[], qr:[], bill:false, since:null, waiter:null});
+  tickets.forEach(k => { if (k.table === t.id) k.status = 'served'; });
+  if (t.id === 'T7') { ui.qrSent = false; ui.qrView = 'menu'; }
+  ui.payments = []; ui.caisseTable = null;
+  toast(`Table <b>${t.id}</b> encaissée : ${fmt(total)}. La table est libérée.`);
+  render();
+}
+function openCloture() {
+  const tt = session.totals;
+  $('#modalRoot').innerHTML = `<div class="modal-bg"><div class="modal">
+    <div class="row between"><h2>Clôture de caisse</h2><button class="btn ghost" data-close>✕</button></div>
+    <p class="muted" style="font-size:12px">Session de Mireille N., ouverte à 17:02.</p>
+    <table class="grid"><thead><tr><th>Moyen</th><th class="num">Théorique</th></tr></thead><tbody>
+      <tr><td>Espèces (fond ${fmt(session.fond)} inclus)</td><td class="num"><b>${fmt(session.fond + tt.especes)}</b></td></tr>
+      <tr><td>MTN MoMo</td><td class="num">${fmt(tt.mtn)}</td></tr>
+      <tr><td>Orange Money</td><td class="num">${fmt(tt.orange)}</td></tr>
+      <tr><td>Carte</td><td class="num">${fmt(tt.carte)}</td></tr>
+      <tr><td>Ardoises (crédit accordé)</td><td class="num">${fmt(tt.ardoise)}</td></tr>
+    </tbody></table>
+    <div class="field"><label>Espèces comptées dans le tiroir</label><input id="counted" class="amount" inputmode="numeric" placeholder="0"></div>
+    <div id="ecart"></div>
+    <div class="field"><label>Commentaire <span id="noteReq"></span></label><textarea id="clotureNote" rows="2" placeholder="Explication de l'écart…"></textarea></div>
+    <button class="btn primary block" id="doCloture" style="margin-top:12px" disabled>Clôturer et imprimer le rapport Z</button>
+  </div></div>`;
+  $('#doCloture').onclick = () => { $('#modalRoot').innerHTML = ''; toast('Caisse clôturée. Rapport Z imprimé et synchronisé.'); };
+}
+function updateCloture() {
+  const expected = session.fond + session.totals.especes;
+  const raw = $('#counted').value.replace(/\D/g, '');
+  const btn = $('#doCloture');
+  if (!raw) { $('#ecart').innerHTML = ''; btn.disabled = true; return; }
+  const diff = parseInt(raw, 10) - expected;
+  const note = $('#clotureNote').value.trim();
+  $('#ecart').innerHTML = diff === 0 ? '<div class="hint ok">Aucun écart.</div>'
+    : `<div class="hint danger">Écart : <b>${diff > 0 ? '+' : ''}${fmt(diff)}</b>. Un commentaire est obligatoire.</div>`;
+  $('#noteReq').textContent = diff === 0 ? '(facultatif)' : '(obligatoire)';
+  btn.disabled = diff !== 0 && !note;
+}
+
+// ---------------- KDS ----------------
+function renderKds() {
+  const f = ui.kdsFilter;
+  $('#kdsFilter').innerHTML = [['all', 'Tous les postes'], ['cuisine', 'Cuisine'], ['grill', 'Grill'], ['bar', 'Bar']]
+    .map(([k, l]) => `<button class="chip ${f === k ? 'active' : ''}" data-kfilter="${k}">${l}</button>`).join('');
+  const list = tickets.filter(t => t.status !== 'served' && (f === 'all' || t.st === f));
+  ['new', 'prep', 'ready'].forEach(s => {
+    const items = list.filter(t => t.status === s).sort((a, b) => a.created - b.created);
+    $('#cnt-' + s).textContent = items.length;
+    $('#col-' + s).innerHTML = items.map(t => {
+      const mins = Math.floor((Date.now() - t.created) / 60000);
+      const action = {new:'Commencer', prep:'Marquer prête', ready:'Servie ✓'}[s];
+      return `<div class="kticket">
+        <div class="kh"><div><b>${t.table}</b> <span class="muted" style="color:var(--kds-muted);font-size:12px">n° ${t.num}</span><br>
+          <span class="station ${t.st}">${STATION_NAME[t.st]}</span> ${t.fromQr ? '<span class="src-qr">· via QR</span>' : ''}</div>
+          <span class="timer ${mins >= 15 && s !== 'ready' ? 'late' : ''}">${mins} min</span></div>
+        <div class="kb">${t.items.map(i => `<div class="kl"><span class="q">${i.q}×</span><span>${i.n}${i.note ? `<small>↳ ${esc(i.note)}</small>` : ''}</span></div>`).join('')}</div>
+        <div class="kf"><button class="btn ${s === 'ready' ? 'success' : 'primary'} block" data-advance="${t.num}">${action}</button></div>
+      </div>`;
+    }).join('') || '<div class="empty" style="color:var(--kds-muted)">—</div>';
+  });
+}
+
+// ---------------- Menu QR ----------------
+const QT = {
+  fr:{table:'Table T7 · Salle', cart:'Voir le panier', yourOrder:'Votre commande', send:'Envoyer la commande', back:'← Retour', total:'Total',
+      sentTitle:'Commande envoyée', sentSub:'Un serveur va la vérifier.', unavailable:'Indisponible', more:'Commander autre chose', bill:'Demander l\'addition', billAsked:'Addition demandée ✓',
+      offline:'La commande en ligne est momentanément indisponible. Appelez un serveur, merci !', pay:'Le paiement se fait auprès du personnel (espèces, MoMo, Orange Money, carte).',
+      rejected:'Votre commande n\'a pas pu être acceptée. Un serveur va passer vous voir.',
+      steps:['En attente de validation', 'Acceptée', 'En préparation', 'Prête', 'Servie']},
+  en:{table:'Table T7 · Main room', cart:'View cart', yourOrder:'Your order', send:'Send order', back:'← Back', total:'Total',
+      sentTitle:'Order sent', sentSub:'A waiter will confirm it shortly.', unavailable:'Unavailable', more:'Order something else', bill:'Ask for the bill', billAsked:'Bill requested ✓',
+      offline:'Online ordering is temporarily unavailable. Please call a waiter, thank you!', pay:'Payment is made to the staff (cash, MoMo, Orange Money, card).',
+      rejected:'Your order could not be accepted. A waiter will come to your table.',
+      steps:['Waiting for confirmation', 'Accepted', 'Being prepared', 'Ready', 'Served']},
+};
+function qrStep() {
+  const t = table('T7');
+  if (t.qr.length) return 0;
+  const tk = tickets.filter(k => k.table === 'T7' && k.fromQr);
+  if (!tk.length) return 0;
+  if (tk.every(k => k.status === 'served')) return 4;
+  if (tk.every(k => k.status === 'ready' || k.status === 'served')) return 3;
+  if (tk.some(k => k.status !== 'new')) return 2;
+  return 1;
+}
+function renderQr() {
+  const L = ui.qrLang, T = QT[L];
+  const nm = m => m[L], ds = m => L === 'fr' ? m.dfr : m.den;
+  const cartCount = ui.qrCart.reduce((s, l) => s + l.qty, 0);
+  const head = `<div class="ph-head"><div class="row between"><div><div class="rest">Le Grill d'Akwa</div><div class="tbl">${T.table}</div></div>
+    <div class="lang"><button data-lang="fr" class="${L === 'fr' ? 'active' : ''}">FR</button><button data-lang="en" class="${L === 'en' ? 'active' : ''}">EN</button></div></div></div>`;
+  let body = '';
+  if (ui.qrView === 'menu') {
+    body = `<div class="ph-body">
+      ${ui.offline ? `<div class="offline-banner">⚠ ${T.offline}</div>` : ''}
+      <div class="ph-cats"><div class="chips">${CATS.map(c => `<button class="chip ${ui.qrCat === c.id ? 'active' : ''}" data-qcat="${c.id}">${c[L]}</button>`).join('')}</div></div>
+      ${MENU.filter(m => m.cat === ui.qrCat).map(m => {
+        const inCart = ui.qrCart.filter(l => l.id === m.id).reduce((s, l) => s + l.qty, 0);
+        return `<div class="mitem ${m.off ? 'unavail' : ''}"><div class="ph">${m.e}</div>
+          <div class="info"><b>${nm(m)}</b><span>${ds(m) || '&nbsp;'}</span><div class="price">${m.off ? T.unavailable : fmt(m.price)}</div></div>
+          ${m.off || ui.offline ? '' : `<div style="display:grid;gap:2px"><button class="add" data-qadd="${m.id}">+</button>${inCart ? `<span class="incart">×${inCart}</span>` : ''}</div>`}</div>`;
+      }).join('')}
+      ${ui.qrSent ? `<button class="btn block" id="qrBack" style="margin-top:14px">${T.steps[qrStep()]} →</button>` : ''}
+    </div>
+    ${cartCount && !ui.offline ? `<button class="cartbar" id="qrOpenCart"><span>${T.cart} · ${cartCount}</span><span>${fmt(lineTotal(ui.qrCart))}</span></button>` : ''}`;
+  } else if (ui.qrView === 'cart') {
+    body = `<div class="ph-body"><button class="btn ghost" id="qrToMenu" style="padding:4px 0">${T.back}</button>
+      <h2 style="margin:8px 0">${T.yourOrder}</h2>
+      ${ui.qrCart.map((l, i) => `<div class="line"><div class="n"><b>${nm(item(l.id))}</b><br><span class="muted" style="font-size:12px">${fmt(item(l.id).price)}</span></div>
+        <div class="qty"><button data-qq="${i}" data-d="-1">−</button><span class="q" style="text-align:center">${l.qty}</span><button data-qq="${i}" data-d="1">+</button></div></div>`).join('')}
+      <div class="total" style="margin:14px 0"><span>${T.total}</span><span>${fmt(lineTotal(ui.qrCart))}</span></div>
+      <p class="muted" style="font-size:12px">${T.pay}</p>
+      <button class="btn primary block" id="qrSend" style="padding:12px" ${ui.offline ? 'disabled' : ''}>${T.send}</button>
+      ${ui.offline ? `<div class="offline-banner" style="margin-top:10px">⚠ ${T.offline}</div>` : ''}</div>`;
+  } else {
+    const step = qrStep(); const t = table('T7');
+    body = `<div class="ph-body">
+      ${ui.qrRejected ? `<div class="offline-banner" style="background:var(--danger-soft);color:var(--danger)">${T.rejected}</div>` : `
+      <div style="text-align:center;padding:12px 0 0"><div style="font-size:40px">✅</div><h2>${T.sentTitle}</h2><p class="muted" style="margin:4px 0">${T.sentSub}</p></div>
+      <div class="steps">${T.steps.map((s, i) => `<div class="step ${i < step ? 'done' : i === step ? 'current' : ''}"><span class="b">${i < step ? '✓' : i + 1}</span><b style="font-weight:${i === step ? 700 : 500}">${s}</b></div>`).join('')}</div>`}
+      <button class="btn block" id="qrToMenu">${T.more}</button>
+      <button class="btn primary block" id="qrBill" style="margin-top:8px" ${t.bill || !t.sent.length ? 'disabled' : ''}>${t.bill ? T.billAsked : T.bill}</button>
+      <p class="muted" style="font-size:12px;margin-top:10px">${T.pay}</p></div>`;
+  }
+  $('#phone').innerHTML = head + body;
+}
+
+// ---------------- Tableau de bord ----------------
+function renderDashboard() {
+  const tt = session.totals;
+  const ca = Object.values(tt).reduce((a, b) => a + b, 0) + 31500;
+  $('#kpiCA').textContent = fmt(ca);
+  const hours = [[12, 18500], [13, 42000], [14, 26000], [15, 9500], [16, 12000], [17, 21000], [18, 38500], [19, 61000], [20, 74500], [21, 56000], [22, 33000]];
+  const max = Math.max(...hours.map(h => h[1]));
+  $('#hourBars').innerHTML = hours.map(([h, v]) => `<div class="bar" style="height:${v / max * 100}%"><em>${fmt(v)}</em><span>${h}h</span></div>`).join('');
+  const top = [['Castel 65 cl', 86, 60200], ['Poisson braisé', 21, 94500], ['Soya de bœuf', 34, 51000], ['Guinness 65 cl', 30, 30000], ['Poulet braisé (½)', 15, 52500]];
+  const tmax = Math.max(...top.map(t => t[2]));
+  $('#topProducts').innerHTML = top.map(([n, q, v]) => `<div style="padding:7px 0"><div class="row between"><span>${n} <span class="muted">· ${q} vendus</span></span><b>${fmt(v)}</b></div><div class="meter"><i style="width:${v / tmax * 100}%"></i></div></div>`).join('');
+  const tot = Object.values(tt).reduce((a, b) => a + b, 0);
+  $('#payBreakdown').innerHTML = Object.entries(tt).map(([k, v]) => `<div style="padding:6px 0"><div class="row between"><span>${METHODS[k].label}</span><b>${fmt(v)}</b></div><div class="meter"><i style="width:${v / tot * 100}%;background:${METHODS[k].color}"></i></div></div>`).join('');
+}
+
+// ---------------- Rendu global ----------------
+function render() {
+  const pendingQr = tables.filter(t => t.qr.length).length;
+  const navS = document.querySelector('[data-screen="serveur"]');
+  navS.innerHTML = 'Serveur' + (pendingQr ? `<span class="badge">${pendingQr}</span>` : '');
+  const newK = tickets.filter(t => t.status === 'new').length;
+  document.querySelector('[data-screen="kds"]').innerHTML = 'Cuisine / Bar' + (newK ? `<span class="badge">${newK}</span>` : '');
+  const bills = tables.filter(t => t.bill).length;
+  document.querySelector('[data-screen="caisse"]').innerHTML = 'Caisse' + (bills ? `<span class="badge">${bills}</span>` : '');
+  if (ui.screen === 'serveur') renderServeur();
+  if (ui.screen === 'caisse') renderCaisse();
+  if (ui.screen === 'kds') renderKds();
+  if (ui.screen === 'qr') renderQr();
+  if (ui.screen === 'dashboard') renderDashboard();
+}
+setInterval(() => { if (ui.screen === 'kds') renderKds(); }, 30000);
+render();
+</script>
+</body>
+</html>
