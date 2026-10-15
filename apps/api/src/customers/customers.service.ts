@@ -1,9 +1,10 @@
-import { ConflictException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { type Prisma } from '@tchop/db';
 import { type CustomerCreateInput, type CustomerUpdateInput, type SettlementInput } from '@tchop/shared';
 import { AuditService } from '../audit/audit.service.js';
 import { BillsService } from '../cash/bills.service.js';
 import { CashService } from '../cash/cash.service.js';
+import { assertReferenceFree } from '../cash/reference.js';
 import { notFound, versionConflict } from '../common/errors.js';
 import { type AuthContext } from '../common/request-context.js';
 import { PrismaService } from '../prisma.service.js';
@@ -121,7 +122,7 @@ export class CustomersService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }
-      if (input.reference) await this.assertReferenceFree(tx, auth, input.method, input.reference);
+      if (input.reference) await assertReferenceFree(tx, auth.siteId, input.method, input.reference);
 
       const entry = await tx.customerLedgerEntry.create({
         data: {
@@ -143,26 +144,6 @@ export class CustomersService {
       });
     });
     return this.get(auth, id);
-  }
-
-  /** Une référence Mobile Money ou carte ne sert qu'une fois, paiements et règlements confondus. */
-  private async assertReferenceFree(tx: Tx, auth: AuthContext, method: string, reference: string) {
-    const lower = reference.toLowerCase();
-    const [payments, entries] = await Promise.all([
-      tx.$queryRaw<{ n: bigint }[]>`
-        SELECT count(*) AS n FROM "payment"
-        WHERE "site_id" = ${auth.siteId}::uuid AND "method"::text = ${method}
-          AND lower("reference") = ${lower} AND "status" <> 'voided'`,
-      tx.$queryRaw<{ n: bigint }[]>`
-        SELECT count(*) AS n FROM "customer_ledger_entry" e JOIN "customer" c ON c."id" = e."customer_id"
-        WHERE c."site_id" = ${auth.siteId}::uuid AND e."method"::text = ${method} AND lower(e."reference") = ${lower}`,
-    ]);
-    if (Number(payments[0]?.n ?? 0) + Number(entries[0]?.n ?? 0) > 0) {
-      throw new ConflictException({
-        code: 'REFERENCE_ALREADY_USED',
-        message: 'Cette référence de transaction a déjà été enregistrée',
-      });
-    }
   }
 
   private toCustomer(c: Prisma.CustomerGetPayload<object>, balance: number) {

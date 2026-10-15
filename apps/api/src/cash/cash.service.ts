@@ -95,20 +95,22 @@ export class CashService {
       where: { id: sessionId },
       include: { register: true },
     });
-    const [payments, settlements, cashier] = await Promise.all([
-      tx.payment.groupBy({
-        by: ['method'],
-        where: { sessionId, status: { not: 'voided' } },
-        _sum: { amountXaf: true },
-        _count: true,
-      }),
-      tx.customerLedgerEntry.groupBy({
-        by: ['method'],
-        where: { sessionId, type: 'payment' },
-        _sum: { amountXaf: true },
-      }),
-      tx.user.findUnique({ where: { id: session.cashierId }, select: { displayName: true } }),
-    ]);
+    // Requêtes l'une après l'autre : dans une transaction, elles partagent une seule connexion.
+    const payments = await tx.payment.groupBy({
+      by: ['method'],
+      where: { sessionId, status: { not: 'voided' } },
+      _sum: { amountXaf: true },
+      _count: true,
+    });
+    const settlements = await tx.customerLedgerEntry.groupBy({
+      by: ['method'],
+      where: { sessionId, type: 'payment' },
+      _sum: { amountXaf: true },
+    });
+    const cashier = await tx.user.findUnique({
+      where: { id: session.cashierId },
+      select: { displayName: true },
+    });
     const byMethod = Object.fromEntries(PAYMENT_METHODS.map((m) => [m, 0])) as Record<PaymentMethod, number>;
     let count = 0;
     for (const p of payments) {

@@ -24,6 +24,7 @@ import { type ReceiptDoc } from '../printing/escpos.js';
 import { PrintService } from '../printing/print.service.js';
 import { PrismaService } from '../prisma.service.js';
 import { CashService, METHOD_LABELS } from './cash.service.js';
+import { assertReferenceFree } from './reference.js';
 
 type Tx = Prisma.TransactionClient;
 
@@ -358,6 +359,8 @@ export class BillsService {
       }
     }
     if (amount <= 0) throw billClosed();
+
+    if (input.reference) await assertReferenceFree(tx, auth.siteId, input.method, input.reference);
 
     // Ardoise : client actif du site ; au-delà du plafond, approbation d'un gérant obligatoire.
     let approvedBy: string | null = null;

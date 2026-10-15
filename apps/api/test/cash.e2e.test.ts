@@ -172,6 +172,27 @@ describe('encaissement', () => {
     expect(done.status).toBe('paid');
   });
 
+  it('une référence utilisée pour régler une ardoise ne sert pas à payer une addition', async () => {
+    const { body: customer } = await as(manager, http().post('/api/customers'))
+      .send({ name: `Réf ${tag()}`, creditLimitXaf: 50_000 })
+      .expect(201);
+    const o1 = await orderOnNewTable();
+    const { body: b1 } = await bill(cashier, o1.id).expect(201);
+    await pay(cashier, b1.id, { method: 'customer_credit', amountXaf: 6600, customerId: customer.id }).expect(
+      200,
+    );
+    const ref = `MPA${Date.now()}`;
+    await as(cashier, http().post(`/api/customers/${customer.id}/settlements`))
+      .send({ idempotencyKey: randomUUID(), method: 'mtn_momo', amountXaf: 6600, reference: ref })
+      .expect(200);
+    const o2 = await orderOnNewTable();
+    const { body: b2 } = await bill(cashier, o2.id).expect(201);
+    const reused = await pay(cashier, b2.id, { method: 'mtn_momo', amountXaf: 6600, reference: ref }).expect(
+      409,
+    );
+    expect(reused.body.code).toBe('REFERENCE_ALREADY_USED');
+  });
+
   it('un paiement renvoyé avec la même clé n’est enregistré qu’une fois', async () => {
     const order = await orderOnNewTable();
     const { body: b } = await bill(cashier, order.id).expect(201);
