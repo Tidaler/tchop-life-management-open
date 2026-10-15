@@ -538,3 +538,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------------------------------------------------------------- Stocks */
+.danger-text {
+  color: var(--danger);
+}
+.receipt-line {
+  display: grid;
+  grid-template-columns: minmax(140px, 2fr) minmax(110px, 1fr) 90px 110px auto 40px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.recipe-line {
+  display: grid;
+  grid-template-columns: minmax(140px, 2fr) 90px 60px minmax(140px, 2fr) 40px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.receipt-line select,
+.receipt-line input,
+.recipe-line select,
+.recipe-line input,
+.qty-input {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+}
+.qty-input {
+  max-width: 120px;
+  text-align: right;
+}
+@media (max-width: 720px) {
+  .receipt-line,
+  .recipe-line {
+    grid-template-columns: 1fr 1fr;
+  }
+}

@@ -187,6 +187,24 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Site injoignable : menu servi depuis la copie, commande suspendue (503 `SITE_OFFLINE`) avec un message au client | `cloud-menu.service.ts`, `apps/menu` |
 | Mêmes limites de débit sur le menu public du cloud que sur celui du site | `qr.controllers.ts` |
 
+### Phase 5 — Stocks et recettes
+
+| Règle | Où |
+|---|---|
+| Mouvements de stock en ajout seul (déclencheur) ; une erreur se corrige par un mouvement inverse ; sens du mouvement imposé par son type (contrainte `CHECK`) | migration `stocks_recettes` |
+| Niveau d'un magasin mis à jour dans la même transaction que le mouvement ; test : chaque niveau égale la somme de ses mouvements | `stock-ledger.ts`, `stock.e2e.test.ts` |
+| Sortie de stock dans la même transaction que la vente ; une vente n'est jamais bloquée par le stock (écart visible à l'inventaire) | `orders.service.ts`, `stock-ledger.ts` |
+| Annulation d'une ligne : réintégration ou perte tracée, au coût de la sortie d'origine | `stock-ledger.ts` |
+| Perte, casse, consommation interne : motif obligatoire ; approbation d'un gérant toujours pour la cuisine, au-delà de 10 000 FCFA pour le magasinier | `stock.service.ts` |
+| Correction manuelle : motif, approbation obligatoire pour le magasinier | `stock.service.ts` |
+| Inventaire à l'aveugle (théorique caché jusqu'à la clôture) ; un seul inventaire en cours par magasin ; approbation au-delà de 10 000 FCFA d'écarts cumulés, sauf pour qui corrige le stock sans approbation | `inventory.service.ts`, index `inventory_count_open_per_location` |
+| Réceptions figées (déclencheur) ; quantités converties et montants recalculés par le serveur ; coût moyen calculé sous verrou des articles | `purchases.service.ts` |
+| Clé d'idempotence sur chaque réception, perte, transfert et correction | `purchases.service.ts`, `common/idempotency.ts` |
+| Coûts, valeurs et prix d'achat visibles seulement des rôles qui suivent les achats ou les rapports de stock | `stock.service.ts` (`canSeeCosts`) |
+| Recette : articles du site et options du produit uniquement ; la cuisine et la caisse n'y ont pas accès, le magasinier en lecture | `recipes.service.ts`, matrice |
+| Téléphone des fournisseurs jamais journalisé | `purchases.service.ts` |
+| Liste des gérants approbateurs (noms seulement) ouverte à tout le personnel connecté ; le PIN reste vérifié par l'action | `approval.controller.ts` |
+
 ### À mettre en place au déploiement (non testé automatiquement)
 
 - En-têtes HTTP posés par le serveur web (Caddy) : HSTS, `frame-ancestors 'none'`, `X-Content-Type-Options`, CSP en en-tête.

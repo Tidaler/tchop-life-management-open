@@ -3,13 +3,15 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { deviceStore, getAccessToken } from './api';
 import { CATALOG_KEY } from './catalog';
+import { STOCK_KEY } from './stock';
 
 type RealtimeEvent =
   | { type: 'orders.changed'; orderId: string; tableId: string | null }
   | { type: 'tickets.changed'; ticketId: string; station: string }
   | { type: 'catalog.changed' }
   | { type: 'qr.changed'; tableId: string | null }
-  | { type: 'bills.changed'; orderId: string };
+  | { type: 'bills.changed'; orderId: string }
+  | { type: 'stock.changed' };
 
 /**
  * Connexion temps réel au serveur local : à chaque événement, l'écran recharge les données concernées.
@@ -32,6 +34,7 @@ export function useRealtime(enabled: boolean): boolean {
     socket.on('change', (event: RealtimeEvent) => {
       if (event.type === 'orders.changed') void queryClient.invalidateQueries({ queryKey: ['orders'] });
       if (event.type === 'tickets.changed') void queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      if (event.type === 'stock.changed') void queryClient.invalidateQueries({ queryKey: STOCK_KEY });
       if (event.type === 'catalog.changed') void queryClient.invalidateQueries({ queryKey: CATALOG_KEY });
       if (event.type === 'bills.changed') {
         void queryClient.invalidateQueries({ queryKey: ['bills'] });

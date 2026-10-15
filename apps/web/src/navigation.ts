@@ -40,7 +40,6 @@ export const SCREENS: Screen[] = [
     icon: '📦',
     permission: 'stock.view',
     access: 'read',
-    phase: 'Phase 5',
   },
   {
     path: '/dashboard',

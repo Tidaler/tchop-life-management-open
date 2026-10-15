@@ -81,6 +81,17 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   BILL_HAS_PAYMENTS: 'cash.billHasPayments',
   LINE_BILLED: 'cash.lineBilled',
   COMMENT_REQUIRED: 'cash.commentRequired',
+  NAME_TAKEN: 'stock.nameTaken',
+  ITEM_HAS_STOCK: 'stock.itemHasStock',
+  ITEM_IN_RECIPE: 'stock.itemInRecipe',
+  LOCATION_IN_USE: 'stock.locationInUse',
+  INVENTORY_IN_PROGRESS: 'stock.inventoryInProgress',
+  INVENTORY_CLOSED: 'stock.inventoryClosedError',
+  NOTHING_COUNTED: 'stock.nothingCounted',
+  ORDER_CLOSED: 'stock.orderClosed',
+  SUPPLIER_MISMATCH: 'stock.supplierMismatch',
+  ORDER_LINE_MISMATCH: 'stock.orderLineMismatch',
+  NOT_FOUND: 'error.notFound',
 };
 
 /** Message d'erreur traduit à partir d'une erreur d'API. */

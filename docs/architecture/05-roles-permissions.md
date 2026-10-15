@@ -68,6 +68,7 @@ Légende : **✓** autorisé · **A** autorisé avec approbation du gérant · *
 | Permission | Code | Proprio | Gérant | Caissier | Serveur | Cuisine/Bar | Magasinier | Comptable |
 |---|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | Voir les stocks | `stock.view` | ✓ | ✓ | — | — | L | ✓ | L |
+| Gérer les articles, conditionnements et magasins | `stock.item.manage` | ✓ | ✓ | — | — | — | ✓ | — |
 | Réceptionner une livraison | `stock.receive` | ✓ | ✓ | — | — | — | ✓ | — |
 | Transférer entre magasins | `stock.transfer` | ✓ | ✓ | — | — | — | ✓ | — |
 | Déclarer perte, casse, consommation interne | `stock.loss` | ✓ | ✓ | — | — | A | ≤ | — |
@@ -114,6 +115,7 @@ Légende : **✓** autorisé · **A** autorisé avec approbation du gérant · *
 |---|---|
 | Remise sans approbation (caissier) | 10 % ou 2 000 FCFA |
 | Perte / casse sans approbation (magasinier) | 10 000 FCFA de valeur |
+| Écarts d'un inventaire sans approbation (magasinier) | 10 000 FCFA (valeur cumulée des écarts) |
 | Dépense payée depuis la caisse sans approbation (caissier) | 5 000 FCFA |
 | Verrouillage automatique | Caisse 60 s · Salle 3 min · Back-office 10 min |
 

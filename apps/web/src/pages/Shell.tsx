@@ -1,5 +1,5 @@
-import { Suspense } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Suspense, useEffect, useRef } from 'react';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { Brand, OfflineBanner } from '../components/common';
 import { LanguageSwitch, useI18n } from '../i18n';
 import { SCREENS } from '../navigation';
@@ -15,6 +15,15 @@ export function Shell() {
   const qr = useQrRequests(can('qr_request.handle', 'read'));
   const pendingQr = qr.data ?? [];
   const screens = SCREENS.filter((s) => can(s.permission, s.access));
+  const nav = useRef<HTMLElement>(null);
+  const { pathname } = useLocation();
+
+  // Sur un écran étroit, la barre de navigation défile : l'écran ouvert reste visible et repérable.
+  useEffect(() => {
+    nav.current
+      ?.querySelector<HTMLElement>('a.active')
+      ?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }, [pathname]);
 
   return (
     <div className="shell">
@@ -22,7 +31,7 @@ export function Shell() {
         <OfflineBanner />
         <div className="topbar">
           <Brand subtitle={[me.site.name]} />
-          <nav className="nav">
+          <nav className="nav" ref={nav}>
             <NavLink to="/" end>
               {t('nav.home')}
             </NavLink>

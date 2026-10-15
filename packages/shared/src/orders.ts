@@ -28,6 +28,11 @@ export type ApprovalInput = z.infer<typeof approvalSchema>;
 
 export const cancelLineSchema = z.object({
   reason: z.string().trim().min(3).max(200),
+  /**
+   * Stock de la ligne annulée : réintégré (marchandise intacte) ou compté en perte.
+   * Absent : réintégré si la préparation n'avait pas commencé, perte sinon.
+   */
+  restock: z.boolean().optional(),
   approval: approvalSchema.optional(),
 });
 export type CancelLineInput = z.infer<typeof cancelLineSchema>;

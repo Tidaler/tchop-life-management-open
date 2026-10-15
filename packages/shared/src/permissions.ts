@@ -32,6 +32,7 @@ export const PERMISSIONS = [
   'recipe.edit',
   // Stocks et achats
   'stock.view',
+  'stock.item.manage',
   'stock.receive',
   'stock.transfer',
   'stock.loss',

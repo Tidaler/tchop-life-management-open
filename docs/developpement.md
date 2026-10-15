@@ -51,8 +51,11 @@ pnpm dev
 | Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
 | Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, clôture |
 | Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
+| Stocks | Magasinier, gérant, propriétaire (cuisine et comptable en lecture) | État par magasin et alertes ; pertes, casse, transferts, corrections ; réceptions (casiers convertis en bouteilles) ; fournisseurs et commandes d'achat ; inventaires à l'aveugle ; articles et magasins ; recettes avec coût et marge ; journal et valorisation |
 
 Les bons sont envoyés aux imprimantes réseau (ESC/POS, port 9100) du poste concerné. Sans imprimante, ils restent visibles sur l'écran de préparation. Pour tester sans matériel, une imprimante peut pointer vers un port qui écoute en local (les tests automatisés utilisent une fausse imprimante TCP).
+
+Les données de démo comprennent 21 articles de stock (boissons, viandes, accompagnements, charbon) avec leurs conditionnements, un stock d'ouverture et les recettes de tous les produits : chaque vente sort le stock correspondant. Sur une base déjà initialisée, `pnpm db:seed` ajoute ces stocks s'ils n'existent pas encore.
 
 Les photos sont stockées dans `apps/api/data/media` (variable `MEDIA_DIR`), réencodées en WebP de 800 px maximum.
 

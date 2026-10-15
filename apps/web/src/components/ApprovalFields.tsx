@@ -21,7 +21,7 @@ export function ApprovalFields({
   const { t } = useI18n();
   const approvers = useQuery({
     queryKey: ['approvers'],
-    queryFn: () => api<{ id: string; displayName: string }[]>('/orders/approvers'),
+    queryFn: () => api<{ id: string; displayName: string }[]>('/approvals/approvers'),
   });
   const userId = value.userId || approvers.data?.[0]?.id || '';
 
