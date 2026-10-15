@@ -283,6 +283,17 @@ export class OrdersService {
       if (line.status === 'cancelled') {
         throw new ConflictException({ code: 'ALREADY_CANCELLED', message: 'Ligne déjà annulée' });
       }
+      // Une ligne déjà sur une addition (ouverte ou payée) ne s'annule pas : annuler d'abord l'addition.
+      if (
+        await tx.billLine.count({
+          where: { orderLineId: lineId, bill: { status: { in: ['open', 'paid'] } } },
+        })
+      ) {
+        throw new ConflictException({
+          code: 'LINE_BILLED',
+          message: "La ligne figure sur une addition : annulez d'abord l'addition",
+        });
+      }
 
       const approverId = await this.approval.require(auth, 'order.line.cancel', input.approval, tx);
       await tx.orderLine.update({

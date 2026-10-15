@@ -446,3 +446,95 @@
     animation: none;
   }
 }
+
+/* ---------- Caisse (Phase 4) ---------- */
+.session-card,
+.session-bar {
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+.session-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+}
+.cash-grid {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr) 360px;
+  gap: 14px;
+  align-items: start;
+}
+.pane-pad {
+  padding: 16px;
+}
+.side-list .item.static {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  flex-wrap: wrap;
+}
+.btn.small {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.small-pad {
+  padding: 4px 12px;
+}
+.total-line {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 12px;
+}
+.method-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+.method {
+  border: 2px solid var(--border);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 700;
+  min-height: 46px;
+}
+.method[aria-pressed='true'] {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-ink);
+}
+.amount-input {
+  font-size: 22px !important;
+  font-weight: 700;
+}
+.receipt {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  background: #fffdf8;
+  border: 1px dashed #cfc6ba;
+  padding: 14px;
+  border-radius: 8px;
+}
+.receipt .c {
+  text-align: center;
+}
+.receipt hr {
+  border: 0;
+  border-top: 1px dashed #b9ae9f;
+  margin: 8px 0;
+}
+.receipt .r {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+@media (max-width: 1100px) {
+  .cash-grid {
+    grid-template-columns: 1fr;
+  }
+}

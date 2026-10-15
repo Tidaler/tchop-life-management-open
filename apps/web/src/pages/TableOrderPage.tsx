@@ -152,6 +152,16 @@ export function TableOrderPage() {
     },
   });
 
+  /** Le serveur transmet l'addition à la caisse (tout ce qui reste à facturer). */
+  const requestBill = useMutation({
+    mutationFn: () => api(`/orders/${orderId}/bills`, { method: 'POST', body: {} }),
+    onSuccess: () => {
+      setNotice({ kind: 'ok', text: t('cash.billRequested') });
+      void queryClient.invalidateQueries({ queryKey: ['bills'] });
+    },
+    onError: (e) => setNotice({ kind: 'danger', text: errorMessage(e, t) }),
+  });
+
   const onProduct = (p: Product) => {
     if (!p.available || !canOrder) return;
     setNotice(null);
@@ -210,6 +220,15 @@ export function TableOrderPage() {
         <div className="ticket-head">
           <div className="row-between">
             <h2>{t('order.title', { label: table?.label ?? '…' })}</h2>
+            {order.data && can('bill.prepare') && (
+              <button
+                className="btn ghost"
+                disabled={requestBill.isPending}
+                onClick={() => requestBill.mutate()}
+              >
+                🧾 {t('cash.requestBill')}
+              </button>
+            )}
             {order.data && can('order.transfer') && (
               <button className="btn ghost" onClick={() => setTransferring(true)}>
                 ⇄ {t('order.transfer')}

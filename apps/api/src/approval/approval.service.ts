@@ -41,6 +41,16 @@ export class ApprovalService {
     return this.verify(auth, approval, tx);
   }
 
+  /** Approbation obligatoire quel que soit le rôle (ex. ardoise au-delà du plafond, remise au-delà du seuil). */
+  async requireApprover(
+    auth: AuthContext,
+    approval: ApprovalInput | undefined,
+    tx: Prisma.TransactionClient = this.prisma,
+  ): Promise<string> {
+    if (!approval) throw approvalRequired();
+    return this.verify(auth, approval, tx);
+  }
+
   /** Personnes du site qui peuvent approuver (droit approval.grant et PIN défini), hors l'utilisateur courant. */
   async listApprovers(auth: AuthContext) {
     const links = await this.prisma.userSiteRole.findMany({

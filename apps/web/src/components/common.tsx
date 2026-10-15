@@ -71,6 +71,16 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   PRODUCT_UNAVAILABLE: 'order.productUnavailable',
   INVALID_OPTIONS: 'order.invalidOptions',
   INVALID_TRANSITION: 'kitchen.alreadyMoved',
+  NO_OPEN_SESSION: 'cash.noSessionCode',
+  SESSION_ALREADY_OPEN: 'cash.sessionAlreadyOpen',
+  OVERPAYMENT: 'cash.overpayment',
+  REFERENCE_ALREADY_USED: 'cash.referenceUsed',
+  ALREADY_BILLED: 'cash.alreadyBilled',
+  NOTHING_TO_BILL: 'cash.nothingToBill',
+  BILL_CLOSED: 'cash.billClosed',
+  BILL_HAS_PAYMENTS: 'cash.billHasPayments',
+  LINE_BILLED: 'cash.lineBilled',
+  COMMENT_REQUIRED: 'cash.commentRequired',
 };
 
 /** Message d'erreur traduit à partir d'une erreur d'API. */

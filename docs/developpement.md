@@ -49,6 +49,7 @@ pnpm dev
 | Plan de salle › Imprimer les QR codes | Gérant, propriétaire | Planche de cartes QR bilingues à imprimer et découper |
 | Salle | Serveurs, caisse, gérant | État des tables ; prise de commande avec options, notes, annulation, changement de table |
 | Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
+| Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, clôture |
 | Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
 
 Les bons sont envoyés aux imprimantes réseau (ESC/POS, port 9100) du poste concerné. Sans imprimante, ils restent visibles sur l'écran de préparation. Pour tester sans matériel, une imprimante peut pointer vers un port qui écoute en local (les tests automatisés utilisent une fausse imprimante TCP).

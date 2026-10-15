@@ -8,7 +8,8 @@ type RealtimeEvent =
   | { type: 'orders.changed'; orderId: string; tableId: string | null }
   | { type: 'tickets.changed'; ticketId: string; station: string }
   | { type: 'catalog.changed' }
-  | { type: 'qr.changed'; tableId: string | null };
+  | { type: 'qr.changed'; tableId: string | null }
+  | { type: 'bills.changed'; orderId: string };
 
 /**
  * Connexion temps réel au serveur local : à chaque événement, l'écran recharge les données concernées.
@@ -32,6 +33,10 @@ export function useRealtime(enabled: boolean): boolean {
       if (event.type === 'orders.changed') void queryClient.invalidateQueries({ queryKey: ['orders'] });
       if (event.type === 'tickets.changed') void queryClient.invalidateQueries({ queryKey: ['tickets'] });
       if (event.type === 'catalog.changed') void queryClient.invalidateQueries({ queryKey: CATALOG_KEY });
+      if (event.type === 'bills.changed') {
+        void queryClient.invalidateQueries({ queryKey: ['bills'] });
+        void queryClient.invalidateQueries({ queryKey: ['cash'] });
+      }
       if (event.type === 'qr.changed') {
         void queryClient.invalidateQueries({ queryKey: ['qr-requests'] });
         void queryClient.invalidateQueries({ queryKey: ['orders'] });
