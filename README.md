@@ -8,6 +8,7 @@ Produit commercialisé à plusieurs établissements (SaaS), avec un serveur loca
 
 - [Cahier des charges](docs/Cahier_des_charges_Tchop_Life_Management.docx)
 - [Maquettes](docs/maquettes/index.html)
+- [Architecture technique](docs/architecture/README.md) : modèle de données, synchronisation, sécurité, rôles et permissions
 
 ## Décisions validées
 
@@ -33,7 +34,7 @@ Produit commercialisé à plusieurs établissements (SaaS), avec un serveur loca
 
 ### Stack technique (proposée)
 - TypeScript partout, organisé en un seul dépôt.
-- Backend Node.js (NestJS) + PostgreSQL. Le même code tourne en mode local et en mode cloud.
+- Backend Node.js (NestJS) + PostgreSQL (Prisma). Le même code tourne en mode local et en mode cloud.
 - Frontend React + Vite (PWA), avec WebSocket pour le temps réel.
 - Impression ESC/POS depuis le serveur local.
 - Serveur local : mini-PC Linux + Docker, avec onduleur.
