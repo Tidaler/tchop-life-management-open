@@ -1,0 +1,34 @@
+{
+  "name": "tchop-life-management",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --filter=@tchop/api --filter=@tchop/web",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "db:up": "docker compose -f infra/dev/docker-compose.yml up -d",
+    "db:down": "docker compose -f infra/dev/docker-compose.yml down",
+    "db:migrate": "pnpm --filter @tchop/db migrate:dev",
+    "db:seed": "pnpm --filter @tchop/db seed",
+    "db:reset": "pnpm --filter @tchop/db reset"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.12.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "turbo": "^2.11.8",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.71.2"
+  }
+}

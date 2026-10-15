@@ -24,7 +24,7 @@
 
 Règles :
 - Mots de passe et PIN hachés avec **Argon2id**, jamais stockés en clair.
-- **5 PIN faux** → compte bloqué 5 minutes sur cet appareil ; l'événement est tracé.
+- **5 PIN faux** → compte bloqué 5 minutes (sur tous les appareils du site) ; l’événement est tracé.
 - **Verrouillage automatique** après inactivité, réglable par poste (ex. 60 s à la caisse, 3 min en salle).
 - Jeton d'accès court (15 min) + jeton de rafraîchissement renouvelé à chaque usage, stocké en cookie `HttpOnly`, `Secure`, `SameSite=Strict`.
 - Les comptes (avec leurs hachages) sont **répliqués du cloud vers le site** pour permettre la connexion sans Internet. Une révocation faite dans le cloud s'applique au site dès sa reconnexion ; le gérant peut aussi désactiver un compte directement sur place.

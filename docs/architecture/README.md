@@ -36,11 +36,18 @@ Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 | Modèle de licence (par site, par mois, par nombre d'appareils) | Porteur du projet |
 | Modèle exact de mini-PC, d'onduleur et d'imprimantes à valider pour le pilote | Tests matériels |
 
-## Prochaine étape
+## Phases de livraison
 
-**Phase 0 — Fondations** :
-1. Initialiser le monorepo (pnpm + Turborepo) avec `apps/api`, `apps/web`, `apps/menu` et `packages/*`.
-2. Base PostgreSQL en Docker, premier schéma Prisma (plateforme, identité, salle, catalogue).
-3. Authentification (mot de passe + PIN), enregistrement des appareils, garde de permissions dans l'API.
-4. Squelette de la PWA : connexion, choix du rôle, navigation, FR/EN.
-5. Intégration continue (lint, tests, build) sur GitHub Actions.
+| Phase | Contenu | État |
+|---|---|---|
+| 0 — Fondations | Monorepo, base de données, connexion (mot de passe, PIN), appareils, permissions, squelette de la PWA, CI | Livrée |
+| 1 — Catalogue et salle | Produits, catégories, options, zones, tables, QR codes | À venir |
+| 2 — Commandes et cuisine | Prise de commande, écran cuisine/bar, impression des bons | À venir |
+| 3 — Commande par QR code | Menu public, relais par le cloud, validation par le serveur | À venir |
+| 4 — Caisse | Sessions, encaissements, reçus, ardoises, clôture | À venir |
+| 5 — Stocks et recettes | Articles, recettes, réceptions, inventaires, achats | À venir |
+| 6 — Pilotage | Dépenses, tableau de bord, rapports, consultation à distance | À venir |
+
+Le mode `cloud` de l'API et la synchronisation site ↔ cloud seront mis en place en parallèle des phases 3 et 6.
+
+Pour démarrer en local : [Guide de développement](../developpement.md).
