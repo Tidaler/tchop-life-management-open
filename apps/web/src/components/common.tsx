@@ -63,6 +63,14 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   CATEGORY_NOT_EMPTY: 'catalog.categoryNotEmpty',
   ZONE_NOT_EMPTY: 'floorSetup.zoneNotEmpty',
   TABLE_LABEL_TAKEN: 'floorSetup.labelTaken',
+  TABLE_HAS_OPEN_ORDER: 'order.tableHasOrder',
+  TABLE_OCCUPIED: 'order.tableOccupied',
+  APPROVAL_REQUIRED: 'order.approvalRequired',
+  APPROVAL_INVALID: 'order.approvalInvalid',
+  PIN_LOCKED: 'order.pinLocked',
+  PRODUCT_UNAVAILABLE: 'order.productUnavailable',
+  INVALID_OPTIONS: 'order.invalidOptions',
+  INVALID_TRANSITION: 'kitchen.alreadyMoved',
 };
 
 /** Message d'erreur traduit à partir d'une erreur d'API. */

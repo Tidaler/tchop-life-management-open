@@ -4,3 +4,4 @@ export * from './permissions.js';
 export * from './roles.js';
 export * from './catalog.js';
 export * from './floor.js';
+export * from './orders.js';

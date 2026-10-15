@@ -187,14 +187,17 @@ export class FloorService {
     }
   }
 
-  /**
-   * Supprime une table du plan (archivage) et désactive son QR code.
-   * À partir de la Phase 2 : refuser si une commande est ouverte sur la table.
-   */
+  /** Supprime une table du plan (archivage) et désactive son QR code. Refusé si une commande y est ouverte. */
   async archiveTable(auth: AuthContext, id: string) {
     await this.prisma.$transaction(async (tx) => {
       const table = await tx.diningTable.findFirst({ where: { id, siteId: auth.siteId, archivedAt: null } });
       if (!table) throw notFound('Table');
+      if (await tx.order.count({ where: { tableId: id, status: 'open' } })) {
+        throw new ConflictException({
+          code: 'TABLE_HAS_OPEN_ORDER',
+          message: 'Une commande est ouverte sur cette table',
+        });
+      }
       const now = new Date();
       await tx.diningTable.update({ where: { id }, data: { archivedAt: now, version: { increment: 1 } } });
       await tx.qrCode.updateMany({

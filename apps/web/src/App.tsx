@@ -3,10 +3,6 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { deviceStore } from './api';
 import { useI18n } from './i18n';
 import { SCREENS } from './navigation';
-import { AvailabilityPage } from './pages/AvailabilityPage';
-import { CatalogPage } from './pages/CatalogPage';
-import { DevicesPage } from './pages/DevicesPage';
-import { FloorSetupPage } from './pages/FloorSetupPage';
 import { EnrollPage } from './pages/EnrollPage';
 import { HomePage, PlaceholderPage } from './pages/HomePage';
 import { PasswordLoginPage } from './pages/PasswordLoginPage';
@@ -14,8 +10,22 @@ import { PinLoginPage } from './pages/PinLoginPage';
 import { Shell } from './pages/Shell';
 import { useSession } from './session';
 
-// La bibliothèque QR n'est chargée que sur la page d'impression.
+// Écrans chargés à la demande : la connexion par PIN reste rapide sur une tablette modeste.
+const AvailabilityPage = lazy(() =>
+  import('./pages/AvailabilityPage').then((m) => ({ default: m.AvailabilityPage })),
+);
+const CatalogPage = lazy(() => import('./pages/CatalogPage').then((m) => ({ default: m.CatalogPage })));
+const DevicesPage = lazy(() => import('./pages/DevicesPage').then((m) => ({ default: m.DevicesPage })));
+const FloorPage = lazy(() => import('./pages/FloorPage').then((m) => ({ default: m.FloorPage })));
+const FloorSetupPage = lazy(() =>
+  import('./pages/FloorSetupPage').then((m) => ({ default: m.FloorSetupPage })),
+);
+const KitchenPage = lazy(() => import('./pages/KitchenPage').then((m) => ({ default: m.KitchenPage })));
+const PrintersPage = lazy(() => import('./pages/PrintersPage').then((m) => ({ default: m.PrintersPage })));
 const QrPrintPage = lazy(() => import('./pages/QrPrintPage').then((m) => ({ default: m.QrPrintPage })));
+const TableOrderPage = lazy(() =>
+  import('./pages/TableOrderPage').then((m) => ({ default: m.TableOrderPage })),
+);
 
 function Loading() {
   const { t } = useI18n();
@@ -48,9 +58,12 @@ function RequireScreen({ path, children }: { path: string; children: ReactNode }
 
 /** Écrans livrés ; les autres affichent la phase prévue. */
 const PAGES: Record<string, ReactNode> = {
+  '/floor': <FloorPage />,
+  '/kitchen': <KitchenPage />,
   '/availability': <AvailabilityPage />,
   '/catalog': <CatalogPage />,
   '/floor-setup': <FloorSetupPage />,
+  '/printers': <PrintersPage />,
   '/devices': <DevicesPage />,
 };
 
@@ -89,6 +102,14 @@ const router = createBrowserRouter([
           </RequireScreen>
         ),
       })),
+      {
+        path: 'floor/:tableId',
+        element: (
+          <RequireScreen path="/floor">
+            <TableOrderPage />
+          </RequireScreen>
+        ),
+      },
       {
         path: 'floor-setup/qr',
         element: (

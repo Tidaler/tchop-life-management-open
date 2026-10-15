@@ -12,6 +12,7 @@ import {
 } from '@tchop/shared';
 import { AuditService } from '../audit/audit.service.js';
 import { notFound, versionConflict } from '../common/errors.js';
+import { EventsService } from '../events/events.gateway.js';
 import { type AuthContext } from '../common/request-context.js';
 import { PrismaService } from '../prisma.service.js';
 
@@ -45,6 +46,7 @@ export class CatalogService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly events: EventsService,
   ) {}
 
   /** Catalogue complet du site (hors éléments archivés, sauf demande contraire). */
@@ -219,7 +221,7 @@ export class CatalogService {
 
   /** Disponible / épuisé : réservé au service (cuisine, bar, gérant), sans verrou de version. */
   async setAvailability(auth: AuthContext, id: string, input: AvailabilityInput) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.findFirst({ where: { id, siteId: auth.siteId, archivedAt: null } });
       if (!product) throw notFound('Produit');
       if (product.available === input.available) return { id, available: product.available };
@@ -238,6 +240,9 @@ export class CatalogService {
       );
       return { id, available: input.available };
     });
+    // Les tablettes des serveurs grisent aussitôt le produit épuisé.
+    this.events.emit(auth.siteId, { type: 'catalog.changed' });
+    return result;
   }
 
   async archiveProduct(auth: AuthContext, id: string) {

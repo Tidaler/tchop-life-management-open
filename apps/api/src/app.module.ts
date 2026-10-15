@@ -2,7 +2,14 @@ import { type DynamicModule, Module } from '@nestjs/common';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
+import { EventsGateway, EventsService } from './events/events.gateway.js';
+import { OrdersController, TicketsController } from './orders/orders.controller.js';
+import { OrdersService } from './orders/orders.service.js';
+import { PrintService } from './printing/print.service.js';
+import { PrintersController } from './printing/printers.controller.js';
+import { TicketsService } from './tickets/tickets.service.js';
 import { CatalogController } from './catalog/catalog.controller.js';
 import { CatalogService } from './catalog/catalog.service.js';
 import { FloorController } from './floor/floor.controller.js';
@@ -47,6 +54,9 @@ export class AppModule {
         CatalogController,
         FloorController,
         MediaController,
+        OrdersController,
+        TicketsController,
+        PrintersController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -59,6 +69,12 @@ export class AppModule {
         CatalogService,
         FloorService,
         MediaService,
+        ApprovalService,
+        EventsGateway,
+        EventsService,
+        PrintService,
+        OrdersService,
+        TicketsService,
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },

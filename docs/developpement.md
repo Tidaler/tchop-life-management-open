@@ -39,7 +39,7 @@ pnpm dev
 3. **Verrouiller**, ouvrir `/enroll`, saisir le code : le navigateur devient un appareil enregistré.
 4. L'écran PIN affiche le personnel du site. Se connecter par exemple en serveur ou en caissière.
 
-### Écrans disponibles (Phase 1)
+### Écrans disponibles
 
 | Écran | Pour qui | Contenu |
 |---|---|---|
@@ -47,6 +47,11 @@ pnpm dev
 | Disponibilités | Cuisine/bar, magasinier, gérant | Marquer un produit épuisé en un geste |
 | Plan de salle | Gérant, propriétaire | Zones, tables, mode du QR code, remplacement d'un QR code |
 | Plan de salle › Imprimer les QR codes | Gérant, propriétaire | Planche de cartes QR bilingues à imprimer et découper |
+| Salle | Serveurs, caisse, gérant | État des tables ; prise de commande avec options, notes, annulation, changement de table |
+| Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
+| Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
+
+Les bons sont envoyés aux imprimantes réseau (ESC/POS, port 9100) du poste concerné. Sans imprimante, ils restent visibles sur l'écran de préparation. Pour tester sans matériel, une imprimante peut pointer vers un port qui écoute en local (les tests automatisés utilisent une fausse imprimante TCP).
 
 Les photos sont stockées dans `apps/api/data/media` (variable `MEDIA_DIR`), réencodées en WebP de 800 px maximum.
 

@@ -49,6 +49,9 @@ export const setAccessToken = (token: string | null): void => {
   accessToken = token;
 };
 
+/** Jeton d'accès courant (connexion temps réel). */
+export const getAccessToken = (): string | null => accessToken;
+
 /** Appelé quand la session ne peut plus être prolongée (révoquée, expirée). */
 export const setAuthLostHandler = (handler: (() => void) | null): void => {
   onAuthLost = handler;

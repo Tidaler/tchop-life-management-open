@@ -1,13 +1,16 @@
+import { Suspense } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { Brand, OfflineBanner } from '../components/common';
 import { LanguageSwitch, useI18n } from '../i18n';
 import { SCREENS } from '../navigation';
+import { useRealtime } from '../realtime';
 import { useMe, useSession } from '../session';
 
 export function Shell() {
   const { t, locale } = useI18n();
   const { can, lock } = useSession();
   const me = useMe();
+  const live = useRealtime(true);
   const screens = SCREENS.filter((s) => can(s.permission, s.access));
 
   return (
@@ -27,6 +30,10 @@ export function Shell() {
             ))}
           </nav>
           <div className="who">
+            <span
+              className={live ? 'live-dot on' : 'live-dot'}
+              title={t(live ? 'shell.live' : 'shell.offlineLive')}
+            />
             <span>
               <b>{me.user.displayName}</b> <span className="site">· {me.role.name[locale]}</span>
             </span>
@@ -43,7 +50,9 @@ export function Shell() {
         </div>
       </header>
       <main className="content">
-        <Outlet />
+        <Suspense fallback={<p className="muted">{t('common.loading')}</p>}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   );

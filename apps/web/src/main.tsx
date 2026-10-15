@@ -5,6 +5,7 @@ import { App } from './App';
 import { I18nProvider } from './i18n';
 import { SessionProvider } from './session';
 import './styles.css';
+import './styles-orders.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

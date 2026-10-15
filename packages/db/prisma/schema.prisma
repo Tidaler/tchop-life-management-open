@@ -64,6 +64,9 @@ model Site {
   categories      Category[]
   products        Product[]
   modifierGroups  ModifierGroup[]
+  orders          Order[]
+  tickets         KitchenTicket[]
+  printers        Printer[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -251,6 +254,7 @@ model DiningTable {
   site    Site     @relation(fields: [siteId], references: [id])
   zone    Zone     @relation(fields: [zoneId], references: [id])
   qrCodes QrCode[]
+  orders  Order[]
 
   @@index([siteId])
   @@map("dining_table")
@@ -326,6 +330,7 @@ model Product {
   site           Site                   @relation(fields: [siteId], references: [id])
   category       Category               @relation(fields: [categoryId], references: [id])
   modifierGroups ProductModifierGroup[]
+  orderLines     OrderLine[]
 
   @@index([siteId, categoryId])
   @@map("product")
@@ -381,6 +386,212 @@ model ProductModifierGroup {
 
   @@id([productId, groupId])
   @@map("product_modifier_group")
+}
+
+// ---------------------------------------------------------------- Commandes
+
+enum OrderType {
+  dine_in
+  takeaway
+  delivery
+}
+
+enum OrderSource {
+  staff
+  qr
+}
+
+enum OrderStatus {
+  open
+  billed
+  paid
+  cancelled
+}
+
+/// Une commande regroupe tout ce qui est servi à une table jusqu'au paiement.
+model Order {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  siteId      String      @map("site_id") @db.Uuid
+  /// Numéro du jour, attribué par le serveur local (repart à 1 chaque jour).
+  number      Int
+  businessDay DateTime    @map("business_day") @db.Date
+  tableId     String?     @map("table_id") @db.Uuid
+  type        OrderType   @default(dine_in)
+  source      OrderSource @default(staff)
+  status      OrderStatus @default(open)
+  waiterId    String?     @map("waiter_id") @db.Uuid
+  guests      Int?
+  openedAt    DateTime    @default(now()) @map("opened_at") @db.Timestamptz(3)
+  closedAt    DateTime?   @map("closed_at") @db.Timestamptz(3)
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version     Int         @default(1)
+
+  site    Site            @relation(fields: [siteId], references: [id])
+  table   DiningTable?    @relation(fields: [tableId], references: [id])
+  lines   OrderLine[]
+  tickets KitchenTicket[]
+
+  @@unique([siteId, businessDay, number])
+  @@index([siteId, status])
+  @@map("order")
+}
+
+enum LineStatus {
+  sent
+  preparing
+  ready
+  served
+  cancelled
+}
+
+model OrderLine {
+  id            String      @id @default(uuid(7)) @db.Uuid
+  orderId       String      @map("order_id") @db.Uuid
+  productId     String      @map("product_id") @db.Uuid
+  /// Instantané au moment de la vente : une modification du catalogue ne change pas l'historique.
+  name          Json
+  /// Prix unitaire TTC, options comprises (FCFA).
+  unitPriceXaf  Int         @map("unit_price_xaf")
+  taxRateBp     Int         @map("tax_rate_bp")
+  quantity      Int
+  /// Options choisies : [{ groupId, modifierId, name, priceDeltaXaf }].
+  modifiers     Json        @default("[]")
+  note          String?
+  station       Station
+  status        LineStatus  @default(sent)
+  ticketId      String?     @map("ticket_id") @db.Uuid
+  createdById   String      @map("created_by") @db.Uuid
+  sentAt        DateTime    @default(now()) @map("sent_at") @db.Timestamptz(3)
+  servedAt      DateTime?   @map("served_at") @db.Timestamptz(3)
+  cancelledAt   DateTime?   @map("cancelled_at") @db.Timestamptz(3)
+  cancelledById String?     @map("cancelled_by") @db.Uuid
+  approvedById  String?     @map("approved_by") @db.Uuid
+  cancelReason  String?     @map("cancel_reason")
+  /// Statut au moment de l'annulation : sert à la règle de stock (Phase 5).
+  cancelledFrom LineStatus? @map("cancelled_from")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  order   Order          @relation(fields: [orderId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  ticket  KitchenTicket? @relation(fields: [ticketId], references: [id])
+
+  @@index([orderId])
+  @@index([ticketId])
+  @@map("order_line")
+}
+
+enum TicketStatus {
+  new
+  preparing
+  ready
+  served
+}
+
+/// Bon de préparation : un par poste et par envoi.
+model KitchenTicket {
+  id          String       @id @default(uuid(7)) @db.Uuid
+  siteId      String       @map("site_id") @db.Uuid
+  orderId     String       @map("order_id") @db.Uuid
+  station     Station
+  number      Int
+  businessDay DateTime     @map("business_day") @db.Date
+  status      TicketStatus @default(new)
+  createdById String       @map("created_by") @db.Uuid
+  startedAt   DateTime?    @map("started_at") @db.Timestamptz(3)
+  readyAt     DateTime?    @map("ready_at") @db.Timestamptz(3)
+  servedAt    DateTime?    @map("served_at") @db.Timestamptz(3)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  site  Site        @relation(fields: [siteId], references: [id])
+  order Order       @relation(fields: [orderId], references: [id])
+  lines OrderLine[]
+
+  @@unique([siteId, businessDay, number])
+  @@index([siteId, status])
+  @@map("kitchen_ticket")
+}
+
+/// Compteurs séquentiels du site (numéros de commande, de bon…), sans trou ni doublon.
+model SiteCounter {
+  siteId String @map("site_id") @db.Uuid
+  key    String
+  value  Int    @default(0)
+
+  @@id([siteId, key])
+  @@map("site_counter")
+}
+
+/// Réponse mémorisée d'une requête d'écriture : un renvoi (Wi-Fi coupé) ne crée pas de doublon.
+model IdempotencyKey {
+  siteId    String   @map("site_id") @db.Uuid
+  key       String
+  userId    String   @map("user_id") @db.Uuid
+  route     String
+  response  Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([siteId, key])
+  @@map("idempotency_key")
+}
+
+// ---------------------------------------------------------------- Impression
+
+enum PrinterRole {
+  cashier
+  kitchen
+  grill
+  bar
+}
+
+model Printer {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  siteId     String      @map("site_id") @db.Uuid
+  name       String
+  host       String
+  port       Int         @default(9100)
+  /// Largeur du papier en millimètres (58 ou 80).
+  paperWidth Int         @default(80) @map("paper_width")
+  role       PrinterRole
+  active     Boolean     @default(true)
+  archivedAt DateTime?   @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int         @default(1)
+
+  site Site       @relation(fields: [siteId], references: [id])
+  jobs PrintJob[]
+
+  @@index([siteId])
+  @@map("printer")
+}
+
+enum PrintJobStatus {
+  pending
+  printed
+  failed
+}
+
+model PrintJob {
+  id            String         @id @default(uuid(7)) @db.Uuid
+  siteId        String         @map("site_id") @db.Uuid
+  printerId     String         @map("printer_id") @db.Uuid
+  kind          String
+  /// Données du document (bon, reçu) : le rendu ESC/POS est fait au moment de l'impression.
+  payload       Json
+  status        PrintJobStatus @default(pending)
+  attempts      Int            @default(0)
+  lastError     String?        @map("last_error")
+  nextAttemptAt DateTime       @default(now()) @map("next_attempt_at") @db.Timestamptz(3)
+  printedAt     DateTime?      @map("printed_at") @db.Timestamptz(3)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  printer Printer @relation(fields: [printerId], references: [id])
+
+  @@index([status, nextAttemptAt])
+  @@map("print_job")
 }
 
 // ---------------------------------------------------------------- Audit

@@ -27,6 +27,12 @@ const configSchema = z
       .transform((dir) => resolve(dir)),
     /** Adresse publique du menu client, encodée dans les QR codes (servie par le cloud). */
     PUBLIC_MENU_URL: z.url().default('https://menu.tchoplife.app'),
+    /** Heure de bascule de la journée d'exploitation (6 : une vente à 2 h compte pour la veille). */
+    BUSINESS_DAY_CUTOFF_HOUR: z.coerce.number().int().min(0).max(12).default(6),
+    /** Intervalle de traitement de la file d'impression (0 : désactivé). */
+    PRINT_POLL_MS: z.coerce.number().int().min(0).default(2000),
+    /** Délai avant la 2e tentative d'impression ; il double ensuite à chaque échec. */
+    PRINT_RETRY_BASE_MS: z.coerce.number().int().min(0).default(2000),
   })
   .refine((c) => c.API_MODE !== 'site' || c.SITE_ID, {
     message: 'SITE_ID est obligatoire en mode site',
