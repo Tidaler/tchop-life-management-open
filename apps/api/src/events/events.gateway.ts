@@ -10,7 +10,8 @@ export type RealtimeEvent =
   | { type: 'orders.changed'; orderId: string; tableId: string | null }
   | { type: 'tickets.changed'; ticketId: string; station: string }
   | { type: 'catalog.changed' }
-  | { type: 'qr.changed'; tableId: string | null };
+  | { type: 'qr.changed'; tableId: string | null }
+  | { type: 'bills.changed'; orderId: string };
 
 const siteRoom = (siteId: string) => `site:${siteId}`;
 

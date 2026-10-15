@@ -22,7 +22,49 @@ export interface TestPageDoc {
   timeZone: string;
 }
 
-export type PrintDoc = KitchenTicketDoc | TestPageDoc;
+/** Reçu client : contenu figé au paiement (aussi conservé dans receipt.snapshot). */
+export interface ReceiptDoc {
+  kind: 'receipt';
+  siteName: string;
+  receiptNumber: number;
+  orderNumber: number;
+  tableLabel: string | null;
+  cashierName: string;
+  paidAt: string;
+  timeZone: string;
+  lines: { quantity: number; name: string; modifiers: string[]; amountXaf: number }[];
+  subtotalXaf: number;
+  discountXaf: number;
+  totalXaf: number;
+  payments: {
+    label: string;
+    amountXaf: number;
+    tenderedXaf: number | null;
+    changeXaf: number;
+    reference: string | null;
+  }[];
+  reprint?: boolean;
+}
+
+/** Rapport Z : clôture d'une session de caisse. */
+export interface ZReportDoc {
+  kind: 'z_report';
+  siteName: string;
+  registerName: string;
+  cashierName: string;
+  openedAt: string;
+  closedAt: string;
+  timeZone: string;
+  openingFloatXaf: number;
+  expected: { label: string; amountXaf: number }[];
+  expectedCashXaf: number;
+  countedCashXaf: number;
+  differenceXaf: number;
+  comment: string | null;
+  paymentCount: number;
+}
+
+export type PrintDoc = KitchenTicketDoc | TestPageDoc | ReceiptDoc | ZReportDoc;
 
 const ESC = 0x1b;
 const GS = 0x1d;
@@ -65,6 +107,23 @@ export function wrap(text: string, width: number): string[] {
   return lines.length ? lines : [''];
 }
 
+const money = (xaf: number) =>
+  `${Math.round(xaf)
+    .toLocaleString('fr-FR')
+    .replace(/\p{Zs}/gu, ' ')} F`;
+
+/** Ligne « libellé ........ montant » sur toute la largeur. */
+const columns = (left: string, right: string, width: number) => {
+  const space = width - right.length - 1;
+  const l = left.length > space ? left.slice(0, space) : left;
+  return `${l}${' '.repeat(Math.max(1, width - l.length - right.length))}${right}`;
+};
+
+const dateTime = (iso: string, timeZone: string) =>
+  new Intl.DateTimeFormat('fr-FR', { timeZone, dateStyle: 'short', timeStyle: 'short' }).format(
+    new Date(iso),
+  );
+
 const time = (iso: string, timeZone: string) =>
   new Intl.DateTimeFormat('fr-FR', { timeZone, hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 
@@ -75,6 +134,77 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
   const cmd = (bytes: number[]) => out.push(...bytes);
   const text = (s: string) => out.push(...iconv.encode(s, 'cp858'), 0x0a);
   const rule = () => text('-'.repeat(cols));
+
+  if (doc.kind === 'receipt') {
+    cmd(CMD.alignCenter);
+    cmd(CMD.sizeDouble);
+    cmd(CMD.boldOn);
+    text(doc.siteName);
+    cmd(CMD.sizeNormal);
+    cmd(CMD.boldOff);
+    if (doc.reprint) text('*** DUPLICATA ***');
+    text(`Reçu n° ${doc.receiptNumber}`);
+    text(dateTime(doc.paidAt, doc.timeZone));
+    text(`${doc.tableLabel ? `Table ${doc.tableLabel} · ` : ''}Cde ${doc.orderNumber} · ${doc.cashierName}`);
+    cmd(CMD.alignLeft);
+    rule();
+    for (const line of doc.lines) {
+      text(columns(`${line.quantity} x ${line.name}`, money(line.amountXaf), cols));
+      for (const m of line.modifiers) wrap(`- ${m}`, cols - 4).forEach((l) => text(`    ${l}`));
+    }
+    rule();
+    if (doc.discountXaf > 0) {
+      text(columns('Sous-total', money(doc.subtotalXaf), cols));
+      text(columns('Remise', `-${money(doc.discountXaf)}`, cols));
+    }
+    cmd(CMD.boldOn);
+    cmd(CMD.sizeTall);
+    text(columns('TOTAL', money(doc.totalXaf), cols));
+    cmd(CMD.sizeNormal);
+    cmd(CMD.boldOff);
+    for (const p of doc.payments) {
+      text(
+        columns(
+          p.reference ? `${p.label} (${p.reference})` : p.label,
+          money(p.tenderedXaf ?? p.amountXaf),
+          cols,
+        ),
+      );
+      if (p.changeXaf > 0) text(columns('Monnaie rendue', money(p.changeXaf), cols));
+    }
+    rule();
+    cmd(CMD.alignCenter);
+    text('Merci de votre visite !');
+    text('Thank you, come again!');
+    cmd(CMD.cut);
+    return Buffer.from(out);
+  }
+
+  if (doc.kind === 'z_report') {
+    cmd(CMD.alignCenter);
+    cmd(CMD.sizeDouble);
+    cmd(CMD.boldOn);
+    text('RAPPORT Z');
+    cmd(CMD.sizeNormal);
+    cmd(CMD.boldOff);
+    text(`${doc.siteName} · ${doc.registerName}`);
+    text(`Caissier : ${doc.cashierName}`);
+    text(`${dateTime(doc.openedAt, doc.timeZone)} → ${dateTime(doc.closedAt, doc.timeZone)}`);
+    cmd(CMD.alignLeft);
+    rule();
+    text(columns('Fond initial', money(doc.openingFloatXaf), cols));
+    for (const e of doc.expected) text(columns(e.label, money(e.amountXaf), cols));
+    text(columns('Paiements', String(doc.paymentCount), cols));
+    rule();
+    text(columns('Espèces attendues', money(doc.expectedCashXaf), cols));
+    text(columns('Espèces comptées', money(doc.countedCashXaf), cols));
+    cmd(CMD.boldOn);
+    text(columns('ÉCART', `${doc.differenceXaf > 0 ? '+' : ''}${money(doc.differenceXaf)}`, cols));
+    cmd(CMD.boldOff);
+    if (doc.comment) wrap(`Commentaire : ${doc.comment}`, cols).forEach(text);
+    cmd(CMD.cut);
+    return Buffer.from(out);
+  }
 
   if (doc.kind === 'test_page') {
     cmd(CMD.alignCenter);

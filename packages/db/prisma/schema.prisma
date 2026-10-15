@@ -67,6 +67,8 @@ model Site {
   orders          Order[]
   tickets         KitchenTicket[]
   printers        Printer[]
+  cashRegisters   CashRegister[]
+  customers       Customer[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -470,6 +472,7 @@ model Order {
   table   DiningTable?    @relation(fields: [tableId], references: [id])
   lines   OrderLine[]
   tickets KitchenTicket[]
+  bills   Bill[]
 
   @@unique([siteId, businessDay, number])
   @@index([siteId, status])
@@ -519,6 +522,7 @@ model OrderLine {
   product   Product         @relation(fields: [productId], references: [id])
   ticket    KitchenTicket?  @relation(fields: [ticketId], references: [id])
   qrRequest QrOrderRequest? @relation(fields: [qrRequestId], references: [id])
+  billLines BillLine[]
 
   @@index([orderId])
   @@index([ticketId])
@@ -578,6 +582,261 @@ model IdempotencyKey {
 
   @@id([siteId, key])
   @@map("idempotency_key")
+}
+
+// ---------------------------------------------------------------- Caisse
+
+model CashRegister {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  name       String
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site     Site          @relation(fields: [siteId], references: [id])
+  sessions CashSession[]
+
+  @@map("cash_register")
+}
+
+enum CashSessionStatus {
+  open
+  closed
+}
+
+/// Session de caisse : du fond initial à la clôture (théorique, compté, écart justifié).
+model CashSession {
+  id              String            @id @default(uuid(7)) @db.Uuid
+  siteId          String            @map("site_id") @db.Uuid
+  registerId      String            @map("register_id") @db.Uuid
+  cashierId       String            @map("cashier_id") @db.Uuid
+  status          CashSessionStatus @default(open)
+  openingFloatXaf Int               @map("opening_float_xaf")
+  openedAt        DateTime          @default(now()) @map("opened_at") @db.Timestamptz(3)
+  closedAt        DateTime?         @map("closed_at") @db.Timestamptz(3)
+  closedById      String?           @map("closed_by") @db.Uuid
+  /// Totaux théoriques par moyen de paiement au moment de la clôture.
+  expected        Json?
+  countedCashXaf  Int?              @map("counted_cash_xaf")
+  differenceXaf   Int?              @map("difference_xaf")
+  comment         String?
+
+  register CashRegister @relation(fields: [registerId], references: [id])
+  payments Payment[]
+
+  @@index([siteId, status])
+  @@map("cash_session")
+}
+
+enum BillStatus {
+  open
+  paid
+  voided
+}
+
+/// Addition : tout ou partie des lignes d'une commande (addition séparée possible).
+model Bill {
+  id                   String     @id @default(uuid(7)) @db.Uuid
+  siteId               String     @map("site_id") @db.Uuid
+  orderId              String     @map("order_id") @db.Uuid
+  status               BillStatus @default(open)
+  subtotalXaf          Int        @map("subtotal_xaf")
+  discountXaf          Int        @default(0) @map("discount_xaf")
+  discountReason       String?    @map("discount_reason")
+  discountApprovedById String?    @map("discount_approved_by") @db.Uuid
+  totalXaf             Int        @map("total_xaf")
+  createdById          String     @map("created_by") @db.Uuid
+  paidAt               DateTime?  @map("paid_at") @db.Timestamptz(3)
+  createdAt            DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime   @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version              Int        @default(1)
+
+  order    Order      @relation(fields: [orderId], references: [id])
+  lines    BillLine[]
+  payments Payment[]
+  receipt  Receipt?
+
+  @@index([siteId, status])
+  @@index([orderId])
+  @@map("bill")
+}
+
+model BillLine {
+  id          String @id @default(uuid(7)) @db.Uuid
+  billId      String @map("bill_id") @db.Uuid
+  orderLineId String @map("order_line_id") @db.Uuid
+  quantity    Int
+  amountXaf   Int    @map("amount_xaf")
+
+  bill      Bill      @relation(fields: [billId], references: [id], onDelete: Cascade)
+  orderLine OrderLine @relation(fields: [orderLineId], references: [id])
+
+  @@index([orderLineId])
+  @@map("bill_line")
+}
+
+enum PaymentMethod {
+  cash
+  mtn_momo
+  orange_money
+  card
+  customer_credit
+}
+
+enum PaymentStatus {
+  recorded
+  verified
+  voided
+}
+
+model Payment {
+  id             String        @id @default(uuid(7)) @db.Uuid
+  siteId         String        @map("site_id") @db.Uuid
+  billId         String        @map("bill_id") @db.Uuid
+  sessionId      String        @map("session_id") @db.Uuid
+  method         PaymentMethod
+  /// Montant imputé sur l'addition (monnaie rendue déjà déduite).
+  amountXaf      Int           @map("amount_xaf")
+  /// Espèces remises par le client ; la monnaie rendue est la différence.
+  tenderedXaf    Int?          @map("tendered_xaf")
+  changeXaf      Int           @default(0) @map("change_xaf")
+  /// Référence de transaction (MoMo, Orange Money, carte).
+  reference      String?
+  customerId     String?       @map("customer_id") @db.Uuid
+  status         PaymentStatus @default(recorded)
+  idempotencyKey String        @map("idempotency_key")
+  createdById    String        @map("created_by") @db.Uuid
+  approvedById   String?       @map("approved_by") @db.Uuid
+  verifiedById   String?       @map("verified_by") @db.Uuid
+  verifiedAt     DateTime?     @map("verified_at") @db.Timestamptz(3)
+  voidedById     String?       @map("voided_by") @db.Uuid
+  voidedAt       DateTime?     @map("voided_at") @db.Timestamptz(3)
+  voidReason     String?       @map("void_reason")
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  bill     Bill        @relation(fields: [billId], references: [id])
+  session  CashSession @relation(fields: [sessionId], references: [id])
+  customer Customer?   @relation(fields: [customerId], references: [id])
+
+  @@unique([siteId, idempotencyKey])
+  @@index([billId])
+  @@index([sessionId])
+  @@map("payment")
+}
+
+/// Reçu : numéro séquentiel par site, contenu figé au moment du paiement.
+model Receipt {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  siteId    String   @map("site_id") @db.Uuid
+  number    Int
+  billId    String   @unique @map("bill_id") @db.Uuid
+  snapshot  Json
+  reprints  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  bill Bill @relation(fields: [billId], references: [id])
+
+  @@unique([siteId, number])
+  @@map("receipt")
+}
+
+// ---------------------------------------------------------------- Ardoise client
+
+model Customer {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  siteId         String   @map("site_id") @db.Uuid
+  name           String
+  phone          String?
+  creditLimitXaf Int      @map("credit_limit_xaf")
+  note           String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version        Int      @default(1)
+
+  site     Site                  @relation(fields: [siteId], references: [id])
+  ledger   CustomerLedgerEntry[]
+  payments Payment[]
+
+  @@index([siteId])
+  @@map("customer")
+}
+
+enum LedgerEntryType {
+  charge
+  payment
+  adjustment
+}
+
+/// Écriture de l'ardoise : le solde est toujours la somme des écritures, jamais un champ modifiable.
+model CustomerLedgerEntry {
+  id             String          @id @default(uuid(7)) @db.Uuid
+  customerId     String          @map("customer_id") @db.Uuid
+  type           LedgerEntryType
+  /// Positif : le client doit davantage (charge) ; négatif : il rembourse (payment).
+  amountXaf      Int             @map("amount_xaf")
+  billId         String?         @map("bill_id") @db.Uuid
+  paymentId      String?         @map("payment_id") @db.Uuid
+  sessionId      String?         @map("session_id") @db.Uuid
+  method         PaymentMethod?
+  reference      String?
+  createdById    String          @map("created_by") @db.Uuid
+  approvedById   String?         @map("approved_by") @db.Uuid
+  note           String?
+  /// Clé d'idempotence d'un règlement : un renvoi ne crée pas une seconde écriture.
+  idempotencyKey String?         @map("idempotency_key")
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@unique([customerId, idempotencyKey])
+  @@index([customerId])
+  @@map("customer_ledger_entry")
+}
+
+// ---------------------------------------------------------------- Cloud (relais du menu QR)
+// Ces tables ne servent que dans la base du cloud (API_MODE=cloud).
+
+/// Serveur local autorisé à se connecter au cloud. Le secret n'est conservé que sous forme d'empreinte.
+model SiteLink {
+  siteId     String    @id @map("site_id") @db.Uuid
+  name       String
+  secretHash String    @map("secret_hash")
+  revokedAt  DateTime? @map("revoked_at") @db.Timestamptz(3)
+  lastSeenAt DateTime? @map("last_seen_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("site_link")
+}
+
+/// Menu public d'un site, tel que le serveur local l'a envoyé (champs publics uniquement).
+model CloudMenuSnapshot {
+  siteId    String   @id @map("site_id") @db.Uuid
+  payload   Json
+  hash      String
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("cloud_menu_snapshot")
+}
+
+/// Aiguillage d'un QR code vers son site : seule l'empreinte du jeton est connue du cloud.
+model CloudQrRoute {
+  tokenHash  String @id @map("token_hash")
+  siteId     String @map("site_id") @db.Uuid
+  tableLabel String @map("table_label")
+  mode       QrMode
+
+  @@index([siteId])
+  @@map("cloud_qr_route")
+}
+
+/// Photo du menu servie par le cloud : nom du fichier → site qui la détient.
+model CloudMediaRoute {
+  name   String @id
+  siteId String @map("site_id") @db.Uuid
+
+  @@index([siteId])
+  @@map("cloud_media_route")
 }
 
 // ---------------------------------------------------------------- Impression

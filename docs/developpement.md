@@ -49,6 +49,7 @@ pnpm dev
 | Plan de salle › Imprimer les QR codes | Gérant, propriétaire | Planche de cartes QR bilingues à imprimer et découper |
 | Salle | Serveurs, caisse, gérant | État des tables ; prise de commande avec options, notes, annulation, changement de table |
 | Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
+| Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, clôture |
 | Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
 
 Les bons sont envoyés aux imprimantes réseau (ESC/POS, port 9100) du poste concerné. Sans imprimante, ils restent visibles sur l'écran de préparation. Pour tester sans matériel, une imprimante peut pointer vers un port qui écoute en local (les tests automatisés utilisent une fausse imprimante TCP).
@@ -83,6 +84,22 @@ Après 5 PIN faux, le compte est bloqué 5 minutes.
 | `pnpm format` | Formate le code avec Prettier |
 | `pnpm db:reset` | Supprime et recrée la base de développement, puis relance le seed (**efface toutes les données** ; les fichiers photo restent dans `MEDIA_DIR`) |
 | `pnpm db:down` | Arrête PostgreSQL |
+
+## Relais par le cloud (test en local)
+
+Le menu QR peut être servi depuis Internet par une instance « cloud » de l'API, reliée au serveur local.
+Pour l'essayer sur un seul PC :
+
+1. Créer une base pour le cloud (par exemple `tchop_cloud`) et y appliquer les migrations :
+   `DATABASE_URL=postgresql://tchop:tchop@localhost:5434/tchop_cloud pnpm --filter @tchop/db exec prisma migrate deploy`.
+2. Enregistrer le site sur le cloud (le secret ne s'affiche qu'une fois) :
+   `DATABASE_URL=…/tchop_cloud pnpm --filter @tchop/api cloud:register-site -- --site <SITE_ID> --name "TCHOP LIFE"`.
+3. Lancer le cloud sur un autre port : `API_MODE=cloud API_PORT=3100 DATABASE_URL=…/tchop_cloud` (sans `SITE_ID`).
+4. Sur le serveur local, renseigner `CLOUD_URL=http://localhost:3100` et `SITE_LINK_SECRET=<secret>` dans `.env`,
+   puis relancer l'API. `GET /api/health` indique `cloud: connected`.
+
+Révoquer un site : `cloud:register-site -- --site <SITE_ID> --revoke`. Relancer `cloud:register-site` avec `--name`
+renouvelle le secret (l'ancien est refusé).
 
 ## Organisation
 

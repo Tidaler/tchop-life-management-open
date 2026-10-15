@@ -14,6 +14,7 @@ import { useSession } from './session';
 const AvailabilityPage = lazy(() =>
   import('./pages/AvailabilityPage').then((m) => ({ default: m.AvailabilityPage })),
 );
+const CashierPage = lazy(() => import('./pages/CashierPage').then((m) => ({ default: m.CashierPage })));
 const CatalogPage = lazy(() => import('./pages/CatalogPage').then((m) => ({ default: m.CatalogPage })));
 const DevicesPage = lazy(() => import('./pages/DevicesPage').then((m) => ({ default: m.DevicesPage })));
 const FloorPage = lazy(() => import('./pages/FloorPage').then((m) => ({ default: m.FloorPage })));
@@ -60,6 +61,7 @@ function RequireScreen({ path, children }: { path: string; children: ReactNode }
 const PAGES: Record<string, ReactNode> = {
   '/floor': <FloorPage />,
   '/kitchen': <KitchenPage />,
+  '/cashier': <CashierPage />,
   '/availability': <AvailabilityPage />,
   '/catalog': <CatalogPage />,
   '/floor-setup': <FloorSetupPage />,

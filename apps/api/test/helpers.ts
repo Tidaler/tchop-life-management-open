@@ -18,9 +18,14 @@ export const DEMO = {
   kitchenPin: { displayName: 'Poste cuisine', pin: '9753' },
 };
 
+/** Valeur d'override qui retire la variable (ex. SITE_ID en mode cloud). */
+export const UNSET = '__unset__';
+
 export function testConfig(overrides: Record<string, string> = {}) {
-  return loadConfig({
+  const env: Record<string, string | undefined> = {
     ...process.env,
+    CLOUD_URL: undefined,
+    SITE_LINK_SECRET: undefined,
     API_MODE: 'site',
     SITE_ID: DEMO_SITE_ID,
     DATABASE_URL: process.env.TEST_DATABASE_URL,
@@ -33,7 +38,9 @@ export function testConfig(overrides: Record<string, string> = {}) {
     MEDIA_DIR: join(tmpdir(), 'tchop-test-media'),
     PUBLIC_MENU_URL: 'https://menu.test.local',
     ...overrides,
-  });
+  };
+  for (const [key, value] of Object.entries(env)) if (value === UNSET || value === undefined) delete env[key];
+  return loadConfig(env);
 }
 
 export async function startApp(overrides: Record<string, string> = {}): Promise<INestApplication> {

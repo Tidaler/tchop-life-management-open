@@ -4,6 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
+import { BillsService } from './cash/bills.service.js';
+import { BillsController, CashController, CustomersController } from './cash/cash.controllers.js';
+import { CashService } from './cash/cash.service.js';
+import { CustomersService } from './customers/customers.service.js';
 import { EventsGateway, EventsService } from './events/events.gateway.js';
 import { OrdersController, TicketsController } from './orders/orders.controller.js';
 import { OrdersService } from './orders/orders.service.js';
@@ -27,6 +31,9 @@ import { APP_CONFIG, type AppConfig } from './config.js';
 import { DevicesController } from './devices/devices.controller.js';
 import { DevicesService } from './devices/devices.service.js';
 import { HealthController } from './health/health.controller.js';
+import { CloudMenuService, PUBLIC_MENU_BACKEND } from './link/cloud-menu.service.js';
+import { SiteLinkClient } from './link/site-link.client.js';
+import { SiteLinkGateway } from './link/site-link.gateway.js';
 import { PrismaService } from './prisma.service.js';
 import { PublicMenuController, QrRequestsController } from './qr/qr.controllers.js';
 import { QrRequestsService } from './qr/qr-requests.service.js';
@@ -74,6 +81,9 @@ export class AppModule {
         PrintersController,
         PublicMenuController,
         QrRequestsController,
+        CashController,
+        BillsController,
+        CustomersController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -94,6 +104,17 @@ export class AppModule {
         TicketsService,
         PricingService,
         QrRequestsService,
+        CashService,
+        BillsService,
+        CustomersService,
+        // Menu QR : servi par le site lui-même, ou par le cloud qui relaie vers les sites.
+        ...(config.API_MODE === 'cloud'
+          ? [
+              SiteLinkGateway,
+              CloudMenuService,
+              { provide: PUBLIC_MENU_BACKEND, useExisting: CloudMenuService },
+            ]
+          : [SiteLinkClient, { provide: PUBLIC_MENU_BACKEND, useExisting: QrRequestsService }]),
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },
