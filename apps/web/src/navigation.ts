@@ -19,7 +19,6 @@ export const SCREENS: Screen[] = [
     icon: '🍽',
     permission: 'order.view',
     access: 'read',
-    phase: 'Phase 2',
   },
   {
     path: '/kitchen',
@@ -27,7 +26,6 @@ export const SCREENS: Screen[] = [
     icon: '🔥',
     permission: 'ticket.update',
     access: 'write',
-    phase: 'Phase 2',
   },
   {
     path: '/cashier',
@@ -62,5 +60,6 @@ export const SCREENS: Screen[] = [
   },
   { path: '/catalog', label: 'nav.catalog', icon: '📋', permission: 'catalog.edit', access: 'write' },
   { path: '/floor-setup', label: 'nav.floorSetup', icon: '🪑', permission: 'floor.manage', access: 'write' },
+  { path: '/printers', label: 'nav.printers', icon: '🖨', permission: 'site.settings', access: 'write' },
   { path: '/devices', label: 'nav.devices', icon: '📱', permission: 'device.manage', access: 'read' },
 ];

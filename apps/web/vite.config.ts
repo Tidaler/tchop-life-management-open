@@ -36,10 +36,10 @@ export default defineConfig({
   server: {
     port: 5180,
     strictPort: true,
-    proxy: { '/api': { target: apiTarget, changeOrigin: false } },
+    proxy: { '/api': { target: apiTarget, changeOrigin: false, ws: true } },
   },
   preview: {
     port: 5180,
-    proxy: { '/api': { target: apiTarget, changeOrigin: false } },
+    proxy: { '/api': { target: apiTarget, changeOrigin: false, ws: true } },
   },
 });
