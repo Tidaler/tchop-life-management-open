@@ -799,7 +799,7 @@ function PaymentPanel({
               id="p-ref"
               required={method !== 'card'}
               maxLength={40}
-              pattern="[A-Za-z0-9._/\-]{4,40}"
+              pattern="[A-Za-z0-9._\/\-]{4,40}"
               value={reference}
               onChange={(e) => setReference(e.target.value)}
             />

@@ -722,3 +722,37 @@ table.grid tr:last-child td {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* Cartes de table du plan de salle : le contenu ne déborde jamais de la carte. */
+.table-cards {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+}
+.table-cards > .table-card {
+  min-width: 0;
+  align-content: start;
+}
+.table-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.table-card-mode {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+}
+.table-card-mode select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--text);
+}
+.table-card-actions {
+  margin-top: 4px;
+  justify-content: space-between;
+}

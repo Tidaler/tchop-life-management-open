@@ -132,37 +132,33 @@ export function FloorSetupPage() {
                 </div>
               </div>
               {zone.tables.length === 0 && <p className="muted">{t('floorSetup.noTables')}</p>}
-              <div
-                className="grid-tiles"
-                style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))' }}
-              >
+              <div className="grid-tiles table-cards">
                 {zone.tables.map((table) => {
                   const code = qrByTable.get(table.id);
                   return (
                     <div key={table.id} className="table-card">
-                      <div
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}
-                      >
+                      <div className="table-card-head">
                         <b>{table.label}</b>
                         <span className="muted">{t('floorSetup.seatsShort', { count: table.seats })}</span>
                       </div>
                       {code && (
-                        <select
-                          aria-label={t('floorSetup.qrMode')}
-                          value={code.mode}
-                          onChange={(e) =>
-                            setMode.mutate({ tableId: table.id, mode: e.target.value as QrMode })
-                          }
-                          style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '6px 8px' }}
-                        >
-                          {QR_MODES.map((m) => (
-                            <option key={m} value={m}>
-                              {t('floorSetup.qrMode')} : {t(`qrMode.${m}`)}
-                            </option>
-                          ))}
-                        </select>
+                        <label className="table-card-mode">
+                          <span className="muted">{t('floorSetup.qrMode')}</span>
+                          <select
+                            value={code.mode}
+                            onChange={(e) =>
+                              setMode.mutate({ tableId: table.id, mode: e.target.value as QrMode })
+                            }
+                          >
+                            {QR_MODES.map((m) => (
+                              <option key={m} value={m}>
+                                {t(`qrMode.${m}`)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
                       )}
-                      <div className="confirm" style={{ marginTop: 4 }}>
+                      <div className="confirm table-card-actions">
                         <button className="btn ghost" onClick={() => setEditing(table)}>
                           {t('common.edit')}
                         </button>
