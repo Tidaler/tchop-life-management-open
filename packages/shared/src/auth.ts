@@ -1,10 +1,5 @@
 import { z } from 'zod';
-
-export const LOCALES = ['fr', 'en'] as const;
-export type Locale = (typeof LOCALES)[number];
-
-export const DEVICE_KINDS = ['tablet', 'phone', 'desktop'] as const;
-export type DeviceKind = (typeof DEVICE_KINDS)[number];
+import { DEVICE_KINDS } from './constants.js';
 
 /** Connexion par identifiant et mot de passe (back-office, accès à distance). */
 export const passwordLoginSchema = z.object({

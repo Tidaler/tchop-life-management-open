@@ -7,6 +7,7 @@ import { AuditService } from './audit/audit.service.js';
 import { EventsGateway, EventsService } from './events/events.gateway.js';
 import { OrdersController, TicketsController } from './orders/orders.controller.js';
 import { OrdersService } from './orders/orders.service.js';
+import { PricingService } from './orders/pricing.service.js';
 import { PrintService } from './printing/print.service.js';
 import { PrintersController } from './printing/printers.controller.js';
 import { TicketsService } from './tickets/tickets.service.js';
@@ -20,13 +21,15 @@ import { AccessService } from './auth/access.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthGuard } from './auth/auth.guard.js';
 import { AuthService } from './auth/auth.service.js';
-import { AUTH_RATE_LIMITED } from './auth/decorators.js';
+import { AUTH_RATE_LIMITED, PUBLIC_ORDER_RATE_LIMITED, PUBLIC_RATE_LIMITED } from './auth/decorators.js';
 import { TokensService } from './auth/tokens.service.js';
 import { APP_CONFIG, type AppConfig } from './config.js';
 import { DevicesController } from './devices/devices.controller.js';
 import { DevicesService } from './devices/devices.service.js';
 import { HealthController } from './health/health.controller.js';
 import { PrismaService } from './prisma.service.js';
+import { PublicMenuController, QrRequestsController } from './qr/qr.controllers.js';
+import { QrRequestsService } from './qr/qr-requests.service.js';
 
 const reflector = new Reflector();
 
@@ -45,6 +48,18 @@ export class AppModule {
             limit: config.AUTH_RATE_LIMIT,
             skipIf: (ctx) => !reflector.get<boolean | undefined>(AUTH_RATE_LIMITED, ctx.getHandler()),
           },
+          {
+            name: 'public',
+            ttl: 60_000,
+            limit: config.PUBLIC_RATE_LIMIT,
+            skipIf: (ctx) => !reflector.get<boolean | undefined>(PUBLIC_RATE_LIMITED, ctx.getHandler()),
+          },
+          {
+            name: 'public-order',
+            ttl: 60_000,
+            limit: config.PUBLIC_ORDER_RATE_LIMIT,
+            skipIf: (ctx) => !reflector.get<boolean | undefined>(PUBLIC_ORDER_RATE_LIMITED, ctx.getHandler()),
+          },
         ]),
       ],
       controllers: [
@@ -57,6 +72,8 @@ export class AppModule {
         OrdersController,
         TicketsController,
         PrintersController,
+        PublicMenuController,
+        QrRequestsController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -75,6 +92,8 @@ export class AppModule {
         PrintService,
         OrdersService,
         TicketsService,
+        PricingService,
+        QrRequestsService,
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },

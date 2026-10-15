@@ -395,3 +395,54 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Commandes QR (Phase 3) ---------- */
+.nav-badge {
+  display: inline-block;
+  margin-left: 6px;
+  background: #ffd43b;
+  color: #1f1a16;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 0 6px;
+}
+.qr-banner {
+  display: block;
+  background: #7048e8;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 10px 16px;
+  text-align: center;
+}
+.qr-alert {
+  background: #f0ebff;
+  border: 1px solid #d3c6fb;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 8px 0;
+}
+.pill.qr {
+  background: #f0ebff;
+  color: #7048e8;
+}
+.floor-table.qr {
+  border-color: #b9a4f7;
+  background: #f8f5ff;
+  animation: qr-pulse 1.6s infinite;
+}
+@keyframes qr-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(112, 72, 232, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(112, 72, 232, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .floor-table.qr {
+    animation: none;
+  }
+}

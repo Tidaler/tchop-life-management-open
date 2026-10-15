@@ -1,12 +1,26 @@
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
+import { contentSecurityPolicy } from '@tchop/shared';
+import { defineConfig, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 const apiTarget = process.env.API_URL ?? 'http://localhost:3000';
 
+/** CSP ajoutée à la page compilée (en développement, Vite a besoin de scripts inline). */
+const csp = (): Plugin => ({
+  name: 'tchop-csp',
+  apply: 'build',
+  transformIndexHtml: (html) =>
+    html.replace(
+      '<head>',
+      `<head>
+    <meta http-equiv="Content-Security-Policy" content="${contentSecurityPolicy({ websocket: true })}" />`,
+    ),
+});
+
 export default defineConfig({
   plugins: [
     react(),
+    csp(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png'],

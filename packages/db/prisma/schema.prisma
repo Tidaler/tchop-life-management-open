@@ -276,10 +276,49 @@ model QrCode {
   replacedAt DateTime? @map("replaced_at") @db.Timestamptz(3)
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
 
-  site  Site        @relation(fields: [siteId], references: [id])
-  table DiningTable @relation(fields: [tableId], references: [id])
+  site     Site             @relation(fields: [siteId], references: [id])
+  table    DiningTable      @relation(fields: [tableId], references: [id])
+  requests QrOrderRequest[]
 
   @@map("qr_code")
+}
+
+enum QrRequestStatus {
+  pending
+  accepted
+  rejected
+  expired
+}
+
+/// Commande envoyée par un client depuis le menu QR, en attente de validation par le personnel.
+model QrOrderRequest {
+  id                String          @id @default(uuid(7)) @db.Uuid
+  siteId            String          @map("site_id") @db.Uuid
+  qrCodeId          String          @map("qr_code_id") @db.Uuid
+  tableId           String          @map("table_id") @db.Uuid
+  /// SHA-256 du cookie anonyme du client : il ne voit que ses propres demandes.
+  clientSessionHash String          @map("client_session_hash")
+  idempotencyKey    String          @map("idempotency_key")
+  /// Lignes demandées : [{ productId, quantity, modifierIds, note, name, unitPriceXaf, modifiers }].
+  items             Json
+  totalXaf          Int             @map("total_xaf")
+  status            QrRequestStatus @default(pending)
+  orderId           String?         @map("order_id") @db.Uuid
+  handledById       String?         @map("handled_by") @db.Uuid
+  handledAt         DateTime?       @map("handled_at") @db.Timestamptz(3)
+  rejectReason      String?         @map("reject_reason")
+  expiresAt         DateTime        @map("expires_at") @db.Timestamptz(3)
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  qrCode QrCode      @relation(fields: [qrCodeId], references: [id])
+  lines  OrderLine[]
+
+  @@unique([siteId, idempotencyKey])
+  @@index([siteId, status])
+  @@index([tableId, status])
+  @@index([clientSessionHash])
+  @@map("qr_order_request")
 }
 
 // ---------------------------------------------------------------- Catalogue
@@ -473,9 +512,13 @@ model OrderLine {
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
 
-  order   Order          @relation(fields: [orderId], references: [id])
-  product Product        @relation(fields: [productId], references: [id])
-  ticket  KitchenTicket? @relation(fields: [ticketId], references: [id])
+  /// Demande QR à l'origine de la ligne (suivi affiché au client).
+  qrRequestId String? @map("qr_request_id") @db.Uuid
+
+  order     Order           @relation(fields: [orderId], references: [id])
+  product   Product         @relation(fields: [productId], references: [id])
+  ticket    KitchenTicket?  @relation(fields: [ticketId], references: [id])
+  qrRequest QrOrderRequest? @relation(fields: [qrRequestId], references: [id])
 
   @@index([orderId])
   @@index([ticketId])

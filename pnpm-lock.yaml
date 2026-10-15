@@ -287,6 +287,12 @@ importers:
 
   apps/menu:
     dependencies:
+      '@tchop/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
+      '@tchop/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       react:
         specifier: ^19.3.0
         version: 19.3.0

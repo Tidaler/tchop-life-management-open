@@ -5,8 +5,9 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api';
 import { type Product, type ModifierGroup, useCatalog, useRefreshCatalog } from '../catalog';
 import { errorMessage, Modal } from '../components/common';
+import { QrRequestCard } from '../components/QrRequestCard';
 import { useI18n } from '../i18n';
-import { type OrderDetail, type OrderLine, useOpenOrders, useOrder } from '../orders';
+import { type OrderDetail, type OrderLine, useOpenOrders, useOrder, useQrRequests } from '../orders';
 import { useMe, useSession } from '../session';
 import { useFloor } from './FloorPage';
 
@@ -61,6 +62,7 @@ export function TableOrderPage() {
   const openOrders = useOpenOrders();
   const orderId = openOrders.data?.find((o) => o.tableId === tableId)?.id;
   const order = useOrder(orderId);
+  const qrRequests = useQrRequests(can('qr_request.handle', 'read'));
   const [draft, setDraft] = useDraft(tableId);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [picking, setPicking] = useState<Product | null>(null);
@@ -223,6 +225,11 @@ export function TableOrderPage() {
         </div>
 
         <div className="ticket-body">
+          {qrRequests.data
+            ?.filter((r) => r.tableId === tableId)
+            .map((r) => (
+              <QrRequestCard key={r.id} request={r} />
+            ))}
           {notice && (
             <div className={`alert ${notice.kind}`} role="status">
               {notice.text}

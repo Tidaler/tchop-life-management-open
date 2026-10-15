@@ -9,7 +9,8 @@ import { PrismaService } from '../prisma.service.js';
 export type RealtimeEvent =
   | { type: 'orders.changed'; orderId: string; tableId: string | null }
   | { type: 'tickets.changed'; ticketId: string; station: string }
-  | { type: 'catalog.changed' };
+  | { type: 'catalog.changed' }
+  | { type: 'qr.changed'; tableId: string | null };
 
 const siteRoom = (siteId: string) => `site:${siteId}`;
 

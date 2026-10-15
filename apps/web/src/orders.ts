@@ -89,3 +89,30 @@ export function useTickets(station: Station | 'all') {
     refetchInterval: FALLBACK_REFRESH_MS,
   });
 }
+
+export interface QrRequest {
+  id: string;
+  tableId: string;
+  tableLabel: string;
+  createdAt: string;
+  expiresAt: string;
+  totalXaf: number;
+  items: {
+    productId: string;
+    name: Translated;
+    quantity: number;
+    unitPriceXaf: number;
+    modifiers: Translated[];
+    note: string | null;
+  }[];
+}
+
+/** Commandes QR en attente de validation (seulement pour les rôles qui les traitent). */
+export function useQrRequests(enabled: boolean) {
+  return useQuery({
+    queryKey: ['qr-requests'],
+    queryFn: () => api<QrRequest[]>('/qr-requests'),
+    enabled,
+    refetchInterval: FALLBACK_REFRESH_MS,
+  });
+}
