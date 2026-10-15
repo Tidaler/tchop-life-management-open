@@ -63,6 +63,7 @@ model Site {
   qrCodes         QrCode[]
   categories      Category[]
   products        Product[]
+  modifierGroups  ModifierGroup[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -322,11 +323,64 @@ model Product {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
   version     Int       @default(1)
 
-  site     Site     @relation(fields: [siteId], references: [id])
-  category Category @relation(fields: [categoryId], references: [id])
+  site           Site                   @relation(fields: [siteId], references: [id])
+  category       Category               @relation(fields: [categoryId], references: [id])
+  modifierGroups ProductModifierGroup[]
 
   @@index([siteId, categoryId])
   @@map("product")
+}
+
+/// Groupe d'options réutilisable (ex. « Accompagnement », « Cuisson »), rattaché à plusieurs produits.
+model ModifierGroup {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  siteId     String    @map("site_id") @db.Uuid
+  name       Json
+  /// Nombre de choix minimum (0 = facultatif) et maximum.
+  minSelect  Int       @default(0) @map("min_select")
+  maxSelect  Int       @default(1) @map("max_select")
+  sortOrder  Int       @default(0) @map("sort_order")
+  archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int       @default(1)
+
+  site      Site                   @relation(fields: [siteId], references: [id])
+  modifiers Modifier[]
+  products  ProductModifierGroup[]
+
+  @@index([siteId])
+  @@map("modifier_group")
+}
+
+model Modifier {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  groupId       String    @map("group_id") @db.Uuid
+  name          Json
+  /// Supplément de prix en FCFA (0 si inclus).
+  priceDeltaXaf Int       @default(0) @map("price_delta_xaf")
+  available     Boolean   @default(true)
+  sortOrder     Int       @default(0) @map("sort_order")
+  archivedAt    DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  group ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@map("modifier")
+}
+
+model ProductModifierGroup {
+  productId String @map("product_id") @db.Uuid
+  groupId   String @map("group_id") @db.Uuid
+  sortOrder Int    @default(0) @map("sort_order")
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  group   ModifierGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([productId, groupId])
+  @@map("product_modifier_group")
 }
 
 // ---------------------------------------------------------------- Audit

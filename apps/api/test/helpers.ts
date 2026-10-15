@@ -1,3 +1,5 @@
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { type INestApplication } from '@nestjs/common';
 import { createPrismaClient, type PrismaClient } from '@tchop/db';
 import request from 'supertest';
@@ -13,6 +15,7 @@ export const DEMO = {
   accountant: { username: 'comptable', password: 'Demo-Compta-2026!' },
   waiterPin: { displayName: 'Joël', pin: '1357' },
   cashierPin: { displayName: 'Mireille', pin: '2468' },
+  kitchenPin: { displayName: 'Poste cuisine', pin: '9753' },
 };
 
 export function testConfig(overrides: Record<string, string> = {}) {
@@ -25,6 +28,8 @@ export function testConfig(overrides: Record<string, string> = {}) {
     COOKIE_SECURE: 'false',
     AUTH_RATE_LIMIT: '1000',
     WEB_ORIGIN: '',
+    MEDIA_DIR: join(tmpdir(), 'tchop-test-media'),
+    PUBLIC_MENU_URL: 'https://menu.test.local',
     ...overrides,
   });
 }

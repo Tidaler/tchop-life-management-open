@@ -3,6 +3,12 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuditService } from './audit/audit.service.js';
+import { CatalogController } from './catalog/catalog.controller.js';
+import { CatalogService } from './catalog/catalog.service.js';
+import { FloorController } from './floor/floor.controller.js';
+import { FloorService } from './floor/floor.service.js';
+import { MediaController } from './media/media.controller.js';
+import { MediaService } from './media/media.service.js';
 import { AccessService } from './auth/access.service.js';
 import { AuthController } from './auth/auth.controller.js';
 import { AuthGuard } from './auth/auth.guard.js';
@@ -34,7 +40,14 @@ export class AppModule {
           },
         ]),
       ],
-      controllers: [HealthController, AuthController, DevicesController],
+      controllers: [
+        HealthController,
+        AuthController,
+        DevicesController,
+        CatalogController,
+        FloorController,
+        MediaController,
+      ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
         PrismaService,
@@ -43,6 +56,9 @@ export class AppModule {
         TokensService,
         AuthService,
         DevicesService,
+        CatalogService,
+        FloorService,
+        MediaService,
         // Ordre des gardes : limitation de débit, puis identification et permissions.
         { provide: APP_GUARD, useClass: ThrottlerGuard },
         { provide: APP_GUARD, useClass: AuthGuard },

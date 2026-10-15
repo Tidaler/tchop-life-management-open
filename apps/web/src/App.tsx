@@ -3,7 +3,11 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { deviceStore } from './api';
 import { useI18n } from './i18n';
 import { SCREENS } from './navigation';
+import { AvailabilityPage } from './pages/AvailabilityPage';
+import { CatalogPage } from './pages/CatalogPage';
 import { DevicesPage } from './pages/DevicesPage';
+import { FloorSetupPage } from './pages/FloorSetupPage';
+import { QrPrintPage } from './pages/QrPrintPage';
 import { EnrollPage } from './pages/EnrollPage';
 import { HomePage, PlaceholderPage } from './pages/HomePage';
 import { PasswordLoginPage } from './pages/PasswordLoginPage';
@@ -40,6 +44,14 @@ function RequireScreen({ path, children }: { path: string; children: ReactNode }
   return children;
 }
 
+/** Écrans livrés ; les autres affichent la phase prévue. */
+const PAGES: Record<string, ReactNode> = {
+  '/availability': <AvailabilityPage />,
+  '/catalog': <CatalogPage />,
+  '/floor-setup': <FloorSetupPage />,
+  '/devices': <DevicesPage />,
+};
+
 const router = createBrowserRouter([
   { path: '/enroll', element: <EnrollPage /> },
   {
@@ -71,10 +83,18 @@ const router = createBrowserRouter([
         path: screen.path.slice(1),
         element: (
           <RequireScreen path={screen.path}>
-            {screen.path === '/devices' ? <DevicesPage /> : <PlaceholderPage screen={screen} />}
+            {PAGES[screen.path] ?? <PlaceholderPage screen={screen} />}
           </RequireScreen>
         ),
       })),
+      {
+        path: 'floor-setup/qr',
+        element: (
+          <RequireScreen path="/floor-setup">
+            <QrPrintPage />
+          </RequireScreen>
+        ),
+      },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

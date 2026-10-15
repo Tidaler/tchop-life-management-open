@@ -41,7 +41,7 @@ Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 | Phase | Contenu | État |
 |---|---|---|
 | 0 — Fondations | Monorepo, base de données, connexion (mot de passe, PIN), appareils, permissions, squelette de la PWA, CI | Livrée |
-| 1 — Catalogue et salle | Produits, catégories, options, zones, tables, QR codes | À venir |
+| 1 — Catalogue et salle | Produits, catégories, options, photos, disponibilités, zones, tables, QR codes imprimables | Livrée |
 | 2 — Commandes et cuisine | Prise de commande, écran cuisine/bar, impression des bons | À venir |
 | 3 — Commande par QR code | Menu public, relais par le cloud, validation par le serveur | À venir |
 | 4 — Caisse | Sessions, encaissements, reçus, ardoises, clôture | À venir |
