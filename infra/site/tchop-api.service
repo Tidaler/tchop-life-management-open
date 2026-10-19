@@ -1,0 +1,31 @@
+# /etc/systemd/system/tchop-api.service - API TCHOP LIFE du serveur local.
+[Unit]
+Description=TCHOP LIFE - API du serveur local
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=tchop
+Group=tchop
+WorkingDirectory=/opt/tchop/app/apps/api
+EnvironmentFile=/etc/tchop/tchop.env
+ExecStart=/usr/bin/node dist/main.js
+Restart=always
+RestartSec=3
+
+# Durcissement : le service ne peut écrire que dans ses données (photos, justificatifs).
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tchop
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
