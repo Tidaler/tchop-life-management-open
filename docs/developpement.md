@@ -7,7 +7,7 @@
 | Node.js | 24 LTS (voir `.nvmrc`) |
 | pnpm | 12 (`npm install -g pnpm`) |
 | Docker Desktop | pour PostgreSQL |
-| Git | — |
+| Git | - |
 
 ## Première installation
 
@@ -51,6 +51,9 @@ pnpm dev
 | Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
 | Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, clôture |
 | Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
+| Tableau de bord | Gérant, propriétaire, comptable | Chiffre d'affaires, additions, panier moyen, commandes, dépenses, ventes par catégorie et par jour, meilleures ventes, moyens de paiement, caisses ouvertes, alertes de stock |
+| Rapports | Gérant, propriétaire, comptable (caissier : ses propres sessions) | Ventes (jour, catégorie, produit, serveur, moyen de paiement), caisse (sessions, écarts, rapprochement), résultat estimé, exports CSV, journal d'audit |
+| Dépenses | Caissier (seuil), gérant, propriétaire, comptable | Saisie avec catégorie et justificatif photo, sortie de caisse déduite à la clôture, annulation tracée |
 | Stocks | Magasinier, gérant, propriétaire (cuisine et comptable en lecture) | État par magasin et alertes ; pertes, casse, transferts, corrections ; réceptions (casiers convertis en bouteilles) ; fournisseurs et commandes d'achat ; inventaires à l'aveugle ; articles et magasins ; recettes avec coût et marge ; journal et valorisation |
 
 Les bons sont envoyés aux imprimantes réseau (ESC/POS, port 9100) du poste concerné. Sans imprimante, ils restent visibles sur l'écran de préparation. Pour tester sans matériel, une imprimante peut pointer vers un port qui écoute en local (les tests automatisés utilisent une fausse imprimante TCP).
@@ -65,14 +68,14 @@ Ces comptes n'existent que dans les données de démo (`packages/db/prisma/seed.
 
 | Identifiant | Rôle | Mot de passe | PIN |
 |---|---|---|---|
-| `proprietaire` | Propriétaire | `Demo-Proprio-2026!` | — |
+| `proprietaire` | Propriétaire | `Demo-Proprio-2026!` | - |
 | `gerant` | Gérant | `Demo-Gerant-2026!` | 4826 |
-| `mireille` | Caissière | — | 2468 |
-| `joel` | Serveur | — | 1357 |
-| `aicha` | Serveuse | — | 3579 |
-| `cuisine` | Cuisine / Bar | — | 9753 |
-| `magasin` | Magasinier | — | 8642 |
-| `comptable` | Comptable | `Demo-Compta-2026!` | — |
+| `mireille` | Caissière | - | 2468 |
+| `joel` | Serveur | - | 1357 |
+| `aicha` | Serveuse | - | 3579 |
+| `cuisine` | Cuisine / Bar | - | 9753 |
+| `magasin` | Magasinier | - | 8642 |
+| `comptable` | Comptable | `Demo-Compta-2026!` | - |
 
 Après 5 PIN faux, le compte est bloqué 5 minutes.
 

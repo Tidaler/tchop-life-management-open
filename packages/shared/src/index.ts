@@ -10,3 +10,4 @@ export * from './qr.js';
 export * from './csp.js';
 export * from './cash.js';
 export * from './stock.js';
+export * from './finance.js';

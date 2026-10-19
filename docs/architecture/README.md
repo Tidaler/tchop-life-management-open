@@ -1,4 +1,4 @@
-# Architecture technique — TCHOP LIFE MANAGEMENT
+# Architecture technique - TCHOP LIFE MANAGEMENT
 
 Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 
@@ -40,14 +40,14 @@ Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 
 | Phase | Contenu | État |
 |---|---|---|
-| 0 — Fondations | Monorepo, base de données, connexion (mot de passe, PIN), appareils, permissions, squelette de la PWA, CI | Livrée |
-| 1 — Catalogue et salle | Produits, catégories, options, photos, disponibilités, zones, tables, QR codes imprimables | Livrée |
-| 2 — Commandes et cuisine | Prise de commande avec options et notes, écran de préparation en temps réel, annulation avec approbation, changement de table, impression ESC/POS des bons | Livrée |
-| 3a — Commande par QR code (site) | Menu public sécurisé, demandes validées par le personnel, suivi par le client | Livrée |
-| 3b — Relais par le cloud | Menu servi par le cloud (même site hors ligne), commandes et photos relayées vers le serveur local par une connexion sortante | Livrée (code ; mise en ligne : hébergeur et domaine à choisir) |
-| 4 — Caisse | Sessions, additions séparables, remises avec seuil, encaissements multi-moyens, reçus, ardoises, clôture et rapport Z | Livrée |
-| 5 — Stocks et recettes | Articles et conditionnements, magasins, recettes (options comprises) déduites à la vente, réceptions au coût moyen pondéré, commandes d'achat, pertes, transferts, inventaires à l'aveugle, alertes, journal et valorisation | Livrée |
-| 6 — Pilotage | Dépenses, tableau de bord, rapports, consultation à distance | À venir |
+| 0 - Fondations | Monorepo, base de données, connexion (mot de passe, PIN), appareils, permissions, squelette de la PWA, CI | Livrée |
+| 1 - Catalogue et salle | Produits, catégories, options, photos, disponibilités, zones, tables, QR codes imprimables | Livrée |
+| 2 - Commandes et cuisine | Prise de commande avec options et notes, écran de préparation en temps réel, annulation avec approbation, changement de table, impression ESC/POS des bons | Livrée |
+| 3a - Commande par QR code (site) | Menu public sécurisé, demandes validées par le personnel, suivi par le client | Livrée |
+| 3b - Relais par le cloud | Menu servi par le cloud (même site hors ligne), commandes et photos relayées vers le serveur local par une connexion sortante | Livrée (code ; mise en ligne : hébergeur et domaine à choisir) |
+| 4 - Caisse | Sessions, additions séparables, remises avec seuil, encaissements multi-moyens, reçus, ardoises, clôture et rapport Z | Livrée |
+| 5 - Stocks et recettes | Articles et conditionnements, magasins, recettes (options comprises) déduites à la vente, réceptions au coût moyen pondéré, commandes d'achat, pertes, transferts, inventaires à l'aveugle, alertes, journal et valorisation | Livrée |
+| 6 - Pilotage | Dépenses (catégories, justificatif, sortie de caisse déduite à la clôture), tableau de bord, rapports de ventes, de caisse et de résultat estimé, exports CSV, journal d'audit | Livrée (consultation à distance : avec la mise en ligne du cloud) |
 
 Le mode `cloud` de l'API et la synchronisation site ↔ cloud seront mis en place en parallèle des phases 3 et 6.
 

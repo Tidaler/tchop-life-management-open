@@ -152,8 +152,8 @@ erDiagram
 
 | Table | Colonnes clés | Remarques |
 |---|---|---|
-| `expense_category` | site, nom | Approvisionnement, transport, énergie, entretien, salaires, loyer, divers. |
-| `expense` | site, catégorie, date, montant, moyen, session de caisse (si payée depuis la caisse), justificatif, par | Une dépense payée en espèces depuis la caisse entre dans le théorique de clôture. |
+| `expense_category` | site, nom, nature (`operating` charge / `purchase` achat de marchandises) | Approvisionnement (achat), transport, énergie, entretien, salaires, loyer, divers. |
+| `expense` | site, n°, catégorie, jour, montant, moyen, session de caisse (si payée depuis la caisse), description, référence, justificatif, statut, par, approuvé par, annulation (par, motif) | Une dépense payée en espèces depuis la caisse sort du théorique de clôture. Jamais supprimée : annulée avec motif. |
 
 ### Audit et synchronisation
 

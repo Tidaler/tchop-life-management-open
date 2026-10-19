@@ -53,7 +53,7 @@ Application du personnel : http://localhost:5180 · API : http://localhost:3000/
 
 ## Matériel par établissement
 
-- Mini-PC (serveur local), 8–16 Go RAM, SSD.
+- Mini-PC (serveur local), 8-16 Go RAM, SSD.
 - Onduleur pour le mini-PC et le routeur.
 - Routeur Wi-Fi dédié (réseau personnel séparé du Wi-Fi clients).
 - Imprimantes thermiques 80 mm réseau (Ethernet ou Wi-Fi).

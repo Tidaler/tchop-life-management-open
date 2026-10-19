@@ -9,6 +9,9 @@ export const MEDIA_ROUTE = '/api/media/';
 export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const MEDIA_NAME = /^[0-9a-f-]{36}\.webp$/;
 const MAX_SIDE = 800;
+/** Justificatifs : plus grands que les photos du menu, pour rester lisibles. */
+const PRIVATE_MAX_SIDE = 1600;
+const PRIVATE_DIR = 'private';
 
 /**
  * Photos des produits, stockées sur le disque du serveur local.
@@ -56,5 +59,44 @@ export class MediaService {
   /** Chemin du fichier à servir, ou null si le nom n'est pas celui d'un média valide. */
   resolve(name: string): string | null {
     return MEDIA_NAME.test(name) ? join(this.dir, name) : null;
+  }
+
+  /**
+   * Image privée (justificatif) : réencodée comme les photos, mais rangée dans un sous-dossier que la
+   * route publique ne peut pas atteindre (son nom de fichier n'admet pas de « / »). Renvoie le nom du fichier.
+   */
+  async savePrivateImage(buffer: Buffer, folder: string): Promise<string> {
+    let output: Buffer;
+    try {
+      output = await sharp(buffer, { limitInputPixels: 40_000_000 })
+        .rotate()
+        .resize({
+          width: PRIVATE_MAX_SIDE,
+          height: PRIVATE_MAX_SIDE,
+          fit: 'inside',
+          withoutEnlargement: true,
+        })
+        .webp({ quality: 80 })
+        .toBuffer();
+    } catch {
+      throw new BadRequestException({
+        code: 'INVALID_IMAGE',
+        message: 'Image illisible (JPEG, PNG ou WebP attendu)',
+      });
+    }
+    const name = `${randomUUID()}.webp`;
+    const dir = join(this.dir, PRIVATE_DIR, folder);
+    await mkdir(dir, { recursive: true });
+    await writeFile(join(dir, name), output);
+    return name;
+  }
+
+  resolvePrivate(folder: string, name: string): string | null {
+    return MEDIA_NAME.test(name) ? join(this.dir, PRIVATE_DIR, folder, name) : null;
+  }
+
+  async removePrivate(folder: string, name: string): Promise<void> {
+    const path = this.resolvePrivate(folder, name);
+    if (path) await rm(path, { force: true }).catch(() => undefined);
   }
 }

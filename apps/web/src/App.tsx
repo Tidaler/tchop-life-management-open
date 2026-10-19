@@ -23,6 +23,9 @@ const FloorSetupPage = lazy(() =>
 );
 const KitchenPage = lazy(() => import('./pages/KitchenPage').then((m) => ({ default: m.KitchenPage })));
 const PrintersPage = lazy(() => import('./pages/PrintersPage').then((m) => ({ default: m.PrintersPage })));
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const ExpensesPage = lazy(() => import('./pages/ExpensesPage').then((m) => ({ default: m.ExpensesPage })));
+const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
 const StockPage = lazy(() => import('./pages/StockPage').then((m) => ({ default: m.StockPage })));
 const QrPrintPage = lazy(() => import('./pages/QrPrintPage').then((m) => ({ default: m.QrPrintPage })));
 const TableOrderPage = lazy(() =>
@@ -64,6 +67,9 @@ const PAGES: Record<string, ReactNode> = {
   '/kitchen': <KitchenPage />,
   '/cashier': <CashierPage />,
   '/stock': <StockPage />,
+  '/dashboard': <DashboardPage />,
+  '/reports': <ReportsPage />,
+  '/expenses': <ExpensesPage />,
   '/availability': <AvailabilityPage />,
   '/catalog': <CatalogPage />,
   '/floor-setup': <FloorSetupPage />,

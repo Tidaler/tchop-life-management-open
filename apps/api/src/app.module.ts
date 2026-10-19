@@ -49,6 +49,12 @@ import {
   StockController,
 } from './stock/stock.controllers.js';
 import { StockService } from './stock/stock.service.js';
+import { ExpensesController } from './expenses/expenses.controller.js';
+import { ExpensesService } from './expenses/expenses.service.js';
+import { AuditViewService } from './reports/audit-view.service.js';
+import { ExportsService } from './reports/exports.service.js';
+import { AuditController, ReportsController } from './reports/reports.controller.js';
+import { ReportsService } from './reports/reports.service.js';
 
 const reflector = new Reflector();
 
@@ -101,6 +107,9 @@ export class AppModule {
         RecipesController,
         PurchasesController,
         InventoryController,
+        ExpensesController,
+        ReportsController,
+        AuditController,
       ],
       providers: [
         { provide: APP_CONFIG, useValue: config },
@@ -129,6 +138,10 @@ export class AppModule {
         RecipesService,
         PurchasesService,
         InventoryService,
+        ExpensesService,
+        ReportsService,
+        ExportsService,
+        AuditViewService,
         // Menu QR : servi par le site lui-même, ou par le cloud qui relaie vers les sites.
         ...(config.API_MODE === 'cloud'
           ? [
