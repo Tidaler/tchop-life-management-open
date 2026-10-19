@@ -8,6 +8,8 @@ const configSchema = z
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     API_MODE: z.enum(['site', 'cloud']).default('site'),
     API_PORT: z.coerce.number().int().positive().default(3000),
+    /** Adresse d'écoute : seulement la machine elle-même, derrière le serveur web HTTPS (Caddy). */
+    API_HOST: z.string().default('127.0.0.1'),
     DATABASE_URL: z.string().min(1),
     /** Site servi par ce serveur local (mode site uniquement). */
     SITE_ID: z.uuid().optional(),

@@ -1,0 +1,8 @@
+# /etc/systemd/system/tchop-backup.service - sauvegarde quotidienne (lancée par tchop-backup.timer).
+[Unit]
+Description=TCHOP LIFE - sauvegarde de la base et des fichiers
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tchop/app/infra/site/backup.sh

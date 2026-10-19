@@ -1,0 +1,62 @@
+# /etc/caddy/Caddyfile - serveur local TCHOP LIFE.
+# Remplacer SERVER_IP par l'adresse fixe du serveur (ex. 192.168.1.10) : voir docs/deploiement.md.
+{
+	# Aucun accès Internet nécessaire : certificats émis par l'autorité de certification locale de Caddy.
+	local_certs
+	skip_install_trust
+	# Les navigateurs n'envoient pas de nom de serveur quand on les connecte à une adresse IP.
+	default_sni SERVER_IP
+}
+
+(securite) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(self), microphone=(), geolocation=()"
+		-Server
+	}
+	# Fichiers de l'application à nom unique : gardés en cache ; le reste est revérifié à chaque visite.
+	@assets path /assets/*
+	header @assets Cache-Control "public, max-age=31536000, immutable"
+	encode zstd gzip
+}
+
+# Application du personnel : tablettes, caisse, cuisine, gestion.
+https://SERVER_IP {
+	import securite
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		root * /opt/tchop/app/apps/web/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# Menu client (QR codes), sur un port à part.
+https://SERVER_IP:8443 {
+	import securite
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		root * /opt/tchop/app/apps/menu/dist
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+# En clair, une seule chose : le certificat de l'autorité locale, à installer une fois sur chaque tablette.
+http://SERVER_IP {
+	handle /tchop-ca.crt {
+		root * /opt/tchop/public
+		header Content-Type application/x-x509-ca-cert
+		file_server
+	}
+	handle {
+		redir https://{host}{uri}
+	}
+}
