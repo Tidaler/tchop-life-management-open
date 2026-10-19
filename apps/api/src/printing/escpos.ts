@@ -57,6 +57,8 @@ export interface ZReportDoc {
   timeZone: string;
   openingFloatXaf: number;
   expected: { label: string; amountXaf: number }[];
+  /** Dépenses payées avec les espèces de la caisse (absent sur les anciens rapports). */
+  cashExpensesXaf?: number;
   expectedCashXaf: number;
   countedCashXaf: number;
   differenceXaf: number;
@@ -195,6 +197,7 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
     text(columns('Fond initial', money(doc.openingFloatXaf), cols));
     for (const e of doc.expected) text(columns(e.label, money(e.amountXaf), cols));
     text(columns('Paiements', String(doc.paymentCount), cols));
+    if (doc.cashExpensesXaf) text(columns('Dépenses en caisse', `-${money(doc.cashExpensesXaf)}`, cols));
     rule();
     text(columns('Espèces attendues', money(doc.expectedCashXaf), cols));
     text(columns('Espèces comptées', money(doc.countedCashXaf), cols));

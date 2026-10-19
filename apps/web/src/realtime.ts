@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 import { deviceStore, getAccessToken } from './api';
 import { CATALOG_KEY } from './catalog';
+import { FINANCE_KEY } from './finance';
 import { STOCK_KEY } from './stock';
 
 type RealtimeEvent =
@@ -36,6 +37,10 @@ export function useRealtime(enabled: boolean): boolean {
       if (event.type === 'tickets.changed') void queryClient.invalidateQueries({ queryKey: ['tickets'] });
       if (event.type === 'stock.changed') void queryClient.invalidateQueries({ queryKey: STOCK_KEY });
       if (event.type === 'catalog.changed') void queryClient.invalidateQueries({ queryKey: CATALOG_KEY });
+      // Une vente, un paiement ou un mouvement de stock change les chiffres du tableau de bord.
+      if (event.type === 'bills.changed' || event.type === 'stock.changed') {
+        void queryClient.invalidateQueries({ queryKey: FINANCE_KEY });
+      }
       if (event.type === 'bills.changed') {
         void queryClient.invalidateQueries({ queryKey: ['bills'] });
         void queryClient.invalidateQueries({ queryKey: ['cash'] });

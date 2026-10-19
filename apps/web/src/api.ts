@@ -108,15 +108,15 @@ export function refreshSession(): Promise<boolean> {
   return refreshing;
 }
 
-export async function api<T>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
-  const method = options.method ?? 'GET';
-  let res = await send(path, method, options.body);
+/** Requête authentifiée : prolonge la session si besoin, lève ApiError sur une réponse en erreur. */
+async function authorized(path: string, method: string, body: unknown): Promise<Response> {
+  let res = await send(path, method, body);
 
   // Jeton d'accès expiré : on prolonge la session une fois, puis on rejoue la requête.
   if (res.status === 401 && accessToken) {
     const error = await toError(res.clone());
     if (error.code === 'UNAUTHENTICATED') {
-      if (await refreshSession()) res = await send(path, method, options.body);
+      if (await refreshSession()) res = await send(path, method, body);
       else onAuthLost?.();
     } else if (
       error.code === 'SESSION_INVALID' ||
@@ -129,8 +129,28 @@ export async function api<T>(path: string, options: { method?: string; body?: un
   }
 
   if (!res.ok) throw await toError(res);
+  return res;
+}
+
+export async function api<T>(path: string, options: { method?: string; body?: unknown } = {}): Promise<T> {
+  const res = await authorized(path, options.method ?? 'GET', options.body);
   if (res.status === 204) return undefined as T;
   // Une réponse vide (ex. aucune session de caisse ouverte) vaut null.
   const text = await res.text();
   return (text ? JSON.parse(text) : null) as T;
+}
+
+/** Fichier protégé (export CSV, justificatif) : téléchargé avec la session, jamais par un lien public. */
+export async function apiBlob(path: string): Promise<Blob> {
+  return (await authorized(path, 'GET', undefined)).blob();
+}
+
+/** Enregistre un fichier protégé sur l'appareil. */
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const url = URL.createObjectURL(await apiBlob(path));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }

@@ -94,6 +94,14 @@ export const REFERENCE_REQUIRED: readonly PaymentMethod[] = ['mtn_momo', 'orange
 /** Moyens acceptés pour régler une ardoise (on ne rembourse pas une ardoise par une autre ardoise). */
 export const SETTLEMENT_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card'] as const;
 
+/** Moyens de paiement d'une dépense (le virement bancaire en plus de ceux de la caisse, sans ardoise). */
+export const EXPENSE_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card', 'bank_transfer'] as const;
+export type ExpenseMethod = (typeof EXPENSE_METHODS)[number];
+
+/** Charge de fonctionnement, ou achat de marchandises (déjà compté dans le coût des ventes). */
+export const EXPENSE_KINDS = ['operating', 'purchase'] as const;
+export type ExpenseKind = (typeof EXPENSE_KINDS)[number];
+
 /** Unités de base des articles de stock. */
 export const STOCK_UNITS = ['piece', 'bottle', 'g', 'kg', 'ml', 'l'] as const;
 export type StockUnit = (typeof STOCK_UNITS)[number];
@@ -127,6 +135,7 @@ export const DEFAULT_THRESHOLDS = {
   discountXaf: 2000,
   stockLossXaf: 10000,
   inventoryVarianceXaf: 10000,
+  expenseXaf: 5000,
 } as const;
 export type Thresholds = { -readonly [K in keyof typeof DEFAULT_THRESHOLDS]: number };
 

@@ -92,6 +92,11 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   SUPPLIER_MISMATCH: 'stock.supplierMismatch',
   ORDER_LINE_MISMATCH: 'stock.orderLineMismatch',
   NOT_FOUND: 'error.notFound',
+  FUTURE_DATE: 'exp.futureDate',
+  CASH_EXPENSE_TODAY: 'exp.cashToday',
+  ALREADY_VOIDED: 'exp.alreadyVoided',
+  SESSION_CLOSED: 'exp.sessionClosed',
+  INVALID_IMAGE: 'exp.invalidImage',
 };
 
 /** Message d'erreur traduit à partir d'une erreur d'API. */

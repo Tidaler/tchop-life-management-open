@@ -11,6 +11,8 @@ export interface CashSession {
   openingFloatXaf: number;
   byMethod: Record<PaymentMethod, number>;
   paymentCount: number;
+  /** Dépenses payées avec les espèces de la caisse : déduites du théorique. */
+  cashExpensesXaf: number;
   expectedCashXaf: number;
   countedCashXaf: number | null;
   differenceXaf: number | null;

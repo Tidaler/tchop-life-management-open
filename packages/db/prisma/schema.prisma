@@ -54,28 +54,30 @@ model Site {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
   version     Int       @default(1)
 
-  tenant          Tenant                 @relation(fields: [tenantId], references: [id])
-  userRoles       UserSiteRole[]
-  devices         Device[]
-  enrollmentCodes DeviceEnrollmentCode[]
-  zones           Zone[]
-  tables          DiningTable[]
-  qrCodes         QrCode[]
-  categories      Category[]
-  products        Product[]
-  modifierGroups  ModifierGroup[]
-  orders          Order[]
-  tickets         KitchenTicket[]
-  printers        Printer[]
-  cashRegisters   CashRegister[]
-  customers       Customer[]
-  stockLocations  StockLocation[]
-  stockItems      StockItem[]
-  stockMovements  StockMovement[]
-  suppliers       Supplier[]
-  purchaseOrders  PurchaseOrder[]
-  goodsReceipts   GoodsReceipt[]
-  inventoryCounts InventoryCount[]
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id])
+  userRoles         UserSiteRole[]
+  devices           Device[]
+  enrollmentCodes   DeviceEnrollmentCode[]
+  zones             Zone[]
+  tables            DiningTable[]
+  qrCodes           QrCode[]
+  categories        Category[]
+  products          Product[]
+  modifierGroups    ModifierGroup[]
+  orders            Order[]
+  tickets           KitchenTicket[]
+  printers          Printer[]
+  cashRegisters     CashRegister[]
+  customers         Customer[]
+  stockLocations    StockLocation[]
+  stockItems        StockItem[]
+  stockMovements    StockMovement[]
+  suppliers         Supplier[]
+  purchaseOrders    PurchaseOrder[]
+  goodsReceipts     GoodsReceipt[]
+  inventoryCounts   InventoryCount[]
+  expenseCategories ExpenseCategory[]
+  expenses          Expense[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -1236,6 +1238,86 @@ model InventoryCountLine {
 
   @@unique([countId, itemId])
   @@map("inventory_count_line")
+}
+
+// ---------------------------------------------------------------- Dépenses
+
+/// Nature d'une catégorie : charge de fonctionnement, ou achat de marchandises (déjà compté dans le coût
+/// des ventes via les stocks, donc exclu du bénéfice estimé pour ne pas le compter deux fois).
+enum ExpenseKind {
+  operating
+  purchase
+}
+
+model ExpenseCategory {
+  id         String      @id @default(uuid(7)) @db.Uuid
+  siteId     String      @map("site_id") @db.Uuid
+  name       String
+  kind       ExpenseKind @default(operating)
+  sortOrder  Int         @default(0) @map("sort_order")
+  archivedAt DateTime?   @map("archived_at") @db.Timestamptz(3)
+  createdAt  DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version    Int         @default(1)
+
+  site     Site      @relation(fields: [siteId], references: [id])
+  expenses Expense[]
+
+  @@index([siteId])
+  @@map("expense_category")
+}
+
+enum ExpenseMethod {
+  cash
+  mtn_momo
+  orange_money
+  card
+  bank_transfer
+}
+
+enum ExpenseStatus {
+  recorded
+  voided
+}
+
+/// Dépense : jamais supprimée, seulement annulée avec motif. Payée depuis la caisse, elle sort du
+/// théorique espèces de la session.
+model Expense {
+  id               String        @id @default(uuid(7)) @db.Uuid
+  siteId           String        @map("site_id") @db.Uuid
+  number           Int
+  categoryId       String        @map("category_id") @db.Uuid
+  /// Jour d'exploitation auquel la dépense se rattache.
+  businessDay      DateTime      @map("business_day") @db.Date
+  amountXaf        Int           @map("amount_xaf")
+  method           ExpenseMethod
+  /// Session de caisse d'où sont sortis les espèces (dépense payée depuis la caisse).
+  sessionId        String?       @map("session_id") @db.Uuid
+  supplierId       String?       @map("supplier_id") @db.Uuid
+  description      String
+  reference        String?
+  /// Justificatif (photo réencodée), stocké hors du dossier public des photos.
+  attachment       String?
+  status           ExpenseStatus @default(recorded)
+  idempotencyKey   String        @map("idempotency_key")
+  createdById      String        @map("created_by") @db.Uuid
+  approvedById     String?       @map("approved_by") @db.Uuid
+  voidedAt         DateTime?     @map("voided_at") @db.Timestamptz(3)
+  voidedById       String?       @map("voided_by") @db.Uuid
+  voidApprovedById String?       @map("void_approved_by") @db.Uuid
+  voidReason       String?       @map("void_reason")
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version          Int           @default(1)
+
+  site     Site            @relation(fields: [siteId], references: [id])
+  category ExpenseCategory @relation(fields: [categoryId], references: [id])
+
+  @@unique([siteId, number])
+  @@unique([siteId, idempotencyKey])
+  @@index([siteId, businessDay])
+  @@index([sessionId])
+  @@map("expense")
 }
 
 // ---------------------------------------------------------------- Audit

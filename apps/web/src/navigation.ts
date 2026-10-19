@@ -47,8 +47,9 @@ export const SCREENS: Screen[] = [
     icon: '📊',
     permission: 'dashboard.view',
     access: 'read',
-    phase: 'Phase 6',
   },
+  { path: '/reports', label: 'nav.reports', icon: '📈', permission: 'report.sales', access: 'read' },
+  { path: '/expenses', label: 'nav.expenses', icon: '🧾', permission: 'expense.create', access: 'read' },
   {
     path: '/availability',
     label: 'nav.availability',

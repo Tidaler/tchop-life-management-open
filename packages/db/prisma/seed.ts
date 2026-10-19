@@ -293,6 +293,24 @@ async function seedStock(db: PrismaClient): Promise<void> {
   console.log(`Stocks de démo créés : ${STOCK_ITEMS.length} articles et leurs recettes.`);
 }
 
+/** Catégories de dépenses du cahier des charges (ajoutées aussi à une base déjà initialisée). */
+async function seedExpenseCategories(db: PrismaClient): Promise<void> {
+  if (await db.expenseCategory.count({ where: { siteId: DEMO_SITE_ID } })) return;
+  await db.expenseCategory.createMany({
+    data: (
+      [
+        ['Approvisionnement', 'purchase'],
+        ['Transport', 'operating'],
+        ['Énergie', 'operating'],
+        ['Entretien', 'operating'],
+        ['Salaires', 'operating'],
+        ['Loyer', 'operating'],
+        ['Divers', 'operating'],
+      ] as const
+    ).map(([name, kind], sortOrder) => ({ siteId: DEMO_SITE_ID, name, kind, sortOrder })),
+  });
+}
+
 async function main() {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL manquant');
@@ -302,6 +320,7 @@ async function main() {
     if (await db.tenant.findUnique({ where: { id: DEMO_TENANT_ID } })) {
       console.log('Données de démo déjà présentes (pnpm db:reset pour repartir de zéro).');
       await seedStock(db);
+      await seedExpenseCategories(db);
       return;
     }
 
@@ -441,6 +460,7 @@ async function main() {
 
     console.log(`Données de démo créées : ${DEMO_USERS.length} utilisateurs, site ${DEMO_SITE_ID}.`);
     await seedStock(db);
+    await seedExpenseCategories(db);
   } finally {
     await db.$disconnect();
   }

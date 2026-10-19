@@ -111,6 +111,13 @@ export class CashService {
       where: { id: session.cashierId },
       select: { displayName: true },
     });
+    // Dépenses payées avec les espèces de cette caisse : elles sortent du théorique.
+    const expenses = await tx.expense.aggregate({
+      where: { sessionId, status: 'recorded' },
+      _sum: { amountXaf: true },
+      _count: true,
+    });
+    const cashExpensesXaf = expenses._sum.amountXaf ?? 0;
     const byMethod = Object.fromEntries(PAYMENT_METHODS.map((m) => [m, 0])) as Record<PaymentMethod, number>;
     let count = 0;
     for (const p of payments) {
@@ -131,7 +138,9 @@ export class CashService {
       openingFloatXaf: session.openingFloatXaf,
       byMethod,
       paymentCount: count,
-      expectedCashXaf: session.openingFloatXaf + byMethod.cash,
+      cashExpensesXaf,
+      cashExpenseCount: expenses._count,
+      expectedCashXaf: session.openingFloatXaf + byMethod.cash - cashExpensesXaf,
       countedCashXaf: session.countedCashXaf,
       differenceXaf: session.differenceXaf,
       comment: session.comment,
@@ -185,6 +194,7 @@ export class CashService {
         sessionId,
         {
           expectedCashXaf: totals.expectedCashXaf,
+          cashExpensesXaf: totals.cashExpensesXaf,
           countedCashXaf: input.countedCashXaf,
           differenceXaf: difference,
           byMethod: totals.byMethod,
@@ -204,6 +214,7 @@ export class CashService {
         timeZone: site.timezone,
         openingFloatXaf: closed.openingFloatXaf,
         expected: PAYMENT_METHODS.map((m) => ({ label: METHOD_LABELS[m], amountXaf: closed.byMethod[m] })),
+        cashExpensesXaf: closed.cashExpensesXaf,
         expectedCashXaf: closed.expectedCashXaf,
         countedCashXaf: input.countedCashXaf,
         differenceXaf: difference,

@@ -18,7 +18,7 @@
 
 | Contexte | Méthode |
 |---|---|
-| **Tablette partagée** (salle, caisse, cuisine) | L'appareil est **enregistré** (jeton d'appareil). L'employé choisit son nom et tape son **PIN à 4–6 chiffres**. |
+| **Tablette partagée** (salle, caisse, cuisine) | L'appareil est **enregistré** (jeton d'appareil). L'employé choisit son nom et tape son **PIN à 4-6 chiffres**. |
 | **Back-office** (gérant, comptable) | Identifiant + **mot de passe** (12 caractères minimum). |
 | **Accès à distance** (propriétaire, depuis le cloud) | Identifiant + mot de passe + **code à usage unique** (application d'authentification ou SMS), obligatoire pour le propriétaire. |
 
@@ -109,7 +109,7 @@ Les actions sensibles exigent, **au moment de l'action**, le PIN d'un utilisateu
 
 Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/api/test`), sauf mention contraire.
 
-### Phase 0 — Fondations
+### Phase 0 - Fondations
 
 | Règle | Où |
 |---|---|
@@ -122,7 +122,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Limitation des tentatives de connexion par adresse IP | `app.module.ts` |
 | Journal d'audit en ajout seul (déclencheur PostgreSQL) | migration `audit_log_append_only` |
 
-### Phase 1 — Catalogue et salle
+### Phase 1 - Catalogue et salle
 
 | Règle | Où |
 |---|---|
@@ -131,7 +131,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Photos réencodées en WebP (le fichier envoyé n'est jamais servi tel quel), 5 Mo maximum, noms de fichiers aléatoires, pas d'accès à un chemin arbitraire | `media/` |
 | Jetons de QR code de 128 bits ; un seul QR actif par table ; remplacement immédiat | `floor.service.ts`, migration `salle_contraintes` |
 
-### Phase 2 — Commandes et cuisine
+### Phase 2 - Commandes et cuisine
 
 | Règle | Où |
 |---|---|
@@ -141,7 +141,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Annulation : motif obligatoire, PIN d'un **autre** gérant selon le rôle ; un PIN d'approbation faux compte dans le blocage | `approval.service.ts` |
 | Temps réel authentifié comme l'API (jeton d'accès + appareil) ; les événements ne transportent aucune donnée métier | `events.gateway.ts` |
 
-### Phase 3a — Commande par QR code
+### Phase 3a - Commande par QR code
 
 | Règle | Où |
 |---|---|
@@ -155,7 +155,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | CSP stricte sur les pages compilées (menu et application du personnel) ; photos du menu limitées aux fichiers du serveur | `packages/shared/src/csp.ts`, `apps/menu/src/api.ts` |
 | Démarrage refusé en production avec une configuration de développement (cookies, secret JWT, HTTPS du menu) | `config.ts` |
 
-### Phase 4 — Caisse
+### Phase 4 - Caisse
 
 | Règle | Où |
 |---|---|
@@ -172,7 +172,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Rapprochement des paiements électroniques réservé à `payment.verify` (gérant, comptable) | `bills.service.ts` |
 | Clients à ardoise : données minimales, téléphone jamais journalisé | `customers.service.ts` |
 
-### Phase 3b — Relais par le cloud
+### Phase 3b - Relais par le cloud
 
 | Règle | Où |
 |---|---|
@@ -187,7 +187,7 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Site injoignable : menu servi depuis la copie, commande suspendue (503 `SITE_OFFLINE`) avec un message au client | `cloud-menu.service.ts`, `apps/menu` |
 | Mêmes limites de débit sur le menu public du cloud que sur celui du site | `qr.controllers.ts` |
 
-### Phase 5 — Stocks et recettes
+### Phase 5 - Stocks et recettes
 
 | Règle | Où |
 |---|---|
@@ -204,6 +204,20 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Recette : articles du site et options du produit uniquement ; la cuisine et la caisse n'y ont pas accès, le magasinier en lecture | `recipes.service.ts`, matrice |
 | Téléphone des fournisseurs jamais journalisé | `purchases.service.ts` |
 | Liste des gérants approbateurs (noms seulement) ouverte à tout le personnel connecté ; le PIN reste vérifié par l'action | `approval.controller.ts` |
+
+### Phase 6 - Pilotage
+
+| Règle | Où |
+|---|---|
+| Dépense : catégorie, description, montant positif ; approbation d'un gérant au-delà de 5 000 FCFA pour le caissier ; clé d'idempotence ; jamais datée dans le futur | `expenses.service.ts`, contraintes `CHECK` |
+| Dépense prise dans la caisse : session ouverte de l'utilisateur, verrouillée contre une clôture simultanée, espèces seulement, déduite du théorique et imprimée sur le rapport Z | `expenses.service.ts`, `cash.service.ts` |
+| Dépense jamais supprimée (déclencheur) ; annulation avec motif et approbation selon le rôle ; impossible une fois la caisse clôturée | migration `depenses`, `expenses.service.ts` |
+| Justificatif réencodé (WebP), rangé hors du dossier public des photos, servi seulement à qui voit la dépense, sans cache | `media.service.ts`, `expenses.controller.ts` |
+| Le caissier ne voit que ses dépenses, ses sessions et les ventes encaissées dans ses sessions (lecture « L¹ ») | `expenses.service.ts`, `reports.service.ts` |
+| Rapports, tableau de bord, exports et journal d'audit : une permission par écran ; le serveur et la cuisine n'y ont pas accès | `reports.controller.ts`, matrice |
+| Exports CSV : protégés contre l'injection de formules (cellule commençant par = + - @ préfixée), téléchargés avec la session, jamais par un lien public | `exports.service.ts`, `api.ts` |
+| Journal d'audit en lecture seule, filtre d'action contrôlé (lettres, points, tirets bas) | `audit-view.service.ts`, `auditQuerySchema` |
+| Résultat présenté comme une estimation, distinct du résultat comptable | `ReportsPage.tsx` |
 
 ### À mettre en place au déploiement (non testé automatiquement)
 

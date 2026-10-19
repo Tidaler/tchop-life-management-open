@@ -59,7 +59,7 @@ flowchart LR
 
 ```
 apps/
-  api/            NestJS — modules métier ; MODE=site | cloud
+  api/            NestJS - modules métier ; MODE=site | cloud
   web/            PWA du personnel
   menu/           Menu public QR
 packages/
