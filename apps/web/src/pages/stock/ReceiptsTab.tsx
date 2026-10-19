@@ -242,7 +242,7 @@ export function ReceiptsTab({ onNotice }: { onNotice: (n: Notice) => void }) {
                   <td>{r.number}</td>
                   <td>{new Date(r.createdAt).toLocaleString(locale)}</td>
                   <td>
-                    {r.supplier?.name ?? '—'}
+                    {r.supplier?.name ?? '-'}
                     {r.purchaseOrder && <div className="muted">n° {r.purchaseOrder.number}</div>}
                     {r.reference && <div className="muted">{r.reference}</div>}
                   </td>
@@ -304,7 +304,7 @@ function ReceiptLine({
         onChange={(e) => onChange({ packagingId: e.target.value })}
         disabled={!item}
       >
-        <option value="">{item ? t(`unit.${item.unit}`) : '—'}</option>
+        <option value="">{item ? t(`unit.${item.unit}`) : '-'}</option>
         {item?.packagings.map((p) => (
           <option key={p.id} value={p.id}>
             {p.name} ({formatQty(p.factor, locale)})

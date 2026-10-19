@@ -332,9 +332,13 @@ h3 {
 .shell {
   min-height: 100vh;
   display: grid;
-  grid-template-rows: auto 1fr;
+  /* En-tête, bandeau QR éventuel (rangée vide sinon), puis le contenu qui prend la place restante. */
+  grid-template-rows: auto auto 1fr;
   /* minmax(0, 1fr) : le menu défile horizontalement au lieu d'élargir la page. */
   grid-template-columns: minmax(0, 1fr);
+}
+.shell > main.content {
+  grid-row: 3;
 }
 .topbar {
   position: sticky;

@@ -214,14 +214,14 @@ function InventorySheet({
                       onChange={(e) => setDraft((d) => ({ ...d, [l.itemId]: e.target.value }))}
                     />
                   ) : l.countedQty === null ? (
-                    <span className="muted">—</span>
+                    <span className="muted">-</span>
                   ) : (
                     formatQty(l.countedQty, locale)
                   )}
                 </td>
                 {closed && (
                   <td style={{ textAlign: 'right' }}>
-                    {l.expectedQty == null ? '—' : formatQty(l.expectedQty, locale)}
+                    {l.expectedQty == null ? '-' : formatQty(l.expectedQty, locale)}
                   </td>
                 )}
                 {closed && (
@@ -229,7 +229,7 @@ function InventorySheet({
                     style={{ textAlign: 'right' }}
                     className={(l.varianceQty ?? 0) < 0 ? 'danger-text' : ''}
                   >
-                    {l.varianceQty == null ? '—' : formatQty(l.varianceQty, locale)}
+                    {l.varianceQty == null ? '-' : formatQty(l.varianceQty, locale)}
                     {l.varianceXaf !== undefined && (
                       <div className="muted">{formatXaf(l.varianceXaf, locale)}</div>
                     )}

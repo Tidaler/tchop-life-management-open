@@ -319,7 +319,7 @@ function OrderEditor({
                 onChange={(e) => update(l.uid, { packagingId: e.target.value })}
                 disabled={!item}
               >
-                <option value="">{item ? t(`unit.${item.unit}`) : '—'}</option>
+                <option value="">{item ? t(`unit.${item.unit}`) : '-'}</option>
                 {item?.packagings.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({formatQty(p.factor, locale)})
