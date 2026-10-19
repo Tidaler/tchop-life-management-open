@@ -12,7 +12,9 @@ import { parseArgs } from 'node:util';
 import { createPrismaClient } from '@tchop/db';
 import { newOpaqueToken, sha256 } from '../common/crypto.js';
 
+// pnpm transmet le séparateur « -- » tel quel : on l'ignore.
 const { values } = parseArgs({
+  args: process.argv.slice(2).filter((arg) => arg !== '--'),
   options: {
     site: { type: 'string' },
     name: { type: 'string' },
