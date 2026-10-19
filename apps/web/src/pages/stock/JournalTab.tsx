@@ -118,7 +118,7 @@ export function JournalTab() {
                         {[i.received, i.sold, i.losses, i.adjustments].map((v, k) => (
                           <td key={k} style={{ textAlign: 'right' }}>
                             {v.quantity === 0 ? (
-                              <span className="muted">—</span>
+                              <span className="muted">-</span>
                             ) : (
                               formatQty(v.quantity, locale)
                             )}

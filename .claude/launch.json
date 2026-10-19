@@ -8,6 +8,12 @@
       "port": 5180
     },
     {
+      "name": "menu",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@tchop/menu", "dev"],
+      "port": 5181
+    },
+    {
       "name": "api",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@tchop/api", "dev"],

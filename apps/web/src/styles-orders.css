@@ -408,6 +408,7 @@
   padding: 0 6px;
 }
 .qr-banner {
+  grid-row: 2;
   display: block;
   background: #7048e8;
   color: #fff;
