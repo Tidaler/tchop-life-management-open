@@ -137,8 +137,16 @@ export class ReportsService {
       cat.amountXaf += n(l.amount);
       categories.set(l.category_id, cat);
     }
+    // Remboursements émis dans la période (caissier : ceux de ses propres sessions).
+    const [refunds] = await this.prisma.$queryRaw<{ count: bigint; amount: bigint | null }[]>`
+      SELECT count(*) AS count, sum(r."amount_xaf") AS amount FROM "refund" r
+      WHERE r."site_id" = ${auth.siteId}::uuid
+        AND ${day('r."created_at"')} BETWEEN ${period.from}::date AND ${period.to}::date
+        ${ownOnly ? Prisma.sql`AND r."session_id" IN (SELECT "id" FROM "cash_session" WHERE "cashier_id" = ${auth.userId}::uuid)` : Prisma.empty}`;
+
     const bills = n(totals?.bills);
     const net = n(totals?.net);
+    const refundsXaf = n(refunds?.amount);
     return {
       period,
       ownOnly,
@@ -147,6 +155,10 @@ export class ReportsService {
         grossXaf: n(totals?.gross),
         discountXaf: n(totals?.discount),
         netXaf: net,
+        refunds: n(refunds?.count),
+        refundsXaf,
+        /** Chiffre d'affaires net des remboursements. */
+        revenueXaf: net - refundsXaf,
         averageTicketXaf: bills ? Math.round(net / bills) : 0,
         orders,
       },
@@ -250,7 +262,7 @@ export class ReportsService {
       WHERE b."site_id" = ${auth.siteId}::uuid AND b."status" = 'paid' AND ${inPeriod('b."paid_at"')}
         AND NOT EXISTS (SELECT 1 FROM "recipe_line" r WHERE r."product_id" = p."id")`;
 
-    const revenue = sales.totals.netXaf;
+    const revenue = sales.totals.revenueXaf;
     const cogs = Math.round(n(stock?.cogs));
     const losses = Math.round(n(stock?.losses));
     const operating = expenses.filter((e) => e.kind === 'operating');

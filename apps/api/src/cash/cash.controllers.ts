@@ -1,5 +1,17 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  ParseIntPipe,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  refundSchema,
+  type RefundInput,
   applyDiscountSchema,
   type ApplyDiscountInput,
   closeSessionSchema,
@@ -23,6 +35,7 @@ import { RequirePermission } from '../auth/decorators.js';
 import { type AuthContext, CurrentAuth } from '../common/request-context.js';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { CustomersService } from '../customers/customers.service.js';
+import { RefundsService } from './refunds.service.js';
 import { BillsService } from './bills.service.js';
 import { CashService } from './cash.service.js';
 
@@ -213,5 +226,40 @@ export class CustomersController {
     @Body(new ZodPipe(settlementSchema)) body: SettlementInput,
   ) {
     return this.customers.settle(auth, id, body);
+  }
+}
+
+/** Remboursements et avoirs : retrouver un reçu, rembourser tout ou partie, réimprimer l'avoir. */
+@Controller()
+export class RefundsController {
+  constructor(private readonly refunds: RefundsService) {}
+
+  @Get('receipts/by-number/:number')
+  @RequirePermission('refund.create', 'read')
+  byReceipt(@CurrentAuth() auth: AuthContext, @Param('number', new ParseIntPipe()) number: number) {
+    return this.refunds.byReceipt(auth, number);
+  }
+
+  @Get('refunds')
+  @RequirePermission('refund.create', 'read')
+  list(@CurrentAuth() auth: AuthContext) {
+    return this.refunds.list(auth);
+  }
+
+  @Post('bills/:id/refunds')
+  @RequirePermission('refund.create')
+  refund(
+    @CurrentAuth() auth: AuthContext,
+    @Param('id', uuid) id: string,
+    @Body(new ZodPipe(refundSchema)) body: RefundInput,
+  ) {
+    return this.refunds.refund(auth, id, body);
+  }
+
+  @Post('refunds/:id/reprint')
+  @HttpCode(204)
+  @RequirePermission('refund.create')
+  async reprint(@CurrentAuth() auth: AuthContext, @Param('id', uuid) id: string): Promise<void> {
+    await this.refunds.reprint(auth, id);
   }
 }

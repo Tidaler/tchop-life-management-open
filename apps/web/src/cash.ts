@@ -13,6 +13,8 @@ export interface CashSession {
   paymentCount: number;
   /** Dépenses payées avec les espèces de la caisse : déduites du théorique. */
   cashExpensesXaf: number;
+  /** Remboursements en espèces sortis de la caisse : déduits du théorique. */
+  cashRefundsXaf: number;
   expectedCashXaf: number;
   countedCashXaf: number | null;
   differenceXaf: number | null;

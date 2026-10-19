@@ -120,7 +120,7 @@ erDiagram
 | `discount` | addition ou ligne, type (% / montant), valeur, motif, accordée par, approuvée par | Approbation du gérant au-delà du seuil. |
 | `payment` | addition, session de caisse, moyen (`cash`, `mtn_momo`, `orange_money`, `card`, `customer_credit`), montant, montant remis, monnaie rendue, référence, statut | Statuts : `recorded` → `verified` ; ou `voided` (annulation tracée). |
 | `receipt` | site, **n° séquentiel**, addition, instantané imprimé (`jsonb`), réimpressions | |
-| `refund` | addition, montant, moyen, motif, approuvé par | Avoir ou remboursement. |
+| `refund` / `refund_line` | site, n°, addition payée, session de caisse (obligatoire en espèces), moyen (espèces, MoMo, Orange Money, carte, avoir sur ardoise), montant, motif, référence, client, remise en stock, avoir figé, par, approuvé par ; ligne de commande, quantité, montant | En ajout seul. Jamais plus que ce qui a été payé. Un avoir est une écriture négative sur l'ardoise du client. |
 
 ### Ardoise client (autorité : site)
 

@@ -93,6 +93,8 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   ORDER_LINE_MISMATCH: 'stock.orderLineMismatch',
   NOT_FOUND: 'error.notFound',
   FUTURE_DATE: 'exp.futureDate',
+  BILL_NOT_PAID: 'refund.notPaid',
+  REFUND_TOO_LARGE: 'refund.tooLarge',
   CASH_EXPENSE_TODAY: 'exp.cashToday',
   ALREADY_VOIDED: 'exp.alreadyVoided',
   SESSION_CLOSED: 'exp.sessionClosed',

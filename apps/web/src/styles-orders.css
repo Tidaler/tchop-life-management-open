@@ -746,3 +746,23 @@ tr.total-row td {
     box-shadow: none;
   }
 }
+
+/* ---------------------------------------------------------------- Remboursements */
+.cash-grid.refunds {
+  grid-template-columns: minmax(240px, 320px) 1fr;
+}
+.link-row {
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--text);
+  font: inherit;
+}
+@media (max-width: 720px) {
+  .cash-grid.refunds {
+    grid-template-columns: 1fr;
+  }
+}

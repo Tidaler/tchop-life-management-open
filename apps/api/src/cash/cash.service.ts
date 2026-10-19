@@ -118,6 +118,15 @@ export class CashService {
       _count: true,
     });
     const cashExpensesXaf = expenses._sum.amountXaf ?? 0;
+    // Remboursements de la session : ceux en espèces sortent aussi du théorique.
+    const refunds = await tx.refund.groupBy({
+      by: ['method'],
+      where: { sessionId },
+      _sum: { amountXaf: true },
+      _count: true,
+    });
+    const cashRefundsXaf = refunds.find((r) => r.method === 'cash')?._sum.amountXaf ?? 0;
+    const refundsXaf = refunds.reduce((s, r) => s + (r._sum.amountXaf ?? 0), 0);
     const byMethod = Object.fromEntries(PAYMENT_METHODS.map((m) => [m, 0])) as Record<PaymentMethod, number>;
     let count = 0;
     for (const p of payments) {
@@ -140,7 +149,10 @@ export class CashService {
       paymentCount: count,
       cashExpensesXaf,
       cashExpenseCount: expenses._count,
-      expectedCashXaf: session.openingFloatXaf + byMethod.cash - cashExpensesXaf,
+      cashRefundsXaf,
+      refundsXaf,
+      refundCount: refunds.reduce((s, r) => s + r._count, 0),
+      expectedCashXaf: session.openingFloatXaf + byMethod.cash - cashExpensesXaf - cashRefundsXaf,
       countedCashXaf: session.countedCashXaf,
       differenceXaf: session.differenceXaf,
       comment: session.comment,
@@ -195,6 +207,7 @@ export class CashService {
         {
           expectedCashXaf: totals.expectedCashXaf,
           cashExpensesXaf: totals.cashExpensesXaf,
+          cashRefundsXaf: totals.cashRefundsXaf,
           countedCashXaf: input.countedCashXaf,
           differenceXaf: difference,
           byMethod: totals.byMethod,
@@ -215,6 +228,7 @@ export class CashService {
         openingFloatXaf: closed.openingFloatXaf,
         expected: PAYMENT_METHODS.map((m) => ({ label: METHOD_LABELS[m], amountXaf: closed.byMethod[m] })),
         cashExpensesXaf: closed.cashExpensesXaf,
+        cashRefundsXaf: closed.cashRefundsXaf,
         expectedCashXaf: closed.expectedCashXaf,
         countedCashXaf: input.countedCashXaf,
         differenceXaf: difference,

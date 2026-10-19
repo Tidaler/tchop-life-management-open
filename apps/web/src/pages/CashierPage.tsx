@@ -16,6 +16,7 @@ import { errorMessage, Modal } from '../components/common';
 import { useI18n } from '../i18n';
 import { useOpenOrders } from '../orders';
 import { useSession } from '../session';
+import { RefundsTab } from './RefundsTab';
 
 type Notice = { kind: 'ok' | 'danger'; text: string } | null;
 const noApproval: ApprovalValue = { userId: '', pin: '' };
@@ -26,7 +27,8 @@ export function CashierPage() {
   const { t } = useI18n();
   const { can } = useSession();
   const session = useCashSession();
-  const [tab, setTab] = useState<'bills' | 'customers'>('bills');
+  const [tab, setTab] = useState<'bills' | 'customers' | 'refunds'>('bills');
+  const canRefund = can('refund.create', 'read');
   const [notice, setNotice] = useState<Notice>(null);
   const canCustomers = can('customer_credit.charge', 'read');
 
@@ -48,6 +50,16 @@ export function CashierPage() {
               {t('cash.tabCustomers')}
             </button>
           )}
+          {canRefund && (
+            <button
+              className="tab"
+              role="tab"
+              aria-selected={tab === 'refunds'}
+              onClick={() => setTab('refunds')}
+            >
+              {t('cash.tabRefunds')}
+            </button>
+          )}
         </div>
       </div>
       {notice && (
@@ -66,6 +78,7 @@ export function CashierPage() {
       {tab === 'customers' && canCustomers && (
         <CustomersTab sessionOpen={!!session.data} onNotice={setNotice} />
       )}
+      {tab === 'refunds' && canRefund && <RefundsTab sessionOpen={!!session.data} onNotice={setNotice} />}
     </>
   );
 }
@@ -163,6 +176,11 @@ function SessionBar({ session, onNotice }: { session: CashSession; onNotice: (n:
       <span>
         {t('cash.collected')} : <b>{formatXaf(collected, locale)}</b>
       </span>
+      {session.cashRefundsXaf > 0 && (
+        <span>
+          {t('cash.refundsPaid')} : <b>{formatXaf(session.cashRefundsXaf, locale)}</b>
+        </span>
+      )}
       {session.cashExpensesXaf > 0 && (
         <span>
           {t('cash.expensesPaid')} : <b>{formatXaf(session.cashExpensesXaf, locale)}</b>
@@ -221,6 +239,12 @@ function CloseSession({
               <td style={{ textAlign: 'right' }}>{formatXaf(session.byMethod[m], locale)}</td>
             </tr>
           ))}
+          {session.cashRefundsXaf > 0 && (
+            <tr>
+              <td>{t('cash.refundsPaid')}</td>
+              <td style={{ textAlign: 'right' }}>- {formatXaf(session.cashRefundsXaf, locale)}</td>
+            </tr>
+          )}
           {session.cashExpensesXaf > 0 && (
             <tr>
               <td>{t('cash.expensesPaid')}</td>

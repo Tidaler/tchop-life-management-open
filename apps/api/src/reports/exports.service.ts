@@ -199,6 +199,59 @@ export class ExportsService {
       };
     }
 
+    if (kind === 'refunds') {
+      const rows = await this.prisma.$queryRaw<
+        {
+          created_at: Date;
+          number: number;
+          receipt: number | null;
+          method: string;
+          amount: number;
+          reason: string;
+          reference: string | null;
+          restocked: boolean;
+          cashier: string | null;
+          approver: string | null;
+        }[]
+      >`SELECT r."created_at", r."number", rc."number" AS receipt, r."method"::text AS method, r."amount_xaf" AS amount,
+               r."reason", r."reference", r."restocked", u."display_name" AS cashier, a."display_name" AS approver
+        FROM "refund" r
+        LEFT JOIN "receipt" rc ON rc."bill_id" = r."bill_id"
+        LEFT JOIN "user" u ON u."id" = r."created_by"
+        LEFT JOIN "user" a ON a."id" = r."approved_by"
+        WHERE r."site_id" = ${auth.siteId}::uuid AND ${inPeriod('r."created_at"')}
+        ORDER BY r."number"`;
+      return {
+        filename,
+        csv: toCsv(
+          [
+            'Date',
+            'N°',
+            "Reçu d'origine",
+            'Moyen',
+            'Montant (FCFA)',
+            'Motif',
+            'Référence',
+            'Remis en stock',
+            'Par',
+            'Approuvé par',
+          ],
+          rows.map((r) => [
+            local(r.created_at),
+            r.number,
+            r.receipt,
+            r.method === 'customer_credit' ? 'Avoir sur ardoise' : (METHODS[r.method] ?? r.method),
+            Number(r.amount),
+            r.reason,
+            r.reference,
+            r.restocked ? 'Oui' : 'Non',
+            r.cashier,
+            r.approver,
+          ]),
+        ),
+      };
+    }
+
     if (kind === 'expenses') {
       const rows = await this.prisma.expense.findMany({
         where: {

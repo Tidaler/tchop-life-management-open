@@ -49,7 +49,7 @@ pnpm dev
 | Plan de salle › Imprimer les QR codes | Gérant, propriétaire | Planche de cartes QR bilingues à imprimer et découper |
 | Salle | Serveurs, caisse, gérant | État des tables ; prise de commande avec options, notes, annulation, changement de table |
 | Cuisine / Bar | Cuisine, serveurs, gérant | Bons par poste en temps réel : commencer, prêt, servi, réimprimer |
-| Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, clôture |
+| Caisse | Caissière, gérant | Session de caisse, additions (séparées ou non), remises, encaissement espèces / MoMo / Orange Money / carte / ardoise, reçus, remboursements et avoirs, clôture |
 | Imprimantes | Gérant, propriétaire | Imprimantes thermiques réseau par poste, page de test, impressions en échec |
 | Tableau de bord | Gérant, propriétaire, comptable | Chiffre d'affaires, additions, panier moyen, commandes, dépenses, ventes par catégorie et par jour, meilleures ventes, moyens de paiement, caisses ouvertes, alertes de stock |
 | Rapports | Gérant, propriétaire, comptable (caissier : ses propres sessions) | Ventes (jour, catégorie, produit, serveur, moyen de paiement), caisse (sessions, écarts, rapprochement), résultat estimé, exports CSV, journal d'audit |

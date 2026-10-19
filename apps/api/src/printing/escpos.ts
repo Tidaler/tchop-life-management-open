@@ -46,6 +46,28 @@ export interface ReceiptDoc {
   reprint?: boolean;
 }
 
+/** Avoir / remboursement : contenu figé à l'émission (aussi conservé dans refund.snapshot). */
+export interface RefundDoc {
+  kind: 'refund';
+  siteName: string;
+  refundNumber: number;
+  receiptNumber: number | null;
+  orderNumber: number;
+  tableLabel: string | null;
+  cashierName: string;
+  createdAt: string;
+  timeZone: string;
+  lines: { quantity: number; name: string; amountXaf: number }[];
+  amountXaf: number;
+  methodLabel: string;
+  /** Avoir porté sur l'ardoise d'un client (sinon : argent rendu). */
+  creditNote: boolean;
+  reference: string | null;
+  customerName: string | null;
+  reason: string;
+  restocked: boolean;
+}
+
 /** Rapport Z : clôture d'une session de caisse. */
 export interface ZReportDoc {
   kind: 'z_report';
@@ -59,6 +81,8 @@ export interface ZReportDoc {
   expected: { label: string; amountXaf: number }[];
   /** Dépenses payées avec les espèces de la caisse (absent sur les anciens rapports). */
   cashExpensesXaf?: number;
+  /** Remboursements en espèces sortis de la caisse (absent sur les anciens rapports). */
+  cashRefundsXaf?: number;
   expectedCashXaf: number;
   countedCashXaf: number;
   differenceXaf: number;
@@ -66,7 +90,7 @@ export interface ZReportDoc {
   paymentCount: number;
 }
 
-export type PrintDoc = KitchenTicketDoc | TestPageDoc | ReceiptDoc | ZReportDoc;
+export type PrintDoc = KitchenTicketDoc | TestPageDoc | ReceiptDoc | ZReportDoc | RefundDoc;
 
 const ESC = 0x1b;
 const GS = 0x1d;
@@ -182,6 +206,47 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
     return Buffer.from(out);
   }
 
+  if (doc.kind === 'refund') {
+    cmd(CMD.alignCenter);
+    cmd(CMD.sizeDouble);
+    cmd(CMD.boldOn);
+    text(doc.creditNote ? 'AVOIR' : 'REMBOURSEMENT');
+    cmd(CMD.sizeNormal);
+    text(`N° ${doc.refundNumber}`);
+    cmd(CMD.boldOff);
+    text(doc.siteName);
+    text(dateTime(doc.createdAt, doc.timeZone));
+    text(`${doc.tableLabel ? `Table ${doc.tableLabel} · ` : ''}Cde ${doc.orderNumber} · ${doc.cashierName}`);
+    if (doc.receiptNumber) text(`Reçu d'origine n° ${doc.receiptNumber}`);
+    cmd(CMD.alignLeft);
+    rule();
+    for (const line of doc.lines)
+      text(columns(`${line.quantity} x ${line.name}`, money(line.amountXaf), cols));
+    if (doc.lines.length) rule();
+    cmd(CMD.boldOn);
+    cmd(CMD.sizeTall);
+    text(columns('MONTANT', money(doc.amountXaf), cols));
+    cmd(CMD.sizeNormal);
+    cmd(CMD.boldOff);
+    text(
+      columns(
+        doc.reference ? `${doc.methodLabel} (${doc.reference})` : doc.methodLabel,
+        money(doc.amountXaf),
+        cols,
+      ),
+    );
+    if (doc.customerName) text(`Client : ${doc.customerName}`);
+    wrap(`Motif : ${doc.reason}`, cols).forEach(text);
+    if (doc.restocked) text('Marchandise remise en stock');
+    rule();
+    cmd(CMD.alignCenter);
+    text('Signature du client :');
+    text('');
+    text('');
+    cmd(CMD.cut);
+    return Buffer.from(out);
+  }
+
   if (doc.kind === 'z_report') {
     cmd(CMD.alignCenter);
     cmd(CMD.sizeDouble);
@@ -198,6 +263,7 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
     for (const e of doc.expected) text(columns(e.label, money(e.amountXaf), cols));
     text(columns('Paiements', String(doc.paymentCount), cols));
     if (doc.cashExpensesXaf) text(columns('Dépenses en caisse', `-${money(doc.cashExpensesXaf)}`, cols));
+    if (doc.cashRefundsXaf) text(columns('Remboursements espèces', `-${money(doc.cashRefundsXaf)}`, cols));
     rule();
     text(columns('Espèces attendues', money(doc.expectedCashXaf), cols));
     text(columns('Espèces comptées', money(doc.countedCashXaf), cols));

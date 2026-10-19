@@ -82,9 +82,16 @@ function SalesTab({ period }: { period: Period }) {
       <div className="kpi-grid">
         <div className="card kpi strong">
           <div className="kpi-label">{t('dash.revenue')}</div>
-          <div className="kpi-value">{money(data.totals.netXaf)}</div>
+          <div className="kpi-value">{money(data.totals.revenueXaf)}</div>
           <div className="kpi-hint">{t('dash.taxIncluded')}</div>
         </div>
+        {data.totals.refundsXaf > 0 && (
+          <div className="card kpi warn">
+            <div className="kpi-label">{t('rep.refunds')}</div>
+            <div className="kpi-value">{money(data.totals.refundsXaf)}</div>
+            <div className="kpi-hint">{t('rep.refundCount', { count: data.totals.refunds })}</div>
+          </div>
+        )}
         <div className="card kpi">
           <div className="kpi-label">{t('dash.bills')}</div>
           <div className="kpi-value">{data.totals.bills}</div>
@@ -236,7 +243,14 @@ function CashTab({ period }: { period: Period }) {
                   <td style={{ textAlign: 'right' }}>
                     {money(Object.values(s.byMethod).reduce((a, b) => a + b, 0))}
                   </td>
-                  <td style={{ textAlign: 'right' }}>{money(s.cashExpensesXaf)}</td>
+                  <td style={{ textAlign: 'right' }}>
+                    {money(s.cashExpensesXaf)}
+                    {s.cashRefundsXaf > 0 && (
+                      <div className="muted">
+                        {t('rep.refunds')} {money(s.cashRefundsXaf)}
+                      </div>
+                    )}
+                  </td>
                   <td style={{ textAlign: 'right' }}>{money(s.expectedCashXaf)}</td>
                   <td style={{ textAlign: 'right' }}>
                     {s.countedCashXaf === null ? '-' : money(s.countedCashXaf)}
