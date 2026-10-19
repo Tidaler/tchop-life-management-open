@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PAYMENT_METHODS, REFERENCE_REQUIRED, SETTLEMENT_METHODS } from './constants.js';
+import { PAYMENT_METHODS, REFERENCE_REQUIRED, REFUND_METHODS, SETTLEMENT_METHODS } from './constants.js';
 import { approvalSchema } from './orders.js';
 
 const amount = z.number().int().min(0).max(10_000_000);
@@ -129,3 +129,43 @@ export const settlementSchema = z
     path: ['reference'],
   });
 export type SettlementInput = z.infer<typeof settlementSchema>;
+
+/**
+ * Remboursement d'une addition payée : des lignes (avec remise en stock possible) ou un montant libre,
+ * jamais les deux. Un avoir sur ardoise désigne le client ; MoMo et Orange Money portent une référence.
+ */
+export const refundSchema = z
+  .object({
+    idempotencyKey: z.uuid(),
+    method: z.enum(REFUND_METHODS),
+    reason,
+    lines: z
+      .array(z.object({ orderLineId: z.uuid(), quantity: z.number().int().min(1).max(99) }))
+      .min(1)
+      .max(100)
+      .optional(),
+    amountXaf: z.number().int().min(1).max(10_000_000).optional(),
+    restock: z.boolean().default(false),
+    reference: reference.optional(),
+    customerId: z.uuid().optional(),
+    approval: approvalSchema.optional(),
+  })
+  .superRefine((r, ctx) => {
+    if (!!r.lines === (r.amountXaf !== undefined)) {
+      ctx.addIssue({ code: 'custom', message: 'Des lignes ou un montant, pas les deux', path: ['lines'] });
+    }
+    if (r.restock && !r.lines) {
+      ctx.addIssue({ code: 'custom', message: 'La remise en stock porte sur des lignes', path: ['restock'] });
+    }
+    if ((r.method === 'customer_credit') !== !!r.customerId) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Client requis pour un avoir, et seulement pour lui',
+        path: ['customerId'],
+      });
+    }
+    if ((r.method === 'mtn_momo' || r.method === 'orange_money') && !r.reference) {
+      ctx.addIssue({ code: 'custom', message: 'Référence de transaction obligatoire', path: ['reference'] });
+    }
+  });
+export type RefundInput = z.infer<typeof refundSchema>;

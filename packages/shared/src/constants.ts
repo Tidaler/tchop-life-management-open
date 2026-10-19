@@ -94,6 +94,10 @@ export const REFERENCE_REQUIRED: readonly PaymentMethod[] = ['mtn_momo', 'orange
 /** Moyens acceptés pour régler une ardoise (on ne rembourse pas une ardoise par une autre ardoise). */
 export const SETTLEMENT_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card'] as const;
 
+/** Moyens de remboursement ; « customer_credit » = avoir porté au crédit de l'ardoise d'un client. */
+export const REFUND_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card', 'customer_credit'] as const;
+export type RefundMethod = (typeof REFUND_METHODS)[number];
+
 /** Moyens de paiement d'une dépense (le virement bancaire en plus de ceux de la caisse, sans ardoise). */
 export const EXPENSE_METHODS = ['cash', 'mtn_momo', 'orange_money', 'card', 'bank_transfer'] as const;
 export type ExpenseMethod = (typeof EXPENSE_METHODS)[number];

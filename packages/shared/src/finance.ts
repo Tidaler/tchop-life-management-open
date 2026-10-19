@@ -82,5 +82,5 @@ export const auditQuerySchema = z.object({
 });
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
 
-export const EXPORT_KINDS = ['sales', 'payments', 'expenses', 'stock-movements'] as const;
+export const EXPORT_KINDS = ['sales', 'payments', 'refunds', 'expenses', 'stock-movements'] as const;
 export type ExportKind = (typeof EXPORT_KINDS)[number];

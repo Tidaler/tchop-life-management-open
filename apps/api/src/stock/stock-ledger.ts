@@ -123,6 +123,37 @@ export class StockLedger {
   }
 
   /**
+   * Remise en stock d'une part d'une ligne vendue (remboursement de marchandise intacte) :
+   * la fraction des sorties d'origine revient, au coût de ces sorties.
+   */
+  async restockSold(
+    tx: Tx,
+    siteId: string,
+    userId: string,
+    orderLineId: string,
+    fraction: number,
+    reason: string,
+    approvedById: string | null,
+  ): Promise<void> {
+    const sales = await tx.stockMovement.findMany({ where: { siteId, orderLineId, type: 'sale' } });
+    await this.record(
+      tx,
+      siteId,
+      userId,
+      sales.map((s) => ({
+        itemId: s.itemId,
+        locationId: s.locationId,
+        type: 'sale_cancel' as const,
+        quantity: s.quantity.times(fraction).negated(),
+        unitCostXaf: s.unitCostXaf,
+        orderLineId,
+        reason,
+        approvedById,
+      })),
+    );
+  }
+
+  /**
    * Annulation d'une ligne vendue. `restock` : la marchandise revient en stock (bière non ouverte).
    * `loss` : elle est perdue (plat préparé) ; la sortie est requalifiée en perte, pour que les rapports
    * distinguent ventes et pertes. Les mouvements inverses reprennent le coût de la sortie d'origine.

@@ -205,6 +205,18 @@ Chaque règle ci-dessous est vérifiée par au moins un test automatisé (`apps/
 | Téléphone des fournisseurs jamais journalisé | `purchases.service.ts` |
 | Liste des gérants approbateurs (noms seulement) ouverte à tout le personnel connecté ; le PIN reste vérifié par l'action | `approval.controller.ts` |
 
+### Remboursements et avoirs
+
+| Règle | Où |
+|---|---|
+| Seule une addition payée se rembourse ; jamais plus que le montant payé, ni plus que la quantité vendue ligne par ligne ; montant au prorata de la remise | `refunds.service.ts` |
+| Permission `refund.create` : le caissier a toujours besoin du PIN d'un autre gérant ; motif obligatoire | `refunds.service.ts`, matrice |
+| Remboursement en espèces : il sort de la caisse ouverte de l'utilisateur (verrouillée contre une clôture simultanée), déduit du théorique et du rapport Z ; la base refuse un remboursement en espèces sans session | `refunds.service.ts`, `cash.service.ts`, contrainte `CHECK` |
+| MoMo et Orange Money : référence obligatoire ; avoir sur ardoise : client désigné, écriture négative en ajout seul | `refundSchema`, `refunds.service.ts` |
+| Remboursements et lignes remboursées en ajout seul (déclencheur) ; avoir numéroté imprimé et figé ; clé d'idempotence | migration `remboursements` |
+| Remise en stock seulement pour des lignes remboursées, au coût de la sortie d'origine | `stock-ledger.ts` |
+| Chiffre d'affaires des rapports net des remboursements ; export CSV dédié | `reports.service.ts`, `exports.service.ts` |
+
 ### Phase 6 - Pilotage
 
 | Règle | Où |

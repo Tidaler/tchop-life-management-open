@@ -78,6 +78,7 @@ model Site {
   inventoryCounts   InventoryCount[]
   expenseCategories ExpenseCategory[]
   expenses          Expense[]
+  refunds           Refund[]
 
   @@unique([tenantId, slug])
   @@map("site")
@@ -1318,6 +1319,63 @@ model Expense {
   @@index([siteId, businessDay])
   @@index([sessionId])
   @@map("expense")
+}
+
+// ---------------------------------------------------------------- Remboursements et avoirs
+
+/// Moyen de remboursement ; « customer_credit » = avoir porté au crédit de l'ardoise d'un client.
+enum RefundMethod {
+  cash
+  mtn_momo
+  orange_money
+  card
+  customer_credit
+}
+
+/// Remboursement d'une addition payée : en ajout seul (déclencheur), numéroté, avoir imprimé et figé.
+model Refund {
+  id             String       @id @default(uuid(7)) @db.Uuid
+  siteId         String       @map("site_id") @db.Uuid
+  number         Int
+  billId         String       @map("bill_id") @db.Uuid
+  /// Session de caisse de la personne qui rembourse : obligatoire en espèces (elles en sortent).
+  sessionId      String?      @map("session_id") @db.Uuid
+  method         RefundMethod
+  amountXaf      Int          @map("amount_xaf")
+  reason         String
+  reference      String?
+  customerId     String?      @map("customer_id") @db.Uuid
+  /// Marchandise intacte remise en stock (lignes remboursées seulement).
+  restocked      Boolean      @default(false)
+  /// Avoir tel qu'imprimé.
+  snapshot       Json
+  idempotencyKey String       @map("idempotency_key")
+  createdById    String       @map("created_by") @db.Uuid
+  approvedById   String?      @map("approved_by") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  site  Site         @relation(fields: [siteId], references: [id])
+  lines RefundLine[]
+
+  @@unique([siteId, number])
+  @@unique([siteId, idempotencyKey])
+  @@index([billId])
+  @@index([sessionId])
+  @@map("refund")
+}
+
+model RefundLine {
+  id          String @id @default(uuid(7)) @db.Uuid
+  refundId    String @map("refund_id") @db.Uuid
+  orderLineId String @map("order_line_id") @db.Uuid
+  quantity    Int
+  amountXaf   Int    @map("amount_xaf")
+
+  refund Refund @relation(fields: [refundId], references: [id])
+
+  @@index([refundId])
+  @@index([orderLineId])
+  @@map("refund_line")
 }
 
 // ---------------------------------------------------------------- Audit

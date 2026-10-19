@@ -28,8 +28,12 @@ export function DashboardPage() {
           <div className="kpi-grid">
             <Kpi
               label={t('dash.revenue')}
-              value={money(data.sales.netXaf)}
-              hint={t('dash.taxIncluded')}
+              value={money(data.sales.revenueXaf)}
+              hint={
+                data.sales.refundsXaf > 0
+                  ? t('dash.refundsDeducted', { amount: money(data.sales.refundsXaf) })
+                  : t('dash.taxIncluded')
+              }
               strong
             />
             <Kpi label={t('dash.bills')} value={String(data.sales.bills)} />

@@ -60,6 +60,10 @@ export interface SalesReport {
     grossXaf: number;
     discountXaf: number;
     netXaf: number;
+    refunds: number;
+    refundsXaf: number;
+    /** Chiffre d'affaires net des remboursements. */
+    revenueXaf: number;
     averageTicketXaf: number;
     orders: number | null;
   };
@@ -83,6 +87,7 @@ export interface CashReport {
     openingFloatXaf: number;
     byMethod: Record<string, number>;
     cashExpensesXaf: number;
+    cashRefundsXaf: number;
     expectedCashXaf: number;
     countedCashXaf: number | null;
     differenceXaf: number | null;

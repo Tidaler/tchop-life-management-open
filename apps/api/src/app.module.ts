@@ -6,7 +6,13 @@ import { ApprovalController } from './approval/approval.controller.js';
 import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
 import { BillsService } from './cash/bills.service.js';
-import { BillsController, CashController, CustomersController } from './cash/cash.controllers.js';
+import {
+  BillsController,
+  CashController,
+  CustomersController,
+  RefundsController,
+} from './cash/cash.controllers.js';
+import { RefundsService } from './cash/refunds.service.js';
 import { CashService } from './cash/cash.service.js';
 import { CustomersService } from './customers/customers.service.js';
 import { EventsGateway, EventsService } from './events/events.gateway.js';
@@ -102,6 +108,7 @@ export class AppModule {
         CashController,
         BillsController,
         CustomersController,
+        RefundsController,
         ApprovalController,
         StockController,
         RecipesController,
@@ -133,6 +140,7 @@ export class AppModule {
         CashService,
         BillsService,
         CustomersService,
+        RefundsService,
         StockLedger,
         StockService,
         RecipesService,
