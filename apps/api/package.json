@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test",
     "test": "vitest run",
-    "cloud:register-site": "node --env-file-if-exists=../../.env dist/cli/register-site.js"
+    "cloud:register-site": "node --env-file-if-exists=../../.env dist/cli/register-site.js",
+    "catalog:import": "node --env-file-if-exists=../../.env dist/cli/import-catalog.js"
   },
   "dependencies": {
     "@nestjs/common": "^12.1.3",

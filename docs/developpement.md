@@ -91,6 +91,17 @@ Après 5 PIN faux, le compte est bloqué 5 minutes.
 | `pnpm db:reset` | Supprime et recrée la base de développement, puis relance le seed (**efface toutes les données** ; les fichiers photo restent dans `MEDIA_DIR`) |
 | `pnpm db:down` | Arrête PostgreSQL |
 
+## Carte de l'établissement
+
+La carte réelle des boissons est décrite dans `catalogue/boissons.json` (catégories, produits FR/EN, prix TTC en FCFA). Pour l'appliquer au site (variable `SITE_ID`) :
+
+```
+pnpm --filter @tchop/api catalog:import -- --dry-run   # simulation : affiche ce qui changerait
+pnpm --filter @tchop/api catalog:import                # import réel
+```
+
+L'import est rejouable : un produit déjà présent (même nom, ou ancien nom listé dans `aliases`) est mis à jour, les autres sont créés, ceux de `archiveProducts` sont archivés (jamais supprimés). Chaque boisson reçoit un article de stock et une recette d'une bouteille si elle n'en a pas. Pour changer un prix : modifier le fichier, puis relancer l'import. Une autre carte : `--file <carte.json> --site <identifiant>`.
+
 ## Relais par le cloud (test en local)
 
 Le menu QR peut être servi depuis Internet par une instance « cloud » de l'API, reliée au serveur local.
