@@ -81,6 +81,3 @@ export const auditQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(50),
 });
 export type AuditQuery = z.infer<typeof auditQuerySchema>;
-
-export const EXPORT_KINDS = ['sales', 'payments', 'refunds', 'expenses', 'stock-movements'] as const;
-export type ExportKind = (typeof EXPORT_KINDS)[number];

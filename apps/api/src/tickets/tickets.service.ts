@@ -1,7 +1,9 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { type LineStatus, type Prisma, type Station } from '@tchop/db';
-import { canMoveTicket, pickText, type TicketStatusInput, type Translated } from '@tchop/shared';
+import { businessDay, canMoveTicket, pickText, type TicketStatusInput, type Translated } from '@tchop/shared';
 import { AuditService } from '../audit/audit.service.js';
+import { APP_CONFIG, type AppConfig } from '../config.js';
+import { toDbDate } from '../common/counters.js';
 import { notFound } from '../common/errors.js';
 import { type AuthContext } from '../common/request-context.js';
 import { EventsService } from '../events/events.gateway.js';
@@ -32,12 +34,23 @@ export class TicketsService {
     private readonly audit: AuditService,
     private readonly events: EventsService,
     private readonly print: PrintService,
+    @Inject(APP_CONFIG) private readonly config: AppConfig,
   ) {}
 
-  /** Bons en cours (non servis), du plus ancien au plus récent. */
+  /**
+   * Bons en cours (non servis), du plus ancien au plus récent : ceux de la journée d'exploitation, et ceux
+   * d'une commande encore ouverte. Un bon oublié d'une commande payée un autre jour ne reste pas à l'écran.
+   */
   async listActive(auth: AuthContext, station?: Station) {
+    const site = await this.prisma.site.findUniqueOrThrow({ where: { id: auth.siteId } });
+    const today = toDbDate(businessDay(new Date(), site.timezone, this.config.BUSINESS_DAY_CUTOFF_HOUR));
     const tickets = await this.prisma.kitchenTicket.findMany({
-      where: { siteId: auth.siteId, status: { not: 'served' }, ...(station ? { station } : {}) },
+      where: {
+        siteId: auth.siteId,
+        status: { not: 'served' },
+        ...(station ? { station } : {}),
+        OR: [{ businessDay: { gte: today } }, { order: { status: 'open' } }],
+      },
       include: ticketInclude,
       orderBy: { createdAt: 'asc' },
     });

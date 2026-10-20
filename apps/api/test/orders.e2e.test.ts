@@ -264,6 +264,24 @@ describe('écran de préparation', () => {
     expect(active.some((t: { id: string }) => t.id === ticket.id)).toBe(false);
   });
 
+  it('un bon d’un jour passé reste affiché tant que la table est ouverte, puis disparaît', async () => {
+    const table = await newTable();
+    const { body: order } = await send(waiter, table.id, [{ productId: products.beer, quantity: 1 }]).expect(
+      200,
+    );
+    const ticket = await db.kitchenTicket.findFirstOrThrow({ where: { orderId: order.id } });
+    // Bon oublié d'une journée précédente (date éloignée : pas de conflit de numéro).
+    const past = new Date(Date.UTC(2001, 0, 1 + Math.floor(Math.random() * 3000)));
+    await db.kitchenTicket.update({ where: { id: ticket.id }, data: { businessDay: past } });
+    const shown = async () => {
+      const { body } = await as(kitchen, http().get('/api/tickets')).expect(200);
+      return body.some((t: { id: string }) => t.id === ticket.id) as boolean;
+    };
+    expect(await shown()).toBe(true);
+    await db.order.update({ where: { id: order.id }, data: { status: 'billed' } });
+    expect(await shown()).toBe(false);
+  });
+
   it('un caissier ne fait pas avancer les bons', async () => {
     const table = await newTable();
     const { body: order } = await send(waiter, table.id, [{ productId: products.beer, quantity: 1 }]).expect(

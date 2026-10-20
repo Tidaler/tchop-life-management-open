@@ -149,6 +149,7 @@ export const en: Messages = {
   'floorSetup.removeTable': 'Remove table',
   'floorSetup.confirmRemoveTable': 'Remove table {label}? Its QR code will stop working.',
   'floorSetup.labelTaken': 'Another table already has this name.',
+  'floorSetup.zoneNameTaken': 'Another area already has this name.',
   'floorSetup.printQr': 'Print QR codes',
   'floorSetup.replaceQr': 'Replace QR code',
   'floorSetup.confirmReplaceQr':

@@ -23,6 +23,21 @@ const newQrToken = () => randomBytes(16).toString('base64url');
 const labelTaken = () =>
   new ConflictException({ code: 'TABLE_LABEL_TAKEN', message: 'Une autre table porte déjà ce nom' });
 
+/** Deux zones actives du même nom (sans tenir compte de la casse) seraient indiscernables sur la tablette. */
+async function assertZoneNameFree(tx: Tx, siteId: string, name: string, exceptId?: string) {
+  const other = await tx.zone.findFirst({
+    where: {
+      siteId,
+      archivedAt: null,
+      name: { equals: name.trim(), mode: 'insensitive' },
+      ...(exceptId ? { id: { not: exceptId } } : {}),
+    },
+  });
+  if (other) {
+    throw new ConflictException({ code: 'ZONE_NAME_TAKEN', message: 'Une autre zone porte déjà ce nom' });
+  }
+}
+
 @Injectable()
 export class FloorService {
   constructor(
@@ -89,6 +104,7 @@ export class FloorService {
 
   async createZone(auth: AuthContext, input: ZoneCreateInput) {
     return this.prisma.$transaction(async (tx) => {
+      await assertZoneNameFree(tx, auth.siteId, input.name);
       const zone = await tx.zone.create({ data: { siteId: auth.siteId, ...input } });
       await this.log(tx, auth, 'floor.zone_created', 'zone', zone.id, undefined, input);
       return zone;
@@ -100,6 +116,7 @@ export class FloorService {
     return this.prisma.$transaction(async (tx) => {
       const before = await tx.zone.findFirst({ where: { id, siteId: auth.siteId, archivedAt: null } });
       if (!before) throw notFound('Zone');
+      if (data.name !== undefined) await assertZoneNameFree(tx, auth.siteId, data.name, id);
       const res = await tx.zone.updateMany({
         where: { id, version },
         data: { ...data, version: { increment: 1 } },

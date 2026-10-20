@@ -106,6 +106,10 @@ export type ExpenseMethod = (typeof EXPENSE_METHODS)[number];
 export const EXPENSE_KINDS = ['operating', 'purchase'] as const;
 export type ExpenseKind = (typeof EXPENSE_KINDS)[number];
 
+/** Exports CSV pour le comptable (ici, sans zod : l'écran des rapports reste léger). */
+export const EXPORT_KINDS = ['sales', 'payments', 'refunds', 'expenses', 'stock-movements'] as const;
+export type ExportKind = (typeof EXPORT_KINDS)[number];
+
 /** Unités de base des articles de stock. */
 export const STOCK_UNITS = ['piece', 'bottle', 'g', 'kg', 'ml', 'l'] as const;
 export type StockUnit = (typeof STOCK_UNITS)[number];
