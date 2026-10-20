@@ -65,7 +65,7 @@ sudo -u tchop mkdir -m 700 -p /opt/tchop/.ssh
 sudo -u tchop ssh-keygen -t ed25519 -N '' -f /opt/tchop/.ssh/id_ed25519
 sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
-cd /opt/tchop/app && sudo -u tchop git checkout v1.0.0
+cd /opt/tchop/app && sudo -u tchop git checkout v1.0.1
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -75,7 +75,7 @@ sudo -u tchop pnpm build
 ```bash
 sudo cp /opt/tchop/app/infra/site/tchop.env.example /etc/tchop/tchop.env
 sudo chown root:tchop /etc/tchop/tchop.env && sudo chmod 640 /etc/tchop/tchop.env
-openssl rand -base64 48   # valeur de JWT_SECRET
+openssl rand -hex 48   # valeur de JWT_SECRET (hexadécimal : jamais refusé au démarrage)
 sudo nano /etc/tchop/tchop.env   # DATABASE_URL, JWT_SECRET, SERVER_IP
 cd /opt/tchop/app && sudo -u tchop bash -c 'set -a; source /etc/tchop/tchop.env; set +a; pnpm --filter @tchop/db exec prisma migrate deploy'
 sudo /opt/tchop/app/infra/site/tchop.sh site:setup --name "TCHOP LIFE"   # recopier SITE_ID dans tchop.env
