@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react';
 import { contentSecurityPolicy } from '@tchop/shared';
 import { defineConfig, type Plugin } from 'vite';
 
-const apiTarget = process.env.API_URL ?? 'http://localhost:3000';
+const apiTarget = process.env.API_URL ?? 'http://127.0.0.1:3000';
 
 /** CSP ajoutée à la page compilée (en développement, Vite a besoin de scripts inline). */
 const csp = (): Plugin => ({

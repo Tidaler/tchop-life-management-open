@@ -63,6 +63,7 @@ const ERROR_KEYS: Record<string, MessageKey> = {
   CATEGORY_NOT_EMPTY: 'catalog.categoryNotEmpty',
   ZONE_NOT_EMPTY: 'floorSetup.zoneNotEmpty',
   TABLE_LABEL_TAKEN: 'floorSetup.labelTaken',
+  ZONE_NAME_TAKEN: 'floorSetup.zoneNameTaken',
   TABLE_HAS_OPEN_ORDER: 'order.tableHasOrder',
   TABLE_OCCUPIED: 'order.tableOccupied',
   APPROVAL_REQUIRED: 'order.approvalRequired',

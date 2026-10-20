@@ -150,6 +150,7 @@ export const fr = {
   'floorSetup.removeTable': 'Retirer la table',
   'floorSetup.confirmRemoveTable': 'Retirer la table {label} ? Son QR code cessera de fonctionner.',
   'floorSetup.labelTaken': 'Une autre table porte déjà ce nom.',
+  'floorSetup.zoneNameTaken': 'Une autre zone porte déjà ce nom.',
   'floorSetup.printQr': 'Imprimer les QR codes',
   'floorSetup.replaceQr': 'Remplacer le QR code',
   'floorSetup.confirmReplaceQr':

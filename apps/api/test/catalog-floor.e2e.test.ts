@@ -263,6 +263,20 @@ describe('salle et QR codes', () => {
     expect(qr.mode).toBe('order');
   });
 
+  it('refuse deux zones actives du même nom, à la création comme au renommage', async () => {
+    const name = `Terrasse ${tag()}`;
+    await asManager(http().post('/api/floor/zones')).send({ name }).expect(201);
+    const dup = await asManager(http().post('/api/floor/zones'))
+      .send({ name: ` ${name.toUpperCase()} ` })
+      .expect(409);
+    expect(dup.body.code).toBe('ZONE_NAME_TAKEN');
+    const other = await createZone();
+    const rename = await asManager(http().patch(`/api/floor/zones/${other.id}`))
+      .send({ name, version: other.version })
+      .expect(409);
+    expect(rename.body.code).toBe('ZONE_NAME_TAKEN');
+  });
+
   it('refuse deux tables actives du même nom, sans tenir compte de la casse', async () => {
     const zone = await createZone();
     const label = `D${tag()}`.slice(0, 8);
