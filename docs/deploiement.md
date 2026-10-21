@@ -1,6 +1,6 @@
 # Installation sur le serveur local
 
-Référence des commandes pour installer TCHOP LIFE MANAGEMENT sur le serveur de l'établissement (Ubuntu Server 24.04 LTS). Le guide détaillé, pas à pas, est remis à part au format Word.
+Référence des commandes pour installer TCHOP LIFE MANAGEMENT sur le serveur de l'établissement (Ubuntu 24.04 LTS : Desktop si le serveur sert aussi de poste de caisse, sinon Server). Le guide détaillé, pas à pas, est remis à part au format Word.
 
 ## Ce qu'on obtient
 
@@ -58,6 +58,9 @@ sudo -u postgres createdb -O tchop tchop
 
 ```bash
 sudo useradd --system --create-home --home-dir /opt/tchop --shell /bin/bash tchop
+# Ubuntu 24.04 crée ce dossier en 750 : Caddy ne pourrait pas lire l'application ni le certificat.
+# 711 : traversable, mais son contenu ne peut pas être listé (les secrets sont dans /etc/tchop).
+sudo chmod 711 /opt/tchop
 sudo mkdir -p /var/lib/tchop/media /etc/tchop /opt/tchop/public /var/backups/tchop
 sudo chown -R tchop:tchop /var/lib/tchop
 # Clé de déploiement (lecture seule) : ajouter la clé publique dans GitHub > Settings > Deploy keys.
@@ -65,7 +68,7 @@ sudo -u tchop mkdir -m 700 -p /opt/tchop/.ssh
 sudo -u tchop ssh-keygen -t ed25519 -N '' -f /opt/tchop/.ssh/id_ed25519
 sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
-cd /opt/tchop/app && sudo -u tchop git checkout v1.0.1
+cd /opt/tchop/app && sudo -u tchop git checkout v1.0.2
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -107,6 +110,38 @@ curl -fsS http://127.0.0.1:3000/api/health
 2. Ouvrir `http://SERVER_IP/tchop-ca.crt`, installer le certificat (Android : « Certificat CA » ; iPad : profil, puis Réglages > Général > Informations > Réglages des certificats).
 3. Ouvrir `https://SERVER_IP` dans Chrome (Safari sur iPad), « Installer l'application ».
 4. Le gérant crée un code dans « Appareils » ; la tablette l'utilise pour s'enregistrer ; connexion par PIN ensuite.
+
+## 8. Poste de caisse sur le serveur (facultatif)
+
+Le serveur peut servir de poste de caisse (Ubuntu Desktop, écran, clavier, souris). **Il ne s'éteint jamais** : en fin de journée, on clôture la caisse et on clique sur « Verrouiller ».
+
+```bash
+# Ni veille ni hibernation ; le bouton d'alimentation ne fait rien (effet au prochain démarrage)
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+sudo mkdir -p /etc/systemd/logind.conf.d
+printf '[Login]
+HandlePowerKey=ignore
+' | sudo tee /etc/systemd/logind.conf.d/tchop.conf
+# Google Chrome et l'outil de certificats
+wget -O /tmp/chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo apt install -y /tmp/chrome.deb libnss3-tools
+# Session « caisse » sans droits d'administration (jamais dans le groupe sudo)
+sudo adduser --comment "Caisse" caisse
+# La session caisse ne peut ni éteindre, ni redémarrer, ni mettre en veille le serveur
+sudo cp /opt/tchop/app/infra/site/50-tchop-caisse.rules /etc/polkit-1/rules.d/
+```
+
+Ensuite : connexion automatique de « caisse » (Paramètres > Système > Utilisateurs), puis dans la session caisse, après avoir ouvert Chrome une fois :
+
+```bash
+wget -O ~/tchop-ca.crt http://SERVER_IP/tchop-ca.crt
+certutil -d sql:$HOME/.pki/nssdb -A -t "C,," -n "TCHOP LIFE" -i ~/tchop-ca.crt
+mkdir -p ~/.config/autostart
+cp /opt/tchop/app/infra/site/tchop-caisse.desktop ~/.config/autostart/
+sed -i 's/SERVER_IP/192.168.1.10/' ~/.config/autostart/tchop-caisse.desktop
+```
+
+Le poste s'enregistre comme une tablette (type « Ordinateur »). Adresse : toujours `https://SERVER_IP`, jamais `localhost`.
 
 ## Exploitation
 
