@@ -1,0 +1,7 @@
+# ~/.config/autostart/tchop-caisse.desktop - ouvre l'application de caisse en plein écran à l'ouverture de la session.
+# Remplacer SERVER_IP par l'adresse fixe du serveur (jamais localhost : le certificat est fait pour l'adresse).
+[Desktop Entry]
+Type=Application
+Name=TCHOP LIFE - Caisse
+Exec=google-chrome --app=https://SERVER_IP --start-fullscreen --no-first-run
+X-GNOME-Autostart-enabled=true
