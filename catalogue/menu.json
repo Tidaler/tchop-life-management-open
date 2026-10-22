@@ -1,0 +1,97 @@
+{
+  "description": "Menu de TCHOP LIFE : plats et accompagnements (prix TTC en FCFA). Les recettes (ingrédients par portion) se saisissent ensuite dans Stocks, Recettes.",
+  "station": "kitchen",
+  "stockLocation": "Cuisine",
+  "firstSortOrder": 0,
+  "categories": [
+    {
+      "name": {
+        "fr": "Plats",
+        "en": "Dishes"
+      },
+      "products": [
+        {
+          "name": {
+            "fr": "Saucisse + frites",
+            "en": "Sausage and fries"
+          },
+          "priceXaf": 2500,
+          "stock": false
+        },
+        {
+          "name": {
+            "fr": "1/4 poulet rôti frites",
+            "en": "Quarter roast chicken and fries"
+          },
+          "priceXaf": 2500,
+          "stock": false
+        },
+        {
+          "name": {
+            "fr": "Poulet pané frites",
+            "en": "Breaded chicken and fries"
+          },
+          "priceXaf": 2500,
+          "stock": false
+        },
+        {
+          "name": {
+            "fr": "Plat de sauté spaghetti",
+            "en": "Sautéed spaghetti"
+          },
+          "priceXaf": 1000,
+          "stock": false
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Grillades",
+        "en": "Grills"
+      },
+      "station": "grill",
+      "products": [
+        {
+          "name": {
+            "fr": "Brochette de porc",
+            "en": "Pork skewer"
+          },
+          "priceXaf": 200,
+          "stock": false
+        },
+        {
+          "name": {
+            "fr": "Brochette de viande",
+            "en": "Beef skewer"
+          },
+          "priceXaf": 200,
+          "stock": false
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Accompagnements",
+        "en": "Sides"
+      },
+      "products": [
+        {
+          "name": {
+            "fr": "Portion de frites de plantain",
+            "en": "Plantain fries"
+          },
+          "priceXaf": 500,
+          "stock": false
+        },
+        {
+          "name": {
+            "fr": "Portion de frites de pommes",
+            "en": "French fries"
+          },
+          "priceXaf": 500,
+          "stock": false
+        }
+      ]
+    }
+  ]
+}
