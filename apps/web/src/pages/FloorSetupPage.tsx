@@ -19,6 +19,8 @@ export interface FloorZone {
   id: string;
   name: string;
   sortOrder: number;
+  /** Salon VIP : tarifs et offre VIP de chaque catégorie. */
+  vip: boolean;
   version: number;
   tables: FloorTable[];
 }
@@ -42,6 +44,7 @@ export function FloorSetupPage() {
   const [zoneId, setZoneId] = useState<string | null>(null);
   const [editing, setEditing] = useState<FloorTable | 'new' | null>(null);
   const [newZone, setNewZone] = useState(false);
+  const [editingZone, setEditingZone] = useState(false);
   const [notice, setNotice] = useState<{ kind: 'ok' | 'danger'; text: string } | null>(null);
 
   const refresh = () =>
@@ -107,7 +110,9 @@ export function FloorSetupPage() {
                 aria-current={z.id === zone?.id}
                 onClick={() => setZoneId(z.id)}
               >
-                <span>{z.name}</span>
+                <span>
+                  {z.name} {z.vip && <span className="pill">VIP</span>}
+                </span>
                 <span className="muted">{z.tables.length}</span>
               </button>
             ))}
@@ -119,8 +124,13 @@ export function FloorSetupPage() {
           {zone && (
             <div>
               <div className="page-head" style={{ marginBottom: 12 }}>
-                <h2>{zone.name}</h2>
+                <h2>
+                  {zone.name} {zone.vip && <span className="pill">{t('floorSetup.vip')}</span>}
+                </h2>
                 <div className="confirm">
+                  <button className="btn" onClick={() => setEditingZone(true)}>
+                    {t('floorSetup.editZone')}
+                  </button>
                   <ConfirmButton
                     label={t('floorSetup.removeZone')}
                     question={zone.name}
@@ -180,6 +190,14 @@ export function FloorSetupPage() {
       {newZone && (
         <ZoneEditor onClose={() => setNewZone(false)} onSaved={(id) => setZoneId(id)} refresh={refresh} />
       )}
+      {editingZone && zone && (
+        <ZoneEditor
+          zone={zone}
+          onClose={() => setEditingZone(false)}
+          onSaved={(id) => setZoneId(id)}
+          refresh={refresh}
+        />
+      )}
       {editing && zone && floor.data && (
         <TableEditor
           zones={floor.data}
@@ -195,19 +213,28 @@ export function FloorSetupPage() {
 }
 
 function ZoneEditor({
+  zone,
   onClose,
   onSaved,
   refresh,
 }: {
+  zone?: FloorZone;
   onClose: () => void;
   onSaved: (id: string) => void;
   refresh: () => Promise<unknown>;
 }) {
   const { t } = useI18n();
-  const [name, setName] = useState('');
+  const [name, setName] = useState(zone?.name ?? '');
+  const [vip, setVip] = useState(zone?.vip ?? false);
   const [error, setError] = useState<string | null>(null);
   const save = useMutation({
-    mutationFn: () => api<{ id: string }>('/floor/zones', { method: 'POST', body: { name } }),
+    mutationFn: () =>
+      zone
+        ? api<{ id: string }>(`/floor/zones/${zone.id}`, {
+            method: 'PATCH',
+            body: { version: zone.version, name, vip },
+          })
+        : api<{ id: string }>('/floor/zones', { method: 'POST', body: { name, vip } }),
     onSuccess: (zone) => {
       void refresh();
       onSaved(zone.id);
@@ -216,7 +243,7 @@ function ZoneEditor({
     onError: (e) => setError(errorMessage(e, t)),
   });
   return (
-    <Modal title={t('floorSetup.newZone')} onClose={onClose}>
+    <Modal title={t(zone ? 'floorSetup.editZone' : 'floorSetup.newZone')} onClose={onClose}>
       <form
         onSubmit={(e: FormEvent) => {
           e.preventDefault();
@@ -233,6 +260,11 @@ function ZoneEditor({
             onChange={(e) => setName(e.target.value)}
           />
         </div>
+        <label className="check">
+          <input type="checkbox" checked={vip} onChange={(e) => setVip(e.target.checked)} />
+          {t('floorSetup.vipZone')}
+        </label>
+        <p className="muted small">{t('floorSetup.vipHelp')}</p>
         {error && <div className="alert danger">{error}</div>}
         <div className="modal-foot">
           <span />

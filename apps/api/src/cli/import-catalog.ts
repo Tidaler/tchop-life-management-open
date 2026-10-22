@@ -17,7 +17,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 import { createPrismaClient, type Prisma, type Station } from '@tchop/db';
-import { STATIONS } from '@tchop/shared';
+import { STATIONS, VIP_SURCHARGE_MAX_XAF } from '@tchop/shared';
 import sharp from 'sharp';
 import { z } from 'zod';
 
@@ -34,6 +34,13 @@ const catalogSchema = z.object({
         aliases: z.array(z.string()).default([]),
         /** Poste de préparation de la catégorie, s'il diffère de celui de la carte (ex. grillades). */
         station: z.enum(STATIONS).optional(),
+        /** Salon VIP : catégorie proposée ou non, supplément par produit. Absent : réglage laissé tel quel. */
+        vip: z
+          .object({
+            offered: z.boolean(),
+            surchargeXaf: z.number().int().min(0).max(VIP_SURCHARGE_MAX_XAF).default(0),
+          })
+          .optional(),
         products: z
           .array(
             z.object({
@@ -159,18 +166,30 @@ async function importFile(url: string, siteId: string, file: string): Promise<vo
             const station = (cat.station ?? catalog.station) as Station;
             let categoryId = await findByName(tx, 'category', siteId, [cat.name.fr, ...cat.aliases]);
             const sortOrder = catalog.firstSortOrder + ci;
+            const vip = cat.vip
+              ? { vipOffered: cat.vip.offered, vipSurchargeXaf: cat.vip.offered ? cat.vip.surchargeXaf : 0 }
+              : {};
             if (categoryId) {
               const before = await tx.category.findUniqueOrThrow({ where: { id: categoryId } });
               const name = before.name as { fr: string; en?: string };
-              if (name.fr !== cat.name.fr || name.en !== cat.name.en || before.sortOrder !== sortOrder) {
+              const vipChanged =
+                !!cat.vip &&
+                (before.vipOffered !== vip.vipOffered || before.vipSurchargeXaf !== vip.vipSurchargeXaf);
+              if (
+                name.fr !== cat.name.fr ||
+                name.en !== cat.name.en ||
+                before.sortOrder !== sortOrder ||
+                vipChanged
+              ) {
                 await tx.category.update({
                   where: { id: categoryId },
-                  data: { name: cat.name, sortOrder, version: { increment: 1 } },
+                  data: { name: cat.name, sortOrder, ...vip, version: { increment: 1 } },
                 });
                 report.categoriesUpdated += 1;
               }
             } else {
-              categoryId = (await tx.category.create({ data: { siteId, name: cat.name, sortOrder } })).id;
+              categoryId = (await tx.category.create({ data: { siteId, name: cat.name, sortOrder, ...vip } }))
+                .id;
               report.categoriesCreated += 1;
             }
 

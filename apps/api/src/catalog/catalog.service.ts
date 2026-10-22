@@ -73,6 +73,8 @@ export class CatalogService {
         id: c.id,
         name: c.name,
         visibleOnQr: c.visibleOnQr,
+        vipOffered: c.vipOffered,
+        vipSurchargeXaf: c.vipSurchargeXaf,
         sortOrder: c.sortOrder,
         version: c.version,
         archivedAt: c.archivedAt,

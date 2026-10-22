@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { type Prisma, type Station } from '@tchop/db';
-import { pickText, type SendLineInput, type Translated } from '@tchop/shared';
+import { pickText, type SendLineInput, type Translated, zonePriceXaf } from '@tchop/shared';
 import { notFound } from '../common/errors.js';
 
 export interface ModifierSnapshot {
@@ -29,15 +29,24 @@ export interface PricedLine {
 @Injectable()
 export class PricingService {
   /**
+   * @param tableId table servie : dans une zone VIP, les règles VIP des catégories s'appliquent
+   *   (catégorie non proposée refusée, supplément ajouté au prix).
    * @param options.publicOnly menu QR : seuls les produits et catégories visibles sur le menu public
    *   sont commandables (un produit masqué est traité comme inexistant, sans rien révéler de plus).
    */
   async price(
     tx: Prisma.TransactionClient,
     siteId: string,
+    tableId: string,
     lines: SendLineInput[],
     options: { publicOnly?: boolean } = {},
   ): Promise<PricedLine[]> {
+    const table = await tx.diningTable.findFirst({
+      where: { id: tableId, siteId, archivedAt: null },
+      include: { zone: true },
+    });
+    if (!table) throw notFound('Table');
+    const vip = table.zone.vip;
     const ids = [...new Set(lines.map((l) => l.productId))];
     const products = await tx.product.findMany({
       where: {
@@ -49,6 +58,7 @@ export class PricingService {
           : {}),
       },
       include: {
+        category: true,
         modifierGroups: {
           include: { group: { include: { modifiers: { where: { archivedAt: null } } } } },
         },
@@ -59,6 +69,16 @@ export class PricingService {
     return lines.map((line) => {
       const product = byId.get(line.productId);
       if (!product) throw notFound('Produit');
+      const basePriceXaf = zonePriceXaf(product.priceXaf, product.category, vip);
+      if (basePriceXaf === null) {
+        // Menu QR : un produit absent du menu de la table est traité comme inexistant.
+        if (options.publicOnly) throw notFound('Produit');
+        throw new ConflictException({
+          code: 'NOT_OFFERED_IN_ZONE',
+          message: `${pickText(product.name as Translated, 'fr')} n'est pas proposé dans cette zone`,
+          productId: product.id,
+        });
+      }
       if (!product.available) {
         throw new ConflictException({
           code: 'PRODUCT_UNAVAILABLE',
@@ -93,7 +113,7 @@ export class PricingService {
       return {
         productId: product.id,
         name: product.name as Translated,
-        unitPriceXaf: product.priceXaf + modifiers.reduce((s, m) => s + m.priceDeltaXaf, 0),
+        unitPriceXaf: basePriceXaf + modifiers.reduce((s, m) => s + m.priceDeltaXaf, 0),
         taxRateBp: product.taxRateBp,
         quantity: line.quantity,
         modifiers,

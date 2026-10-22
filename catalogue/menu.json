@@ -1,5 +1,5 @@
 {
-  "description": "Menu de TCHOP LIFE : plats et accompagnements (prix TTC en FCFA). Les recettes (ingrédients par portion) se saisissent ensuite dans Stocks, Recettes.",
+  "description": "Menu de TCHOP LIFE : plats et accompagnements (prix TTC en FCFA). Les recettes (ingrédients par portion) se saisissent ensuite dans Stocks, Recettes. Salon VIP : plats et accompagnements + 500 F, brochettes à 300 F (+ 100 F).",
   "station": "kitchen",
   "stockLocation": "Cuisine",
   "firstSortOrder": 0,
@@ -8,6 +8,10 @@
       "name": {
         "fr": "Plats",
         "en": "Dishes"
+      },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 500
       },
       "products": [
         {
@@ -50,6 +54,10 @@
         "en": "Grills"
       },
       "station": "grill",
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 100
+      },
       "products": [
         {
           "name": {
@@ -73,6 +81,10 @@
       "name": {
         "fr": "Accompagnements",
         "en": "Sides"
+      },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 500
       },
       "products": [
         {

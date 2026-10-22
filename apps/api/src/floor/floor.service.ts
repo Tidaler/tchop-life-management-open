@@ -62,6 +62,7 @@ export class FloorService {
       id: z.id,
       name: z.name,
       sortOrder: z.sortOrder,
+      vip: z.vip,
       version: z.version,
       tables: z.tables.map((t) => ({
         id: t.id,

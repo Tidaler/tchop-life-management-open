@@ -2,12 +2,12 @@ import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { HttpException, Injectable } from '@nestjs/common';
-import { QR_TOKEN_PATTERN, type QrSubmitInput } from '@tchop/shared';
+import { menuForZone, QR_TOKEN_PATTERN, type QrSubmitInput } from '@tchop/shared';
 import { sha256 } from '../common/crypto.js';
 import { notFound } from '../common/errors.js';
 import { MediaService } from '../media/media.service.js';
 import { PrismaService } from '../prisma.service.js';
-import { MAX_RELAYED_MEDIA_BYTES, type RpcResponse } from './protocol.js';
+import { MAX_RELAYED_MEDIA_BYTES, type RpcResponse, type Snapshot } from './protocol.js';
 import { SiteLinkGateway } from './site-link.gateway.js';
 
 /** Interface commune aux deux façons de servir le menu QR : par le site lui-même, ou par le cloud. */
@@ -44,7 +44,7 @@ export class CloudMenuService implements PublicMenuBackend {
     const snapshot = await this.prisma.cloudMenuSnapshot.findUnique({ where: { siteId: route.siteId } });
     if (!snapshot) throw notFound('Menu');
     return {
-      ...(snapshot.payload as object),
+      ...menuForZone(snapshot.payload as unknown as Snapshot['menu'], route.vip),
       table: { label: route.tableLabel },
       // Commande possible seulement si le site est relié à cet instant.
       ordering: route.mode === 'order' && this.link.isConnected(route.siteId),

@@ -239,6 +239,8 @@ model Zone {
   siteId     String    @map("site_id") @db.Uuid
   name       String
   sortOrder  Int       @default(0) @map("sort_order")
+  /// Salon VIP : tarifs et offre propres (règles portées par chaque catégorie).
+  vip        Boolean   @default(false)
   archivedAt DateTime? @map("archived_at") @db.Timestamptz(3)
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt  DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
@@ -336,15 +338,18 @@ model QrOrderRequest {
 // ---------------------------------------------------------------- Catalogue
 
 model Category {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  siteId      String    @map("site_id") @db.Uuid
-  name        Json
-  sortOrder   Int       @default(0) @map("sort_order")
-  visibleOnQr Boolean   @default(true) @map("visible_on_qr")
-  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(3)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  version     Int       @default(1)
+  id              String    @id @default(uuid(7)) @db.Uuid
+  siteId          String    @map("site_id") @db.Uuid
+  name            Json
+  sortOrder       Int       @default(0) @map("sort_order")
+  visibleOnQr     Boolean   @default(true) @map("visible_on_qr")
+  /// Proposée dans les zones VIP, avec un supplément ajouté au prix de chaque produit.
+  vipOffered      Boolean   @default(true) @map("vip_offered")
+  vipSurchargeXaf Int       @default(0) @map("vip_surcharge_xaf")
+  archivedAt      DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version         Int       @default(1)
 
   site     Site      @relation(fields: [siteId], references: [id])
   products Product[]
@@ -834,10 +839,12 @@ model CloudMenuSnapshot {
 
 /// Aiguillage d'un QR code vers son site : seule l'empreinte du jeton est connue du cloud.
 model CloudQrRoute {
-  tokenHash  String @id @map("token_hash")
-  siteId     String @map("site_id") @db.Uuid
-  tableLabel String @map("table_label")
+  tokenHash  String  @id @map("token_hash")
+  siteId     String  @map("site_id") @db.Uuid
+  tableLabel String  @map("table_label")
   mode       QrMode
+  /// Table d'une zone VIP : le cloud applique les règles VIP des catégories au menu.
+  vip        Boolean @default(false)
 
   @@index([siteId])
   @@map("cloud_qr_route")

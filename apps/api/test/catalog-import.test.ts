@@ -135,6 +135,7 @@ describe("import d'une carte", () => {
       {
         name: { fr: `Grill ${tag}`, en: 'Grill' },
         station: 'grill',
+        vip: { offered: true, surchargeXaf: 100 },
         products: [{ name: { fr: grilled, en: grilled }, priceXaf: 200, stock: false }],
       },
       {
@@ -143,7 +144,12 @@ describe("import d'une carte", () => {
       },
     ];
     expect(write(categories)).toContain('Photos : 1');
-    expect(await product(grilled)).toMatchObject({ station: 'grill', recipeLines: [] });
+    const grill = await product(grilled);
+    expect(grill).toMatchObject({ station: 'grill', recipeLines: [] });
+    expect(await db.category.findUniqueOrThrow({ where: { id: grill!.categoryId } })).toMatchObject({
+      vipOffered: true,
+      vipSurchargeXaf: 100,
+    });
     const withPhoto = await product(bottle);
     expect(withPhoto!.imageUrl).toMatch(/^\/api\/media\/[0-9a-f-]{36}\.webp$/);
     expect(readdirSync(media)).toEqual([withPhoto!.imageUrl!.split('/').pop()]);

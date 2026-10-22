@@ -6,6 +6,7 @@ const versioned = { version: z.number().int().positive() };
 export const zoneCreateSchema = z.object({
   name: z.string().trim().min(1).max(40),
   sortOrder: z.number().int().min(0).default(0),
+  vip: z.boolean().default(false),
 });
 export type ZoneCreateInput = z.infer<typeof zoneCreateSchema>;
 
@@ -13,6 +14,7 @@ export const zoneUpdateSchema = z.object({
   ...versioned,
   name: z.string().trim().min(1).max(40).optional(),
   sortOrder: z.number().int().min(0).optional(),
+  vip: z.boolean().optional(),
 });
 export type ZoneUpdateInput = z.infer<typeof zoneUpdateSchema>;
 
