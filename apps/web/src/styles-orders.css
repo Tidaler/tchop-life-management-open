@@ -114,6 +114,10 @@
   place-items: center;
   font-size: 26px;
 }
+/* Photo entière (une bouteille n'est pas coupée), sur le fond de la vignette. */
+.product img {
+  object-fit: contain;
+}
 .product .price {
   color: var(--brand-ink);
   font-weight: 700;

@@ -1,6 +1,14 @@
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -100,5 +108,84 @@ describe("import d'une carte", () => {
       orderBy: { id: 'desc' },
     });
     expect(log?.after).toMatchObject({ archived: [extra] });
+  });
+
+  it('poste par catégorie, photo ajoutée une seule fois, catégorie vide archivée', async () => {
+    const media = mkdtempSync(join(tmpdir(), 'tchop-media-'));
+    mkdirSync(join(dir, 'images'), { recursive: true });
+    copyFileSync(
+      new URL('../../../catalogue/images/heineken.webp', import.meta.url),
+      join(dir, 'images', 'bouteille.webp'),
+    );
+    const grilled = `Brochette ${tag}`;
+    const bottle = `Bouteille ${tag}`;
+    const emptyCategory = `Vide ${tag}`;
+    const write = (categories: object[], archiveCategories: string[] = []) => {
+      const file = join(dir, `${randomUUID()}.json`);
+      writeFileSync(
+        file,
+        JSON.stringify({ station: 'kitchen', stockLocation: 'Cuisine', categories, archiveCategories }),
+      );
+      return execFileSync(process.execPath, [script, '--', '--file', file, '--site', DEMO_SITE_ID], {
+        env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL, MEDIA_DIR: media },
+        encoding: 'utf8',
+      });
+    };
+    const categories = [
+      {
+        name: { fr: `Grill ${tag}`, en: 'Grill' },
+        station: 'grill',
+        products: [{ name: { fr: grilled, en: grilled }, priceXaf: 200, stock: false }],
+      },
+      {
+        name: { fr: emptyCategory, en: emptyCategory },
+        products: [{ name: { fr: bottle, en: bottle }, priceXaf: 900, image: 'images/bouteille.webp' }],
+      },
+    ];
+    expect(write(categories)).toContain('Photos : 1');
+    expect(await product(grilled)).toMatchObject({ station: 'grill', recipeLines: [] });
+    const withPhoto = await product(bottle);
+    expect(withPhoto!.imageUrl).toMatch(/^\/api\/media\/[0-9a-f-]{36}\.webp$/);
+    expect(readdirSync(media)).toEqual([withPhoto!.imageUrl!.split('/').pop()]);
+
+    // Rejouable : la photo n'est pas réimportée. Une catégorie qui a encore des produits n'est pas archivée.
+    expect(write(categories, [emptyCategory])).toContain('Photos : 0');
+    expect((await product(bottle))!.imageUrl).toBe(withPhoto!.imageUrl);
+    const category = () =>
+      db.category.findFirstOrThrow({
+        where: { siteId: DEMO_SITE_ID, name: { path: ['fr'], equals: emptyCategory } },
+      });
+    expect((await category()).archivedAt).toBeNull();
+
+    await db.product.update({ where: { id: withPhoto!.id }, data: { archivedAt: new Date() } });
+    write([categories[0]!], [emptyCategory]);
+    expect((await category()).archivedAt).not.toBeNull();
+  });
+
+  it('les cartes du dépôt sont valides et leurs photos existent', () => {
+    for (const name of ['boissons.json', 'menu.json']) {
+      const out = execFileSync(
+        process.execPath,
+        [
+          script,
+          '--',
+          '--file',
+          fileURLToPath(new URL(`../../../catalogue/${name}`, import.meta.url)),
+          '--site',
+          DEMO_SITE_ID,
+          '--dry-run',
+        ],
+        { env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL }, encoding: 'utf8' },
+      );
+      expect(out).toContain('Simulation');
+    }
+    const catalog = JSON.parse(
+      readFileSync(new URL('../../../catalogue/boissons.json', import.meta.url), 'utf8'),
+    ) as {
+      categories: { products: { image?: string }[] }[];
+    };
+    for (const p of catalog.categories.flatMap((c) => c.products)) {
+      if (p.image) expect(existsSync(new URL(`../../../catalogue/${p.image}`, import.meta.url))).toBe(true);
+    }
   });
 });

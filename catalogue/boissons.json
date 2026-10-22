@@ -1,254 +1,557 @@
 {
-  "description": "Carte des boissons de l'établissement (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et liste des spiritueux, champagnes et vins remises par l'établissement.",
+  "description": "Carte des boissons de TCHOP LIFE (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et carte des spiritueux et bouteilles de l'établissement ; photos découpées dans la carte des spiritueux.",
   "station": "bar",
   "stockLocation": "Bar",
   "firstSortOrder": 10,
   "categories": [
     {
-      "name": { "fr": "Bières", "en": "Beers" },
+      "name": {
+        "fr": "Bières",
+        "en": "Beers"
+      },
       "aliases": ["Bières"],
       "products": [
-        { "name": { "fr": "Castel", "en": "Castel" }, "priceXaf": 1000, "aliases": ["Castel 65 cl"] },
         {
-          "name": { "fr": "33 Export", "en": "33 Export" },
+          "name": {
+            "fr": "Petite Guinness",
+            "en": "Small Guinness"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "33 Export",
+            "en": "33 Export"
+          },
           "priceXaf": 1000,
           "aliases": ["33 Export 65 cl"]
         },
         {
-          "name": { "fr": "Mützig", "en": "Mützig" },
+          "name": {
+            "fr": "Mützig",
+            "en": "Mützig"
+          },
           "priceXaf": 1000,
           "aliases": ["Mützig 65 cl", "Mutzig"]
         },
-        { "name": { "fr": "Petite Guinness", "en": "Small Guinness" }, "priceXaf": 1000 },
-        { "name": { "fr": "Smooth Guinness", "en": "Smooth Guinness" }, "priceXaf": 1500 },
-        { "name": { "fr": "Kadji Beer", "en": "Kadji Beer" }, "priceXaf": 1000 },
-        { "name": { "fr": "Beaufort", "en": "Beaufort" }, "priceXaf": 1000 },
-        { "name": { "fr": "Dopel", "en": "Dopel" }, "priceXaf": 1000 },
-        { "name": { "fr": "Madoran", "en": "Madoran" }, "priceXaf": 1000 },
-        { "name": { "fr": "Isenbeck", "en": "Isenbeck" }, "priceXaf": 1500 },
-        { "name": { "fr": "Skool", "en": "Skool" }, "priceXaf": 1500 },
-        { "name": { "fr": "Heineken", "en": "Heineken" }, "priceXaf": 1500 }
+        {
+          "name": {
+            "fr": "Kadji Beer",
+            "en": "Kadji Beer"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "Castel",
+            "en": "Castel"
+          },
+          "priceXaf": 1000,
+          "aliases": ["Castel 65 cl"]
+        },
+        {
+          "name": {
+            "fr": "Doppel",
+            "en": "Doppel"
+          },
+          "priceXaf": 1000,
+          "aliases": ["Dopel"]
+        },
+        {
+          "name": {
+            "fr": "Smooth Guinness",
+            "en": "Smooth Guinness"
+          },
+          "priceXaf": 1500
+        },
+        {
+          "name": {
+            "fr": "Isenbeck",
+            "en": "Isenbeck"
+          },
+          "priceXaf": 1500
+        },
+        {
+          "name": {
+            "fr": "Skool",
+            "en": "Skool"
+          },
+          "priceXaf": 1500
+        },
+        {
+          "name": {
+            "fr": "Heineken",
+            "en": "Heineken"
+          },
+          "priceXaf": 1500,
+          "image": "images/heineken.webp"
+        }
       ]
     },
     {
-      "name": { "fr": "Boissons alcoolisées aromatisées", "en": "Flavoured alcoholic drinks" },
+      "name": {
+        "fr": "Boissons alcoolisées aromatisées",
+        "en": "Flavoured alcoholic drinks"
+      },
       "products": [
-        { "name": { "fr": "Booster", "en": "Booster" }, "priceXaf": 1000 },
-        { "name": { "fr": "Orijin", "en": "Orijin" }, "priceXaf": 1000 },
         {
-          "name": { "fr": "Smirnoff Ice", "en": "Smirnoff Ice" },
+          "name": {
+            "fr": "Booster",
+            "en": "Booster"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "Orijin",
+            "en": "Orijin"
+          },
+          "priceXaf": 1000,
+          "aliases": ["Orijn"]
+        },
+        {
+          "name": {
+            "fr": "Smirnoff Ice",
+            "en": "Smirnoff Ice"
+          },
           "priceXaf": 1500,
           "aliases": ["Ice Smirnoff"]
         }
       ]
     },
     {
-      "name": { "fr": "Sodas, jus & eaux", "en": "Soft drinks, juices & water" },
-      "aliases": ["Sucreries & eaux"],
-      "products": [
-        { "name": { "fr": "Coca-Cola", "en": "Coca-Cola" }, "priceXaf": 1000 },
-        { "name": { "fr": "Djino", "en": "Djino" }, "priceXaf": 1000 },
-        { "name": { "fr": "Top / A&P", "en": "Top / A&P" }, "priceXaf": 1000, "aliases": ["Top Ananas"] },
-        { "name": { "fr": "Malta", "en": "Malta" }, "priceXaf": 1000 },
-        { "name": { "fr": "Malta Vanpu", "en": "Malta Vanpu" }, "priceXaf": 1500 },
-        { "name": { "fr": "Fruitas", "en": "Fruitas" }, "priceXaf": 2500 },
-        { "name": { "fr": "Red Bull", "en": "Red Bull" }, "priceXaf": 2000 },
-        {
-          "name": { "fr": "Eau minérale", "en": "Mineral water" },
-          "priceXaf": 500,
-          "aliases": ["Eau minérale 1,5 L"]
-        }
-      ]
-    },
-    {
-      "name": { "fr": "Whiskies", "en": "Whiskies" },
-      "aliases": ["Spiritueux (bouteille)"],
+      "name": {
+        "fr": "Sodas",
+        "en": "Soft drinks"
+      },
+      "aliases": ["Sodas, jus & eaux", "Sucreries & eaux"],
       "products": [
         {
-          "name": { "fr": "Johnnie Walker Red Label", "en": "Johnnie Walker Red Label" },
-          "priceXaf": 25000,
-          "aliases": ["Johnnie Walker Red 70 cl", "Red Label"]
-        },
-        {
-          "name": { "fr": "Johnnie Walker Black Label", "en": "Johnnie Walker Black Label" },
-          "priceXaf": 40000,
-          "aliases": ["Black Label"]
+          "name": {
+            "fr": "Top / A&P",
+            "en": "Top / A&P"
+          },
+          "priceXaf": 1000,
+          "aliases": ["Top Ananas"]
         },
         {
           "name": {
-            "fr": "Johnnie Walker Black Label 1 L (Freeshop)",
-            "en": "Johnnie Walker Black Label 1 L (Freeshop)"
+            "fr": "Djino",
+            "en": "Djino"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "Coca-Cola",
+            "en": "Coca-Cola"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "Madoran",
+            "en": "Madoran"
+          },
+          "priceXaf": 1000
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Boissons fraîches et énergisantes",
+        "en": "Cold and energy drinks"
+      },
+      "products": [
+        {
+          "name": {
+            "fr": "Eau minérale",
+            "en": "Mineral water"
+          },
+          "priceXaf": 500,
+          "aliases": ["Eau minérale 1,5 L"]
+        },
+        {
+          "name": {
+            "fr": "Malta",
+            "en": "Malta"
+          },
+          "priceXaf": 1000
+        },
+        {
+          "name": {
+            "fr": "Malta Vanpu",
+            "en": "Malta Vanpu"
+          },
+          "priceXaf": 1500
+        },
+        {
+          "name": {
+            "fr": "Red Bull",
+            "en": "Red Bull"
+          },
+          "priceXaf": 1500,
+          "image": "images/red-bull.webp"
+        },
+        {
+          "name": {
+            "fr": "Fruitas",
+            "en": "Fruitas"
+          },
+          "priceXaf": 2500
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Whiskies",
+        "en": "Whiskies"
+      },
+      "aliases": ["Spiritueux (bouteille)"],
+      "products": [
+        {
+          "name": {
+            "fr": "Johnnie Walker Red Label",
+            "en": "Johnnie Walker Red Label"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Johnnie Walker Red 70 cl", "Red Label"],
+          "image": "images/jw-red-label.webp"
+        },
+        {
+          "name": {
+            "fr": "Jameson",
+            "en": "Jameson"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Jameson 70 cl"],
+          "image": "images/jameson.webp"
+        },
+        {
+          "name": {
+            "fr": "Ballantine's Finest",
+            "en": "Ballantine's Finest"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Ballentinex Finex", "Ballantine's"],
+          "image": "images/ballantines.webp"
+        },
+        {
+          "name": {
+            "fr": "Johnnie Walker Black Label",
+            "en": "Johnnie Walker Black Label"
+          },
+          "priceXaf": 35000,
+          "aliases": ["Black Label"],
+          "image": "images/jw-black-label.webp"
+        },
+        {
+          "name": {
+            "fr": "Jack Daniel's",
+            "en": "Jack Daniel's"
+          },
+          "priceXaf": 35000,
+          "aliases": ["Jack Daniel"],
+          "image": "images/jack-daniels.webp"
+        },
+        {
+          "name": {
+            "fr": "Jameson 12 ans",
+            "en": "Jameson 12 years"
+          },
+          "priceXaf": 35000,
+          "image": "images/jameson-12.webp"
+        },
+        {
+          "name": {
+            "fr": "Chivas Regal 12 ans",
+            "en": "Chivas Regal 12 years"
+          },
+          "priceXaf": 40000,
+          "aliases": ["Chivas Regal 12 ans 70 cl", "Chivas 12 ans"],
+          "image": "images/chivas-12.webp"
+        },
+        {
+          "name": {
+            "fr": "Chivas Regal Extra",
+            "en": "Chivas Regal Extra"
+          },
+          "priceXaf": 40000,
+          "image": "images/chivas-extra.webp"
+        },
+        {
+          "name": {
+            "fr": "Singleton 15 ans",
+            "en": "Singleton 15 years"
+          },
+          "priceXaf": 40000,
+          "aliases": ["Singleton"],
+          "image": "images/singleton-15.webp"
+        },
+        {
+          "name": {
+            "fr": "Glenlivet 18 ans",
+            "en": "Glenlivet 18 years"
+          },
+          "priceXaf": 50000,
+          "aliases": ["Glenuvet"],
+          "image": "images/glenlivet-18.webp"
+        },
+        {
+          "name": {
+            "fr": "Glenfiddich 15 ans 75 cl",
+            "en": "Glenfiddich 15 years 75 cl"
+          },
+          "priceXaf": 65000,
+          "aliases": ["Glenfiddich 15 ans"],
+          "image": "images/glenfiddich-15-75cl.webp"
+        },
+        {
+          "name": {
+            "fr": "Glenfiddich 15 ans 1 L",
+            "en": "Glenfiddich 15 years 1 L"
+          },
+          "priceXaf": 70000,
+          "image": "images/glenfiddich-15-1l.webp"
+        },
+        {
+          "name": {
+            "fr": "Chivas Regal XV",
+            "en": "Chivas Regal XV"
+          },
+          "priceXaf": 65000,
+          "image": "images/chivas-xv.webp"
+        },
+        {
+          "name": {
+            "fr": "Jack Daniel's Single Barrel",
+            "en": "Jack Daniel's Single Barrel"
+          },
+          "priceXaf": 65000,
+          "image": "images/jack-daniels-single-barrel.webp"
+        },
+        {
+          "name": {
+            "fr": "Glenfiddich 18 ans",
+            "en": "Glenfiddich 18 years"
+          },
+          "priceXaf": 70000,
+          "image": "images/glenfiddich-18.webp"
+        },
+        {
+          "name": {
+            "fr": "Johnnie Walker Gold Label 18 ans",
+            "en": "Johnnie Walker Gold Label 18 years"
+          },
+          "priceXaf": 70000,
+          "aliases": ["Johnnie Walker Gold Label", "Gold Label"],
+          "image": "images/jw-gold-label.webp"
+        },
+        {
+          "name": {
+            "fr": "Grant's 18 ans",
+            "en": "Grant's 18 years"
+          },
+          "priceXaf": 80000,
+          "image": "images/grants-18.webp"
+        },
+        {
+          "name": {
+            "fr": "Chivas Regal 18 ans",
+            "en": "Chivas Regal 18 years"
+          },
+          "priceXaf": 85000,
+          "aliases": ["Chivas 18 ans"],
+          "image": "images/chivas-18.webp"
+        },
+        {
+          "name": {
+            "fr": "Johnnie Walker Blue Label 1 L",
+            "en": "Johnnie Walker Blue Label 1 L"
+          },
+          "priceXaf": 180000,
+          "image": "images/jw-blue-label.webp"
+        },
+        {
+          "name": {
+            "fr": "Royal Salute 21 ans",
+            "en": "Royal Salute 21 years"
+          },
+          "priceXaf": 200000,
+          "image": "images/royal-salute-21.webp"
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Cognacs",
+        "en": "Cognacs"
+      },
+      "aliases": ["Cognac"],
+      "products": [
+        {
+          "name": {
+            "fr": "Hennessy VS",
+            "en": "Hennessy VS"
+          },
+          "priceXaf": 50000,
+          "aliases": ["Hennessy"],
+          "image": "images/hennessy-vs.webp"
+        },
+        {
+          "name": {
+            "fr": "Martell VS",
+            "en": "Martell VS"
           },
           "priceXaf": 60000,
-          "aliases": ["Black Freeshop 1L"]
+          "image": "images/martell-vs.webp"
         },
         {
-          "name": { "fr": "Johnnie Walker Gold Label", "en": "Johnnie Walker Gold Label" },
-          "priceXaf": 75000,
-          "aliases": ["Gold Label"]
+          "name": {
+            "fr": "Hennessy VSOP",
+            "en": "Hennessy VSOP"
+          },
+          "priceXaf": 70000,
+          "image": "images/hennessy-vsop.webp"
         },
         {
-          "name": { "fr": "Chivas Regal 12 ans", "en": "Chivas Regal 12 yrs" },
-          "priceXaf": 40000,
-          "aliases": ["Chivas Regal 12 ans 70 cl", "Chivas 12 ans"]
-        },
+          "name": {
+            "fr": "Hennessy XO",
+            "en": "Hennessy XO"
+          },
+          "priceXaf": 200000,
+          "image": "images/hennessy-xo.webp"
+        }
+      ]
+    },
+    {
+      "name": {
+        "fr": "Vodkas",
+        "en": "Vodkas"
+      },
+      "products": [
         {
-          "name": { "fr": "Chivas Regal 18 ans", "en": "Chivas Regal 18 yrs" },
-          "priceXaf": 90000,
-          "aliases": ["Chivas 18 ans"]
-        },
-        {
-          "name": { "fr": "Chivas Regal 1 L (Freeshop)", "en": "Chivas Regal 1 L (Freeshop)" },
-          "priceXaf": 60000,
-          "aliases": ["Chivas Freeshop 1L"]
-        },
-        {
-          "name": { "fr": "Ballantine's Finest", "en": "Ballantine's Finest" },
-          "priceXaf": 20000,
-          "aliases": ["Ballentinex Finex"]
-        },
-        {
-          "name": { "fr": "Ballantine's Brasil", "en": "Ballantine's Brasil" },
-          "priceXaf": 30000,
-          "aliases": ["Ballentinex Brasil"]
-        },
-        {
-          "name": { "fr": "Grant's 6 ans", "en": "Grant's 6 yrs" },
-          "priceXaf": 20000,
-          "aliases": ["Grant's 06 ans"]
-        },
-        {
-          "name": { "fr": "Grant's 1 L", "en": "Grant's 1 L" },
+          "name": {
+            "fr": "Absolut",
+            "en": "Absolut"
+          },
           "priceXaf": 25000,
-          "aliases": ["Grant's 1L"]
-        },
-        { "name": { "fr": "Grant's 12 ans", "en": "Grant's 12 yrs" }, "priceXaf": 35000 },
-        {
-          "name": { "fr": "Jack Daniel's", "en": "Jack Daniel's" },
-          "priceXaf": 40000,
-          "aliases": ["Jack Daniel"]
+          "image": "images/absolut.webp"
         },
         {
-          "name": { "fr": "Jack Daniel's 1 L", "en": "Jack Daniel's 1 L" },
-          "priceXaf": 50000,
-          "aliases": ["Jack Daniel 1L"]
-        },
-        {
-          "name": { "fr": "Jack Daniel's Honey", "en": "Jack Daniel's Honey" },
-          "priceXaf": 40000,
-          "aliases": ["Jack Honey"]
-        },
-        { "name": { "fr": "Glenfiddich 12 ans", "en": "Glenfiddich 12 yrs" }, "priceXaf": 50000 },
-        { "name": { "fr": "Glenfiddich 15 ans", "en": "Glenfiddich 15 yrs" }, "priceXaf": 70000 },
-        { "name": { "fr": "Glenfiddich 18 ans", "en": "Glenfiddich 18 yrs" }, "priceXaf": 90000 },
-        {
-          "name": { "fr": "Monkey Shoulder 75 cl", "en": "Monkey Shoulder 75 cl" },
-          "priceXaf": 50000,
-          "aliases": ["Monkey 75CL"]
-        },
-        {
-          "name": { "fr": "Monkey Shoulder 1 L", "en": "Monkey Shoulder 1 L" },
-          "priceXaf": 60000,
-          "aliases": ["Monkey Shoulder 1L"]
-        },
-        { "name": { "fr": "Singleton", "en": "Singleton" }, "priceXaf": 50000 },
-        {
-          "name": { "fr": "Macallan 12 ans", "en": "Macallan 12 yrs" },
-          "priceXaf": 90000,
-          "aliases": ["Macallan 12"]
-        }
-      ]
-    },
-    {
-      "name": { "fr": "Cognac", "en": "Cognac" },
-      "products": [{ "name": { "fr": "Hennessy", "en": "Hennessy" }, "priceXaf": 50000 }]
-    },
-    {
-      "name": { "fr": "Vodkas", "en": "Vodkas" },
-      "products": [
-        { "name": { "fr": "Belvedere", "en": "Belvedere" }, "priceXaf": 50000, "aliases": ["Belvédère"] },
-        {
-          "name": { "fr": "Belvedere Magnum", "en": "Belvedere Magnum" },
-          "priceXaf": 90000,
-          "aliases": ["Belvédère Magnum"]
-        },
-        {
-          "name": { "fr": "Vodka Absolut 1 L", "en": "Absolut Vodka 1 L" },
+          "name": {
+            "fr": "Cîroc",
+            "en": "Cîroc"
+          },
           "priceXaf": 35000,
-          "aliases": ["Volka Absolut 1L"]
+          "aliases": ["Ciroc"],
+          "image": "images/ciroc.webp"
+        },
+        {
+          "name": {
+            "fr": "Belvedere",
+            "en": "Belvedere"
+          },
+          "priceXaf": 40000,
+          "aliases": ["Belvédère", "Belvedere mini"],
+          "image": "images/belvedere.webp"
+        },
+        {
+          "name": {
+            "fr": "Belvedere Magnum",
+            "en": "Belvedere Magnum"
+          },
+          "priceXaf": 90000,
+          "aliases": ["Belvédère Magnum"],
+          "image": "images/belvedere-magnum.webp"
         }
       ]
     },
     {
-      "name": { "fr": "Liqueurs & apéritifs", "en": "Liqueurs & aperitifs" },
-      "products": [
-        { "name": { "fr": "Baileys", "en": "Baileys" }, "priceXaf": 20000 },
-        { "name": { "fr": "Martini Blanc", "en": "Martini Bianco" }, "priceXaf": 20000 }
-      ]
-    },
-    {
-      "name": { "fr": "Champagnes", "en": "Champagnes" },
+      "name": {
+        "fr": "Liqueurs & apéritifs",
+        "en": "Liqueurs & aperitifs"
+      },
       "products": [
         {
-          "name": { "fr": "Moët Impérial", "en": "Moët Impérial" },
-          "priceXaf": 60000,
-          "aliases": ["Moet impérial"]
+          "name": {
+            "fr": "Martini Blanc",
+            "en": "Martini Blanc"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Martini"],
+          "image": "images/martini.webp"
         },
         {
-          "name": { "fr": "Moët Nectar", "en": "Moët Nectar" },
-          "priceXaf": 80000,
-          "aliases": ["Moet nectar"]
-        },
-        {
-          "name": { "fr": "Veuve Clicquot", "en": "Veuve Clicquot" },
-          "priceXaf": 80000,
-          "aliases": ["Veuve cliquot", "Veuve clicquot"]
-        },
-        { "name": { "fr": "Ruinart Brut", "en": "Ruinart Brut" }, "priceXaf": 90000 },
-        {
-          "name": { "fr": "Ruinart Blanc de Blancs", "en": "Ruinart Blanc de Blancs" },
-          "priceXaf": 110000,
-          "aliases": ["Ruinart blanc"]
+          "name": {
+            "fr": "Baileys",
+            "en": "Baileys"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Bailey's"],
+          "image": "images/baileys.webp"
         }
       ]
     },
     {
-      "name": { "fr": "Vins", "en": "Wines" },
+      "name": {
+        "fr": "Vins",
+        "en": "Wines"
+      },
       "products": [
         {
-          "name": { "fr": "Vieux Moulin", "en": "Vieux Moulin" },
-          "priceXaf": 7000,
-          "aliases": ["Vieux mouliin"]
+          "name": {
+            "fr": "Tour de Cantelou (petite)",
+            "en": "Tour de Cantelou (small)"
+          },
+          "priceXaf": 5000,
+          "image": "images/tour-de-cantelou.webp"
         },
-        { "name": { "fr": "Isabelle de France", "en": "Isabelle de France" }, "priceXaf": 8000 },
-        { "name": { "fr": "Consigna", "en": "Consigna" }, "priceXaf": 8000 },
-        { "name": { "fr": "Tour de Cantelou", "en": "Tour de Cantelou" }, "priceXaf": 8000 },
-        { "name": { "fr": "Moscato Comparero", "en": "Moscato Comparero" }, "priceXaf": 15000 },
-        { "name": { "fr": "Moscato Nua", "en": "Moscato Nua" }, "priceXaf": 20000 },
         {
-          "name": { "fr": "Louis Eschenauer", "en": "Louis Eschenauer" },
-          "priceXaf": 15000,
-          "aliases": ["Luis eschenauer"]
-        },
-        { "name": { "fr": "Cavet rouge", "en": "Cavet red" }, "priceXaf": 15000 },
-        { "name": { "fr": "Cavet blanc", "en": "Cavet white" }, "priceXaf": 15000 },
-        {
-          "name": { "fr": "Monbazillac", "en": "Monbazillac" },
-          "priceXaf": 20000,
-          "aliases": ["Mont bazillac"]
-        },
-        { "name": { "fr": "Château Fernande", "en": "Château Fernande" }, "priceXaf": 30000 },
-        {
-          "name": { "fr": "Haut-Médoc de Giscours", "en": "Haut-Médoc de Giscours" },
-          "priceXaf": 30000,
-          "aliases": ["Haut médoc de gyscous"]
+          "name": {
+            "fr": "Tour de Cantelou",
+            "en": "Tour de Cantelou"
+          },
+          "priceXaf": 8000,
+          "aliases": ["Cantelou"],
+          "image": "images/tour-de-cantelou.webp"
         }
       ]
-    },
-    {
-      "name": { "fr": "Chicha", "en": "Hookah" },
-      "products": [{ "name": { "fr": "Chicha", "en": "Hookah" }, "priceXaf": 4000, "stock": false }]
     }
   ],
-  "archiveProducts": ["Guinness 65 cl", "Jameson 70 cl"]
+  "archiveProducts": [
+    "Guinness 65 cl",
+    "Beaufort",
+    "Johnnie Walker Black Label 1 L (Freeshop)",
+    "Chivas Regal 1 L (Freeshop)",
+    "Ballantine's Brasil",
+    "Grant's 6 ans",
+    "Grant's 1 L",
+    "Grant's 12 ans",
+    "Jack Daniel's 1 L",
+    "Jack Daniel's Honey",
+    "Glenfiddich 12 ans",
+    "Monkey Shoulder 75 cl",
+    "Monkey Shoulder 1 L",
+    "Macallan 12 ans",
+    "Vodka Absolut 1 L",
+    "Moët Impérial",
+    "Moët Nectar",
+    "Veuve Clicquot",
+    "Ruinart Brut",
+    "Ruinart Blanc de Blancs",
+    "Vieux Moulin",
+    "Isabelle de France",
+    "Consigna",
+    "Moscato Comparero",
+    "Moscato Nua",
+    "Louis Eschenauer",
+    "Cavet rouge",
+    "Cavet blanc",
+    "Monbazillac",
+    "Château Fernande",
+    "Haut-Médoc de Giscours",
+    "Chicha"
+  ],
+  "archiveCategories": ["Champagnes", "Chicha"]
 }
