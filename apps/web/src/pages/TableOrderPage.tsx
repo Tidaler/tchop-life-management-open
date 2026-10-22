@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatXaf, needsApproval, pickText, type Station } from '@tchop/shared';
+import { formatXaf, menuForZone, needsApproval, pickText, type Station } from '@tchop/shared';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api';
@@ -71,10 +71,20 @@ export function TableOrderPage() {
   const [transferring, setTransferring] = useState(false);
   const [notice, setNotice] = useState<{ kind: 'ok' | 'danger'; text: string } | null>(null);
 
-  const table = floor.data?.flatMap((z) => z.tables).find((tb) => tb.id === tableId);
-  const products = useMemo(() => new Map(catalog.data?.products.map((p) => [p.id, p])), [catalog.data]);
-  const groups = useMemo(() => new Map(catalog.data?.modifierGroups.map((g) => [g.id, g])), [catalog.data]);
-  const category = catalog.data?.categories.find((c) => c.id === categoryId) ?? catalog.data?.categories[0];
+  const zone = floor.data?.find((z) => z.tables.some((tb) => tb.id === tableId));
+  const table = zone?.tables.find((tb) => tb.id === tableId);
+  // Carte vue depuis cette table : en salon VIP, catégories proposées seulement et prix VIP.
+  const zoneVip = useMemo(
+    () => floor.data?.find((z) => z.tables.some((tb) => tb.id === tableId))?.vip ?? null,
+    [floor.data, tableId],
+  );
+  const menu = useMemo(
+    () => (catalog.data && zoneVip !== null ? menuForZone(catalog.data, zoneVip) : undefined),
+    [catalog.data, zoneVip],
+  );
+  const products = useMemo(() => new Map(menu?.products.map((p) => [p.id, p])), [menu]);
+  const groups = useMemo(() => new Map(menu?.modifierGroups.map((g) => [g.id, g])), [menu]);
+  const category = menu?.categories.find((c) => c.id === categoryId) ?? menu?.categories[0];
   const canOrder = can('order.create');
 
   const unitPrice = (line: DraftLine) => {
@@ -182,7 +192,7 @@ export function TableOrderPage() {
           </Link>
         </div>
         <div className="tabs">
-          {catalog.data?.categories.map((c) => (
+          {menu?.categories.map((c) => (
             <button
               key={c.id}
               className="tab"
@@ -194,7 +204,7 @@ export function TableOrderPage() {
           ))}
         </div>
         <div className="product-grid">
-          {catalog.data?.products
+          {menu?.products
             .filter((p) => p.categoryId === category?.id)
             .map((p) => (
               <button

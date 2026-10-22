@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { STATIONS } from './constants.js';
+import { VIP_SURCHARGE_MAX_XAF } from './vip.js';
 
 /** Texte affiché aux clients en français et en anglais ; l'anglais retombe sur le français s'il est vide. */
 export const translatedSchema = z.object({
@@ -17,10 +18,14 @@ const versioned = { version: z.number().int().positive() };
 
 const priceXaf = z.number().int().min(0).max(10_000_000);
 
+const vipSurchargeXaf = z.number().int().min(0).max(VIP_SURCHARGE_MAX_XAF);
+
 export const categoryCreateSchema = z.object({
   name: translatedSchema,
   visibleOnQr: z.boolean().default(true),
   sortOrder: z.number().int().min(0).default(0),
+  vipOffered: z.boolean().default(true),
+  vipSurchargeXaf: vipSurchargeXaf.default(0),
 });
 export type CategoryCreateInput = z.infer<typeof categoryCreateSchema>;
 
@@ -29,6 +34,8 @@ export const categoryUpdateSchema = z.object({
   name: translatedSchema.optional(),
   visibleOnQr: z.boolean().optional(),
   sortOrder: z.number().int().min(0).optional(),
+  vipOffered: z.boolean().optional(),
+  vipSurchargeXaf: vipSurchargeXaf.optional(),
 });
 export type CategoryUpdateInput = z.infer<typeof categoryUpdateSchema>;
 

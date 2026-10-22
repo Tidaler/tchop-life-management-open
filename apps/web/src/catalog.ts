@@ -6,6 +6,9 @@ export interface Category {
   id: string;
   name: Translated;
   visibleOnQr: boolean;
+  /** Salon VIP : proposée ou non, supplément ajouté au prix de ses produits. */
+  vipOffered: boolean;
+  vipSurchargeXaf: number;
   sortOrder: number;
   version: number;
 }

@@ -377,7 +377,9 @@ async function main() {
         }
 
         for (const [zi, z] of ZONES.entries()) {
-          const zone = await tx.zone.create({ data: { siteId: DEMO_SITE_ID, name: z.name, sortOrder: zi } });
+          const zone = await tx.zone.create({
+            data: { siteId: DEMO_SITE_ID, name: z.name, sortOrder: zi, vip: z.name === 'Salon VIP' },
+          });
           for (const [ti, label] of z.tables.entries()) {
             await tx.diningTable.create({
               data: {

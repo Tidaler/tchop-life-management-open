@@ -1,5 +1,5 @@
 {
-  "description": "Carte des boissons de TCHOP LIFE (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et carte des spiritueux et bouteilles de l'établissement ; photos découpées dans la carte des spiritueux.",
+  "description": "Carte des boissons de TCHOP LIFE (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et carte des spiritueux et bouteilles de l'établissement ; photos découpées dans la carte des spiritueux. Salon VIP : bières et boissons aromatisées non proposées ; sodas et boissons fraîches + 500 F, vins + 5 000 F, spiritueux et liqueurs + 10 000 F.",
   "station": "bar",
   "stockLocation": "Bar",
   "firstSortOrder": 10,
@@ -10,6 +10,9 @@
         "en": "Beers"
       },
       "aliases": ["Bières"],
+      "vip": {
+        "offered": false
+      },
       "products": [
         {
           "name": {
@@ -93,6 +96,9 @@
         "fr": "Boissons alcoolisées aromatisées",
         "en": "Flavoured alcoholic drinks"
       },
+      "vip": {
+        "offered": false
+      },
       "products": [
         {
           "name": {
@@ -125,6 +131,10 @@
         "en": "Soft drinks"
       },
       "aliases": ["Sodas, jus & eaux", "Sucreries & eaux"],
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 500
+      },
       "products": [
         {
           "name": {
@@ -161,6 +171,10 @@
       "name": {
         "fr": "Boissons fraîches et énergisantes",
         "en": "Cold and energy drinks"
+      },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 500
       },
       "products": [
         {
@@ -208,6 +222,10 @@
         "en": "Whiskies"
       },
       "aliases": ["Spiritueux (bouteille)"],
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 10000
+      },
       "products": [
         {
           "name": {
@@ -388,6 +406,10 @@
         "en": "Cognacs"
       },
       "aliases": ["Cognac"],
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 10000
+      },
       "products": [
         {
           "name": {
@@ -428,6 +450,10 @@
       "name": {
         "fr": "Vodkas",
         "en": "Vodkas"
+      },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 10000
       },
       "products": [
         {
@@ -472,6 +498,10 @@
         "fr": "Liqueurs & apéritifs",
         "en": "Liqueurs & aperitifs"
       },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 10000
+      },
       "products": [
         {
           "name": {
@@ -497,6 +527,10 @@
       "name": {
         "fr": "Vins",
         "en": "Wines"
+      },
+      "vip": {
+        "offered": true,
+        "surchargeXaf": 5000
       },
       "products": [
         {

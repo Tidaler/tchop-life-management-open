@@ -133,6 +133,42 @@ describe('menu servi par le cloud', () => {
     }
   });
 
+  it('table de salon VIP : le cloud applique les règles VIP des catégories', async () => {
+    const { body: wines } = await asManager(siteHttp().post('/api/catalog/categories'))
+      .send({ name: { fr: `Vins VIP ${tag()}` }, vipSurchargeXaf: 5000 })
+      .expect(201);
+    const { body: wine } = await asManager(siteHttp().post('/api/catalog/products'))
+      .send({ categoryId: wines.id, name: { fr: 'Vin cloud' }, priceXaf: 8000, station: 'bar' })
+      .expect(201);
+    const { body: beers } = await asManager(siteHttp().post('/api/catalog/categories'))
+      .send({ name: { fr: `Bières VIP ${tag()}` }, vipOffered: false })
+      .expect(201);
+    const { body: beer } = await asManager(siteHttp().post('/api/catalog/products'))
+      .send({ categoryId: beers.id, name: { fr: 'Bière cloud' }, priceXaf: 1000, station: 'bar' })
+      .expect(201);
+    const { body: zone } = await asManager(siteHttp().post('/api/floor/zones'))
+      .send({ name: `VIP ${tag()}`, vip: true })
+      .expect(201);
+    const { body: table } = await asManager(siteHttp().post('/api/floor/tables'))
+      .send({ zoneId: zone.id, label: `V${tag()}` })
+      .expect(201);
+    const { body: codes } = await asManager(siteHttp().get('/api/floor/qr-codes')).expect(200);
+    const token: string = codes.codes
+      .find((c: { tableId: string }) => c.tableId === table.id)
+      .url.split('/q/')[1];
+    const route = await waitFor(() => db.cloudQrRoute.findUnique({ where: { tokenHash: sha256(token) } }));
+    expect(route.vip).toBe(true);
+    const { body } = await waitFor(async () => {
+      const res = await cloudHttp().get(`/api/public/menu/${token}`);
+      return res.status === 200 && res.body.products.some((p: { id: string }) => p.id === wine.id)
+        ? res
+        : null;
+    });
+    expect(body.products.find((p: { id: string }) => p.id === wine.id).priceXaf).toBe(13000);
+    expect(body.products.some((p: { id: string }) => p.id === beer.id)).toBe(false);
+    expect(JSON.stringify(body)).not.toContain('vipSurcharge');
+  });
+
   it('ne garde que l’empreinte des jetons QR', async () => {
     const table = await newTable();
     expect(await db.cloudQrRoute.count({ where: { tokenHash: table.token } })).toBe(0);

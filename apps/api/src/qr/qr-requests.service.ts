@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { type Prisma } from '@tchop/db';
 import {
+  menuForZone,
   QR_LIMITS,
   QR_TOKEN_PATTERN,
   qrClientStatus,
@@ -77,7 +78,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
     if (!QR_TOKEN_PATTERN.test(token)) throw unknownQr();
     const qr = await this.prisma.qrCode.findUnique({
       where: { token },
-      include: { table: true, site: { include: { tenant: true } } },
+      include: { table: { include: { zone: true } }, site: { include: { tenant: true } } },
     });
     if (
       !qr ||
@@ -95,14 +96,17 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
   async menu(token: string) {
     const qr = await this.resolveQr(token);
     return {
-      ...(await this.siteMenu(qr.siteId)),
+      ...menuForZone(await this.siteMenu(qr.siteId), qr.table.zone.vip),
       table: { label: qr.table.label },
       ordering: qr.mode === 'order',
       orderingPaused: false,
     };
   }
 
-  /** Partie du menu commune à toutes les tables du site (aussi envoyée au cloud). */
+  /**
+   * Partie du menu commune à toutes les tables du site (aussi envoyée au cloud), avec les règles VIP
+   * des catégories : à passer par menuForZone avant de la montrer à une table.
+   */
   async siteMenu(siteId: string) {
     const [site, categories, products, groups] = await Promise.all([
       this.prisma.site.findUniqueOrThrow({ where: { id: siteId } }),
@@ -130,7 +134,12 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
     const used = new Set(products.flatMap((p) => p.modifierGroups.map((g) => g.groupId)));
     return {
       site: { name: site.name },
-      categories: categories.map((c) => ({ id: c.id, name: c.name })),
+      categories: categories.map((c) => ({
+        id: c.id,
+        name: c.name,
+        vipOffered: c.vipOffered,
+        vipSurchargeXaf: c.vipSurchargeXaf,
+      })),
       products: products.map((p) => ({
         id: p.id,
         categoryId: p.categoryId,
@@ -162,7 +171,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
       this.siteMenu(siteId),
       this.prisma.qrCode.findMany({
         where: { siteId, active: true, table: { archivedAt: null } },
-        include: { table: { select: { label: true } } },
+        include: { table: { select: { label: true, zone: { select: { vip: true } } } } },
       }),
     ]);
     const media = menu.products
@@ -170,7 +179,12 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
       .filter((n): n is string => !!n);
     return {
       menu,
-      routes: qrs.map((q) => ({ tokenHash: sha256(q.token), tableLabel: q.table.label, mode: q.mode })),
+      routes: qrs.map((q) => ({
+        tokenHash: sha256(q.token),
+        tableLabel: q.table.label,
+        mode: q.mode,
+        vip: q.table.zone.vip,
+      })),
       media,
     };
   }
@@ -208,7 +222,9 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
           HttpStatus.TOO_MANY_REQUESTS,
         );
       }
-      const priced = await this.pricing.price(tx, qr.siteId, input.lines, { publicOnly: true });
+      const priced = await this.pricing.price(tx, qr.siteId, qr.tableId, input.lines, {
+        publicOnly: true,
+      });
       const total = priced.reduce((s, l) => s + l.unitPriceXaf * l.quantity, 0);
       if (total > QR_LIMITS.maxTotalXaf) {
         throw new HttpException(
@@ -340,6 +356,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
           const priced = await this.pricing.price(
             tx,
             auth.siteId,
+            request.tableId,
             items.map(({ productId, quantity, modifierIds, note }) => ({
               productId,
               quantity,

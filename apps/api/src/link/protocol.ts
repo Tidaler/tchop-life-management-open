@@ -1,4 +1,4 @@
-import { QR_MODES } from '@tchop/shared';
+import { QR_MODES, VIP_SURCHARGE_MAX_XAF } from '@tchop/shared';
 import { z } from 'zod';
 
 /**
@@ -17,7 +17,16 @@ const translated = z.object({ fr: z.string().max(400), en: z.string().max(400) }
 export const snapshotSchema = z.object({
   menu: z.object({
     site: z.object({ name: z.string().max(120) }),
-    categories: z.array(z.object({ id: z.uuid(), name: translated })).max(500),
+    categories: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          name: translated,
+          vipOffered: z.boolean().default(true),
+          vipSurchargeXaf: z.number().int().min(0).max(VIP_SURCHARGE_MAX_XAF).default(0),
+        }),
+      )
+      .max(500),
     products: z
       .array(
         z.object({
@@ -55,6 +64,7 @@ export const snapshotSchema = z.object({
         tokenHash: z.string().regex(/^[0-9a-f]{64}$/),
         tableLabel: z.string().max(12),
         mode: z.enum(QR_MODES),
+        vip: z.boolean().default(false),
       }),
     )
     .max(2000),

@@ -68,7 +68,7 @@ sudo -u tchop mkdir -m 700 -p /opt/tchop/.ssh
 sudo -u tchop ssh-keygen -t ed25519 -N '' -f /opt/tchop/.ssh/id_ed25519
 sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
-cd /opt/tchop/app && sudo -u tchop git checkout v1.0.3
+cd /opt/tchop/app && sudo -u tchop git checkout v1.0.4
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```

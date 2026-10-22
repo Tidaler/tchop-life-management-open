@@ -126,7 +126,7 @@ export class OrdersService {
   }
 
   private async sendInTx(tx: Tx, auth: AuthContext, input: SendOrderInput): Promise<DispatchResult> {
-    const priced = await this.pricing.price(tx, auth.siteId, input.lines);
+    const priced = await this.pricing.price(tx, auth.siteId, input.tableId, input.lines);
     const result = await this.dispatch(tx, auth, {
       tableId: input.tableId,
       priced,

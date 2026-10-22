@@ -243,6 +243,8 @@ function CategoryEditor({
   const handleError = useSaveErrors(onClose, onNotice);
   const [name, setName] = useState<Translated>(category?.name ?? { fr: '', en: '' });
   const [visibleOnQr, setVisibleOnQr] = useState(category?.visibleOnQr ?? true);
+  const [vipOffered, setVipOffered] = useState(category?.vipOffered ?? true);
+  const [vipSurchargeXaf, setVipSurchargeXaf] = useState(category?.vipSurchargeXaf ?? 0);
   const [error, setError] = useState<string | null>(null);
 
   const save = useMutation({
@@ -250,9 +252,12 @@ function CategoryEditor({
       category
         ? api<Category>(`/catalog/categories/${category.id}`, {
             method: 'PATCH',
-            body: { version: category.version, name, visibleOnQr },
+            body: { version: category.version, name, visibleOnQr, vipOffered, vipSurchargeXaf },
           })
-        : api<Category>('/catalog/categories', { method: 'POST', body: { name, visibleOnQr } }),
+        : api<Category>('/catalog/categories', {
+            method: 'POST',
+            body: { name, visibleOnQr, vipOffered, vipSurchargeXaf },
+          }),
     onSuccess: (saved) => {
       void refresh();
       onSaved(saved.id);
@@ -278,6 +283,26 @@ function CategoryEditor({
           <input type="checkbox" checked={visibleOnQr} onChange={(e) => setVisibleOnQr(e.target.checked)} />
           {t('catalog.visibleOnQr')}
         </label>
+        <div className="section-label">{t('catalog.vip')}</div>
+        <label className="check">
+          <input type="checkbox" checked={vipOffered} onChange={(e) => setVipOffered(e.target.checked)} />
+          {t('catalog.vipOffered')}
+        </label>
+        {vipOffered && (
+          <div className="field">
+            <label htmlFor="vip-surcharge">{t('catalog.vipSurcharge')}</label>
+            <input
+              id="vip-surcharge"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={1_000_000}
+              step={100}
+              value={vipSurchargeXaf}
+              onChange={(e) => setVipSurchargeXaf(Math.max(0, Math.round(Number(e.target.value))))}
+            />
+          </div>
+        )}
         {error && <div className="alert danger">{error}</div>}
         <div className="modal-foot">
           <span />
