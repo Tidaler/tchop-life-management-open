@@ -19,6 +19,14 @@ export const sendOrderSchema = z.object({
 });
 export type SendOrderInput = z.infer<typeof sendOrderSchema>;
 
+/** Vente directe à la caisse (comptoir, à emporter) : pas de table, addition préparée aussitôt. */
+export const directSaleSchema = z.object({
+  /** Généré par la caisse : un renvoi après une coupure ne crée pas de doublon. */
+  idempotencyKey: z.uuid(),
+  lines: z.array(sendLineSchema).min(1).max(100),
+});
+export type DirectSaleInput = z.infer<typeof directSaleSchema>;
+
 /** PIN d'un gérant présent, pour les actions qui demandent une approbation. */
 export const approvalSchema = z.object({
   userId: z.uuid(),

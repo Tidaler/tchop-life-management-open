@@ -17,6 +17,8 @@ import {
   closeSessionSchema,
   type CloseSessionInput,
   createBillSchema,
+  directSaleSchema,
+  type DirectSaleInput,
   type CreateBillInput,
   customerCreateSchema,
   type CustomerCreateInput,
@@ -38,6 +40,7 @@ import { CustomersService } from '../customers/customers.service.js';
 import { RefundsService } from './refunds.service.js';
 import { BillsService } from './bills.service.js';
 import { CashService } from './cash.service.js';
+import { DirectSaleService } from './direct-sale.service.js';
 
 const uuid = new ParseUUIDPipe();
 
@@ -46,7 +49,15 @@ export class CashController {
   constructor(
     private readonly cash: CashService,
     private readonly bills: BillsService,
+    private readonly directSales: DirectSaleService,
   ) {}
+
+  /** Vente directe (comptoir, à emporter) : renvoie l'addition prête à encaisser. */
+  @Post('direct-sales')
+  @RequirePermission('payment.record')
+  directSale(@CurrentAuth() auth: AuthContext, @Body(new ZodPipe(directSaleSchema)) body: DirectSaleInput) {
+    return this.directSales.create(auth, body);
+  }
 
   @Get('registers')
   @RequirePermission('cash_session.manage', 'read')

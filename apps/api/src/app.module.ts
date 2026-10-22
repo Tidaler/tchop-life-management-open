@@ -6,6 +6,7 @@ import { ApprovalController } from './approval/approval.controller.js';
 import { ApprovalService } from './approval/approval.service.js';
 import { AuditService } from './audit/audit.service.js';
 import { BillsService } from './cash/bills.service.js';
+import { DirectSaleService } from './cash/direct-sale.service.js';
 import {
   BillsController,
   CashController,
@@ -139,6 +140,7 @@ export class AppModule {
         QrRequestsService,
         CashService,
         BillsService,
+        DirectSaleService,
         CustomersService,
         RefundsService,
         StockLedger,

@@ -30,23 +30,26 @@ export interface PricedLine {
 export class PricingService {
   /**
    * @param tableId table servie : dans une zone VIP, les règles VIP des catégories s'appliquent
-   *   (catégorie non proposée refusée, supplément ajouté au prix).
+   *   (catégorie non proposée refusée, supplément ajouté au prix). null : vente directe à la caisse.
    * @param options.publicOnly menu QR : seuls les produits et catégories visibles sur le menu public
    *   sont commandables (un produit masqué est traité comme inexistant, sans rien révéler de plus).
    */
   async price(
     tx: Prisma.TransactionClient,
     siteId: string,
-    tableId: string,
+    tableId: string | null,
     lines: SendLineInput[],
     options: { publicOnly?: boolean } = {},
   ): Promise<PricedLine[]> {
-    const table = await tx.diningTable.findFirst({
-      where: { id: tableId, siteId, archivedAt: null },
-      include: { zone: true },
-    });
-    if (!table) throw notFound('Table');
-    const vip = table.zone.vip;
+    let vip = false;
+    if (tableId) {
+      const table = await tx.diningTable.findFirst({
+        where: { id: tableId, siteId, archivedAt: null },
+        include: { zone: true },
+      });
+      if (!table) throw notFound('Table');
+      vip = table.zone.vip;
+    }
     const ids = [...new Set(lines.map((l) => l.productId))];
     const products = await tx.product.findMany({
       where: {

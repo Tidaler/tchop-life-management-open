@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable } from '@nestjs/common';
 import { type Prisma, type Station } from '@tchop/db';
 import {
+  type DirectSaleInput,
   businessDay,
   type CancelLineInput,
   linesTotal,
@@ -37,7 +38,8 @@ type OrderRow = Prisma.OrderGetPayload<{ include: typeof orderInclude }>;
 
 export interface DispatchResult {
   orderId: string;
-  tableId: string;
+  /** null : vente directe à la caisse. */
+  tableId: string | null;
   tickets: { id: string; station: Station }[];
 }
 
@@ -146,14 +148,52 @@ export class OrdersService {
   }
 
   /**
+   * Vente directe à la caisse : nouvelle commande sans table (à emporter), envoyée en préparation.
+   * Renvoie l'identifiant de la commande ; rejouer la même clé renvoie la même commande.
+   */
+  async sendDirect(auth: AuthContext, input: DirectSaleInput): Promise<string> {
+    const replay = await this.findReplay(auth, input.idempotencyKey, 'orders.direct');
+    if (replay) return replay;
+    let result: DispatchResult;
+    try {
+      result = await this.prisma.$transaction(
+        async (tx) => {
+          const priced = await this.pricing.price(tx, auth.siteId, null, input.lines);
+          const dispatched = await this.dispatch(tx, auth, { tableId: null, priced, source: 'staff' });
+          await tx.idempotencyKey.create({
+            data: {
+              siteId: auth.siteId,
+              key: input.idempotencyKey,
+              userId: auth.userId,
+              route: 'orders.direct',
+              response: { orderId: dispatched.orderId },
+            },
+          });
+          return dispatched;
+        },
+        { timeout: 15_000 },
+      );
+    } catch (error) {
+      // Deux envois simultanés de la même vente : la première a gagné.
+      if (!isUniqueViolation(error)) throw error;
+      const again = await this.findReplay(auth, input.idempotencyKey, 'orders.direct');
+      if (!again) throw error;
+      return again;
+    }
+    this.afterDispatch(auth.siteId, result);
+    return result.orderId;
+  }
+
+  /**
    * Enregistre des lignes déjà chiffrées sur la commande ouverte de la table (créée si besoin),
    * crée un bon par poste et met les impressions en file. À appeler dans une transaction.
+   * Sans table (vente directe), une nouvelle commande à emporter est toujours créée.
    */
   async dispatch(
     tx: Tx,
     auth: AuthContext,
     input: {
-      tableId: string;
+      tableId: string | null;
       priced: PricedLine[];
       guests?: number;
       source: 'staff' | 'qr';
@@ -162,29 +202,36 @@ export class OrdersService {
   ): Promise<DispatchResult> {
     const { priced } = input;
     const site = await tx.site.findUniqueOrThrow({ where: { id: auth.siteId } });
-    const table = await tx.diningTable.findFirst({
-      where: { id: input.tableId, siteId: auth.siteId, archivedAt: null },
-    });
-    if (!table) throw notFound('Table');
+    const table = input.tableId
+      ? await tx.diningTable.findFirst({
+          where: { id: input.tableId, siteId: auth.siteId, archivedAt: null },
+        })
+      : null;
+    if (input.tableId && !table) throw notFound('Table');
 
     const day = businessDay(new Date(), site.timezone, this.config.BUSINESS_DAY_CUTOFF_HOUR);
 
-    let order = await tx.order.findFirst({
-      where: { siteId: auth.siteId, tableId: table.id, status: 'open' },
-    });
+    let order = table
+      ? await tx.order.findFirst({ where: { siteId: auth.siteId, tableId: table.id, status: 'open' } })
+      : null;
     if (!order) {
       order = await tx.order.create({
         data: {
           siteId: auth.siteId,
           number: await nextCounter(tx, auth.siteId, `order:${day}`),
           businessDay: toDbDate(day),
-          tableId: table.id,
+          tableId: table?.id ?? null,
+          type: table ? 'dine_in' : 'takeaway',
           waiterId: auth.userId,
           guests: input.guests,
           source: input.source,
         },
       });
-      await this.log(tx, auth, 'order.opened', order.id, { number: order.number, table: table.label });
+      await this.log(tx, auth, 'order.opened', order.id, {
+        number: order.number,
+        table: table?.label ?? null,
+        type: order.type,
+      });
     }
 
     const waiter = await tx.user.findUnique({ where: { id: order.waiterId ?? auth.userId } });
@@ -228,7 +275,7 @@ export class OrdersService {
         stationLabel: STATION_LABELS[station],
         ticketNumber: ticket.number,
         orderNumber: order.number,
-        tableLabel: table.label,
+        tableLabel: table?.label ?? null,
         waiterName: waiter?.displayName ?? null,
         createdAt: ticket.createdAt.toISOString(),
         timeZone: site.timezone,
@@ -253,15 +300,15 @@ export class OrdersService {
         unitPriceXaf: l.unitPriceXaf,
       })),
     });
-    return { orderId: order.id, tickets, tableId: table.id };
+    return { orderId: order.id, tickets, tableId: table?.id ?? null };
   }
 
-  private async findReplay(auth: AuthContext, key: string): Promise<string | null> {
+  private async findReplay(auth: AuthContext, key: string, route = 'orders.send'): Promise<string | null> {
     const found = await this.prisma.idempotencyKey.findUnique({
       where: { siteId_key: { siteId: auth.siteId, key } },
     });
     if (!found) return null;
-    if (found.userId !== auth.userId || found.route !== 'orders.send') {
+    if (found.userId !== auth.userId || found.route !== route) {
       throw new ConflictException({
         code: 'IDEMPOTENCY_KEY_REUSED',
         message: 'Clé de requête déjà utilisée',

@@ -21,6 +21,9 @@ const FloorPage = lazy(() => import('./pages/FloorPage').then((m) => ({ default:
 const FloorSetupPage = lazy(() =>
   import('./pages/FloorSetupPage').then((m) => ({ default: m.FloorSetupPage })),
 );
+const DirectSalePage = lazy(() =>
+  import('./pages/DirectSalePage').then((m) => ({ default: m.DirectSalePage })),
+);
 const KitchenPage = lazy(() => import('./pages/KitchenPage').then((m) => ({ default: m.KitchenPage })));
 const PrintersPage = lazy(() => import('./pages/PrintersPage').then((m) => ({ default: m.PrintersPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -117,6 +120,16 @@ const router = createBrowserRouter([
         element: (
           <RequireScreen path="/floor">
             <TableOrderPage />
+          </RequireScreen>
+        ),
+      },
+      {
+        path: 'cashier/vente',
+        element: (
+          <RequireScreen path="/cashier">
+            <Suspense fallback={<Loading />}>
+              <DirectSalePage />
+            </Suspense>
           </RequireScreen>
         ),
       },
