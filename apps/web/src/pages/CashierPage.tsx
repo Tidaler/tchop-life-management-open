@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { formatXaf, PAYMENT_METHODS, type PaymentMethod, pickText, SETTLEMENT_METHODS } from '@tchop/shared';
 import { type FormEvent, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api';
 import {
   type Bill,
@@ -36,6 +37,11 @@ export function CashierPage() {
     <>
       <div className="page-head">
         <h1>{t('cash.title')}</h1>
+        {can('payment.record') && (
+          <Link className="btn primary" to="/cashier/vente">
+            + {t('cash.directSaleNew')}
+          </Link>
+        )}
         <div className="tabs" role="tablist">
           <button className="tab" role="tab" aria-selected={tab === 'bills'} onClick={() => setTab('bills')}>
             {t('cash.tabBills')}
@@ -330,7 +336,10 @@ function BillsTab({ sessionOpen, onNotice }: { sessionOpen: boolean; onNotice: (
 
   const billedOrders = new Set(bills.data?.map((b) => b.orderId));
   const withoutBill = (orders.data ?? []).filter((o) => !billedOrders.has(o.id));
-  const selected = bills.data?.find((b) => b.id === selectedId) ?? bills.data?.[0] ?? null;
+  // Après une vente directe, l'écran s'ouvre sur son addition (?bill=…).
+  const [searchParams] = useSearchParams();
+  const wanted = selectedId ?? searchParams.get('bill');
+  const selected = bills.data?.find((b) => b.id === wanted) ?? bills.data?.[0] ?? null;
 
   const prepare = useMutation({
     mutationFn: (orderId: string) => api<Bill>(`/orders/${orderId}/bills`, { method: 'POST', body: {} }),
@@ -354,7 +363,11 @@ function BillsTab({ sessionOpen, onNotice }: { sessionOpen: boolean; onNotice: (
             onClick={() => setSelectedId(b.id)}
           >
             <span>
-              <b>{b.tableLabel ? t('order.title', { label: b.tableLabel }) : `#${b.orderNumber}`}</b>
+              <b>
+                {b.tableLabel
+                  ? t('order.title', { label: b.tableLabel })
+                  : t('cash.directSaleLabel', { number: b.orderNumber })}
+              </b>
             </span>
             <span>{formatXaf(b.remainingXaf, locale)}</span>
           </button>
@@ -363,7 +376,7 @@ function BillsTab({ sessionOpen, onNotice }: { sessionOpen: boolean; onNotice: (
         {withoutBill.map((o) => (
           <div key={o.id} className="item static">
             <span>
-              <b>{o.tableLabel ?? `#${o.number}`}</b>{' '}
+              <b>{o.tableLabel ?? t('cash.directSaleLabel', { number: o.number })}</b>{' '}
               <span className="muted">{formatXaf(o.total, locale)}</span>
             </span>
             {can('bill.prepare') && (
@@ -442,7 +455,11 @@ function BillDetail({
   return (
     <div className="card pane-pad">
       <div className="row-between">
-        <h2>{t('cash.billTitle', { label: bill.tableLabel ?? `#${bill.orderNumber}` })}</h2>
+        <h2>
+          {bill.tableLabel
+            ? t('cash.billTitle', { label: bill.tableLabel })
+            : t('cash.billTitleDirect', { number: bill.orderNumber })}
+        </h2>
         <span className="muted">{t('order.number', { number: bill.orderNumber })}</span>
       </div>
       {bill.lines.map((l) => (
@@ -747,7 +764,10 @@ function PaymentPanel({
       void queryClient.invalidateQueries({ queryKey: ['customers'] });
       void queryClient.invalidateQueries({ queryKey: ['orders'] });
       if (updated.status === 'paid' && updated.receipt) {
-        onNotice({ kind: 'ok', text: t('cash.receiptPrinted') });
+        onNotice({
+          kind: 'ok',
+          text: t(updated.tableLabel ? 'cash.receiptPrinted' : 'cash.receiptPrintedDirect'),
+        });
         onPaid(updated.receipt.id);
       }
     },

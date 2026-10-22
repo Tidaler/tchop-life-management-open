@@ -11,7 +11,7 @@ import { type OrderDetail, type OrderLine, useOpenOrders, useOrder, useQrRequest
 import { useMe, useSession } from '../session';
 import { useFloor } from './FloorPage';
 
-interface DraftLine {
+export interface DraftLine {
   uid: string;
   productId: string;
   quantity: number;
@@ -25,10 +25,10 @@ interface Draft {
   lines: DraftLine[];
 }
 
-const newDraft = (): Draft => ({ key: crypto.randomUUID(), lines: [] });
+export const newDraft = (): Draft => ({ key: crypto.randomUUID(), lines: [] });
 
 /** Saisie non envoyée, gardée sur la tablette (survit à un rechargement de la page). */
-function useDraft(tableId: string) {
+export function useDraft(tableId: string) {
   const storageKey = `tchop.draft.${tableId}`;
   const [draft, setDraft] = useState<Draft>(() => {
     try {
@@ -412,7 +412,7 @@ export function TableOrderPage() {
   );
 }
 
-function OptionsPicker({
+export function OptionsPicker({
   product,
   groups,
   onClose,

@@ -123,7 +123,9 @@ function TicketCard({
     <article className="kticket">
       <header>
         <div>
-          <b className="kt-table">{ticket.tableLabel ?? `#${ticket.orderNumber}`}</b>
+          <b className="kt-table">
+            {ticket.tableLabel ?? t('cash.directSaleLabel', { number: ticket.orderNumber })}
+          </b>
           <div className="kt-meta">
             {t('kitchen.ticket', { number: ticket.number })}
             {showStation && (
