@@ -88,9 +88,14 @@ export function FloorSetupPage() {
     <>
       <div className="page-head">
         <h1>{t('nav.floorSetup')}</h1>
-        <Link className="btn" to="/floor-setup/qr">
-          🖨 {t('floorSetup.printQr')}
-        </Link>
+        <div className="confirm">
+          <Link className="btn primary" to="/floor-setup/menu">
+            📄 {t('menuQr.title')}
+          </Link>
+          <Link className="btn" to="/floor-setup/qr">
+            🖨 {t('floorSetup.printQr')}
+          </Link>
+        </div>
       </div>
       {notice && (
         <div className={`alert ${notice.kind}`} role="status" style={{ marginBottom: 12 }}>
