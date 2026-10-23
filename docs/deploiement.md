@@ -74,7 +74,7 @@ sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
 cd /opt/tchop/app
 sudo -u tchop git fetch --tags        # indispensable si le dépôt a été cloné avant la publication de la version
-sudo -u tchop git checkout v1.0.7
+sudo -u tchop git checkout v1.0.8
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -138,23 +138,24 @@ Chaque ligne dit `OK` ou ce qu'il faut faire. À relancer après chaque correcti
 | Restauration | `sudo -u postgres pg_restore --clean --if-exists -d tchop /var/backups/tchop/tchop-AAAA-MM-JJ_HHMM.dump` puis redémarrer `tchop-api` |
 | Mise à jour | `sudo /opt/tchop/app/infra/site/update.sh v1.1.0` |
 | Nouveau compte | `sudo /opt/tchop/app/infra/site/tchop.sh user:add …` |
+| Remettre tout le stock à zéro | `sudo /opt/tchop/app/infra/site/stock-zero.sh gerant` (inventaire à 0 de chaque magasin, écarts tracés dans le journal) |
 | Menu des clients sans connexion | Application, Plan de salle, **Menu sans connexion**, Imprimer (à refaire après un changement de prix) |
 
 Sauvegardes : chaque jour à 7 h dans `/var/backups/tchop` (30 jours), copiées sur le disque USB monté sur `/mnt/sauvegarde` (90 jours).
 
-### Passer un serveur existant en v1.0.7
+### Passer un serveur existant en v1.0.8
 
 Depuis un serveur en **v1.0.5**, une seule commande :
 
 ```bash
-sudo /opt/tchop/app/infra/site/update.sh v1.0.7
+sudo /opt/tchop/app/infra/site/update.sh v1.0.8
 ```
 
 Depuis un serveur en **v1.0.4** (l'ancien script ne se relance pas sur la nouvelle version), une fois :
 
 ```bash
-cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.7
-sudo /opt/tchop/app/infra/site/update.sh v1.0.7
+cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.8
+sudo /opt/tchop/app/infra/site/update.sh v1.0.8
 sudo /opt/tchop/app/infra/site/setup-caisse.sh --usb-printer   # sans --usb-printer si l'imprimante est en réseau
 ```
 
