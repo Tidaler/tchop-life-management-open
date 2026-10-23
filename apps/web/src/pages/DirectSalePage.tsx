@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { formatXaf, pickText } from '@tchop/shared';
+import { formatXaf, newId, pickText } from '@tchop/shared';
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { api, ApiError } from '../api';
@@ -56,7 +56,7 @@ export function DirectSalePage() {
       }
       return {
         ...d,
-        lines: [...d.lines, { uid: crypto.randomUUID(), productId, quantity, modifierIds: sorted, note }],
+        lines: [...d.lines, { uid: newId(), productId, quantity, modifierIds: sorted, note }],
       };
     });
   const setQuantity = (uid: string, quantity: number) =>

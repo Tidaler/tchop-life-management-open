@@ -12,7 +12,7 @@ Référence des commandes pour installer TCHOP LIFE MANAGEMENT sur le serveur de
 | Application du personnel | `https://SERVER_IP` | Tablettes, cuisine, gestion (PWA installable) |
 | Menu client | `https://SERVER_IP:8443` | Menu QR (réservé au relais cloud pour les téléphones des clients) |
 | Certificat local | `http://SERVER_IP/tchop-ca.crt` | À installer une fois sur chaque tablette |
-| Imprimante | `SERVER_IP` du réseau + 10 (ex. 192.168.0.20) port 9100, ou USB sur la caisse (`127.0.0.1:9100`) | Tickets et reçus (ESC/POS) |
+| Imprimante | réseau (ex. 192.168.0.20) port 9100, ou USB sur la caisse (`127.0.0.1:9100`, service `tchop-usb-printer`) | Tickets et reçus (ESC/POS). **Une ligne active par rôle** dans Imprimantes : Caisse (reçus, rapport Z), Cuisine, Grill, Bar |
 
 **Choisir les adresses d'après le routeur** : `SERVER_IP` reprend les trois premiers nombres de l'adresse du routeur (écrite sous le routeur, ou « passerelle » dans les réglages Wi-Fi d'un téléphone), suivis de `.10`.
 
@@ -74,7 +74,7 @@ sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
 cd /opt/tchop/app
 sudo -u tchop git fetch --tags        # indispensable si le dépôt a été cloné avant la publication de la version
-sudo -u tchop git checkout v1.0.5
+sudo -u tchop git checkout v1.0.6
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -141,13 +141,20 @@ Chaque ligne dit `OK` ou ce qu'il faut faire. À relancer après chaque correcti
 
 Sauvegardes : chaque jour à 7 h dans `/var/backups/tchop` (30 jours), copiées sur le disque USB monté sur `/mnt/sauvegarde` (90 jours).
 
-### Passage de v1.0.4 à v1.0.5
+### Passer un serveur existant en v1.0.6
 
-L'ancien script de mise à jour ne se relance pas sur la nouvelle version : changer d'abord de version à la main, puis lancer le nouveau script.
+Depuis un serveur en **v1.0.5**, une seule commande :
 
 ```bash
-cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.5
-sudo /opt/tchop/app/infra/site/update.sh v1.0.5
+sudo /opt/tchop/app/infra/site/update.sh v1.0.6
 ```
 
-La caisse passe sur `https://localhost` : au premier démarrage, l'enregistrer de nouveau (code du gérant, type Ordinateur).
+Depuis un serveur en **v1.0.4** (l'ancien script ne se relance pas sur la nouvelle version), une fois :
+
+```bash
+cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.6
+sudo /opt/tchop/app/infra/site/update.sh v1.0.6
+sudo /opt/tchop/app/infra/site/setup-caisse.sh --usb-printer   # sans --usb-printer si l'imprimante est en réseau
+```
+
+La caisse passe sur `https://localhost` : l'enregistrer de nouveau une fois (code du gérant, type Ordinateur).

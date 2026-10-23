@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { formatXaf, pickText } from '@tchop/shared';
+import { formatXaf, newId, pickText } from '@tchop/shared';
 import { useState } from 'react';
 import { api } from '../../api';
 import { useCatalog } from '../../catalog';
@@ -186,9 +186,7 @@ function RecipeEditor({ productId, onNotice }: { productId: string; onNotice: (n
             <button
               type="button"
               className="btn ghost"
-              onClick={() =>
-                update([...lines, { uid: crypto.randomUUID(), itemId: '', quantity: '1', modifierId: '' }])
-              }
+              onClick={() => update([...lines, { uid: newId(), itemId: '', quantity: '1', modifierId: '' }])}
             >
               + {t('stock.addLine')}
             </button>

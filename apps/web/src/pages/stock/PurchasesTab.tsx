@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { formatXaf } from '@tchop/shared';
+import { formatXaf, newId } from '@tchop/shared';
 import { type FormEvent, useState } from 'react';
 import { api } from '../../api';
 import { ConfirmButton, errorMessage, Modal } from '../../components/common';
@@ -243,7 +243,7 @@ function OrderEditor({
   const refresh = useRefreshStock();
   const [supplierId, setSupplierId] = useState(suppliers[0]?.id ?? '');
   const [lines, setLines] = useState<OrderLine[]>([
-    { uid: crypto.randomUUID(), itemId: '', packagingId: '', quantity: '', unitPrice: '' },
+    { uid: newId(), itemId: '', packagingId: '', quantity: '', unitPrice: '' },
   ]);
   const [error, setError] = useState('');
   const filled = lines.filter((l) => l.itemId && parseQty(l.quantity) > 0);
@@ -359,7 +359,7 @@ function OrderEditor({
             onClick={() =>
               setLines((all) => [
                 ...all,
-                { uid: crypto.randomUUID(), itemId: '', packagingId: '', quantity: '', unitPrice: '' },
+                { uid: newId(), itemId: '', packagingId: '', quantity: '', unitPrice: '' },
               ])
             }
           >

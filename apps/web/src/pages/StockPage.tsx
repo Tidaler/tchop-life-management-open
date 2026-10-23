@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { type MessageKey } from '@tchop/i18n';
-import { type Access, formatXaf, LOSS_TYPES, type Permission } from '@tchop/shared';
+import { type Access, formatXaf, LOSS_TYPES, newId, type Permission } from '@tchop/shared';
 import { type FormEvent, useMemo, useState } from 'react';
 import { api, ApiError } from '../api';
 import { approvalBody, ApprovalFields, type ApprovalValue } from '../components/ApprovalFields';
@@ -224,7 +224,7 @@ function MovementModal({
   const [quantity, setQuantity] = useState('');
   const [direction, setDirection] = useState<1 | -1>(1);
   const [reason, setReason] = useState('');
-  const [key] = useState(() => crypto.randomUUID());
+  const [key] = useState(() => newId());
   const [needsApproval, setNeedsApproval] = useState(false);
   const [approval, setApproval] = useState<ApprovalValue>({ userId: '', pin: '' });
   const [error, setError] = useState('');

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { EXPENSE_METHODS, type ExpenseMethod, formatXaf } from '@tchop/shared';
+import { EXPENSE_METHODS, type ExpenseMethod, formatXaf, newId } from '@tchop/shared';
 import { type FormEvent, useState } from 'react';
 import { api, ApiError, apiBlob } from '../api';
 import { useCashSession } from '../cash';
@@ -206,7 +206,7 @@ function ExpenseForm({ onClose, onNotice }: { onClose: () => void; onNotice: (n:
   const [date, setDate] = useState(businessToday());
   const [description, setDescription] = useState('');
   const [reference, setReference] = useState('');
-  const [key] = useState(() => crypto.randomUUID());
+  const [key] = useState(() => newId());
   const [approvalNeeded, setApprovalNeeded] = useState(false);
   const [approval, setApproval] = useState<ApprovalValue>({ userId: '', pin: '' });
   const [error, setError] = useState('');

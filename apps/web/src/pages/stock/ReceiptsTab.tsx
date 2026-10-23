@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { formatXaf } from '@tchop/shared';
+import { formatXaf, newId } from '@tchop/shared';
 import { type FormEvent, useState } from 'react';
 import { api } from '../../api';
 import { errorMessage } from '../../components/common';
@@ -29,7 +29,7 @@ interface DraftLine {
 }
 
 const emptyLine = (): DraftLine => ({
-  uid: crypto.randomUUID(),
+  uid: newId(),
   itemId: '',
   packagingId: '',
   quantity: '',
@@ -57,7 +57,7 @@ export function ReceiptsTab({ onNotice }: { onNotice: (n: Notice) => void }) {
   const [orderId, setOrderId] = useState('');
   const [reference, setReference] = useState('');
   const [lines, setLines] = useState<DraftLine[]>([emptyLine()]);
-  const [key, setKey] = useState(() => crypto.randomUUID());
+  const [key, setKey] = useState(() => newId());
 
   const byId = new Map((items.data ?? []).map((i) => [i.id, i]));
   const openOrders = (orders.data ?? []).filter(
@@ -75,7 +75,7 @@ export function ReceiptsTab({ onNotice }: { onNotice: (n: Notice) => void }) {
       order.lines
         .filter((l) => l.receivedQuantity < l.quantity)
         .map((l) => ({
-          uid: crypto.randomUUID(),
+          uid: newId(),
           itemId: l.itemId,
           packagingId: byId.get(l.itemId)?.packagings.find((p) => p.name === l.unitName)?.id ?? '',
           quantity: String(Math.round((l.quantity - l.receivedQuantity) * 1000) / 1000),
@@ -115,7 +115,7 @@ export function ReceiptsTab({ onNotice }: { onNotice: (n: Notice) => void }) {
       setLines([emptyLine()]);
       setOrderId('');
       setReference('');
-      setKey(crypto.randomUUID());
+      setKey(newId());
     },
     onError: (e) => onNotice({ kind: 'danger', text: errorMessage(e, t) }),
   });

@@ -12,3 +12,4 @@ export * from './cash.js';
 export * from './stock.js';
 export * from './finance.js';
 export * from './vip.js';
+export * from './id.js';

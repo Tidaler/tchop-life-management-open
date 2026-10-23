@@ -8,7 +8,7 @@
 #   3. la session « caisse », sans droits d'administration, ouverte automatiquement au démarrage ;
 #   4. le certificat du serveur dans la session caisse ;
 #   5. l'application ouverte en plein écran sur https://localhost (fonctionne même sans réseau) ;
-#   6. avec --usb-printer : passerelle p910nd, l'imprimante USB devient 127.0.0.1 port 9100.
+#   6. avec --usb-printer : service tchop-usb-printer (socat), l'imprimante USB devient 127.0.0.1 port 9100.
 # Internet est nécessaire pour les installations (Chrome, paquets).
 set -euo pipefail
 APP=/opt/tchop/app
@@ -60,24 +60,24 @@ sudo -u "$USER_CAISSE" certutil -D -d "sql:$NSS" -n "TCHOP LIFE" > /dev/null 2>&
 install -o "$USER_CAISSE" -g "$USER_CAISSE" -m 644 /opt/tchop/public/tchop-ca.crt "$HOME_CAISSE/tchop-ca.crt"
 sudo -u "$USER_CAISSE" certutil -A -d "sql:$NSS" -t "C,," -n "TCHOP LIFE" -i "$HOME_CAISSE/tchop-ca.crt"
 
-echo "5/6 Ouverture automatique en plein écran (https://localhost)"
-sudo -u "$USER_CAISSE" mkdir -p "$HOME_CAISSE/.config/autostart"
-install -o "$USER_CAISSE" -g "$USER_CAISSE" -m 644 "$APP/infra/site/tchop-caisse.desktop" \
-  "$HOME_CAISSE/.config/autostart/tchop-caisse.desktop"
+echo "5/6 Ouverture automatique en plein écran (https://localhost) et icône dans les applications"
+for dir in .config/autostart .local/share/applications; do
+  sudo -u "$USER_CAISSE" mkdir -p "$HOME_CAISSE/$dir"
+  install -o "$USER_CAISSE" -g "$USER_CAISSE" -m 644 "$APP/infra/site/tchop-caisse.desktop" \
+    "$HOME_CAISSE/$dir/tchop-caisse.desktop"
+done
 
 echo "6/6 Imprimante de caisse"
 if $USB; then
-  apt-get install -y -q p910nd > /dev/null
-  cat > /etc/default/p910nd << 'EOF'
-# Imprimante de caisse branchée en USB, rendue joignable par l'application sur 127.0.0.1 port 9100.
-P910ND_NUM=""
-P910ND_OPTS="-f /dev/usb/lp0 -i 127.0.0.1"
-P910ND_START=1
-EOF
-  systemctl enable --now p910nd > /dev/null 2>&1 || true
-  systemctl restart p910nd
-  [ -e /dev/usb/lp0 ] || echo "    Attention : aucune imprimante USB détectée (/dev/usb/lp0). Branchez-la, allumez-la, puis : sudo systemctl restart p910nd"
-  echo "    Dans l'application : Imprimantes, adresse 127.0.0.1, port 9100, rôle Caisse."
+  # p910nd est livré bloqué (masked) par Ubuntu : on utilise socat, avec notre propre service.
+  systemctl disable --now p910nd > /dev/null 2>&1 || true
+  apt-get install -y -q socat > /dev/null
+  cp "$APP/infra/site/tchop-usb-printer.service" /etc/systemd/system/tchop-usb-printer.service
+  systemctl daemon-reload
+  systemctl enable --now tchop-usb-printer > /dev/null
+  systemctl restart tchop-usb-printer
+  [ -e /dev/usb/lp0 ] || echo "    Attention : aucune imprimante USB détectée (/dev/usb/lp0). Branchez-la, allumez-la, puis : sudo systemctl restart tchop-usb-printer"
+  echo "    Dans l'application : Imprimantes, adresse 127.0.0.1, port 9100, rôles Caisse, Cuisine, Grill et Bar."
 else
   echo "    Imprimante réseau : rien à installer ici (adresse fixe, puis menu Imprimantes)."
 fi

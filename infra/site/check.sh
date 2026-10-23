@@ -77,9 +77,10 @@ if id caisse > /dev/null 2>&1; then
 else
   info "Pas de session caisse sur ce serveur (caisse sur une tablette ou un autre poste)."
 fi
-if systemctl list-unit-files p910nd.service > /dev/null 2>&1 && systemctl is-enabled --quiet p910nd 2> /dev/null; then
-  check "Imprimante USB détectée" "[ -e /dev/usb/lp0 ]" "brancher et allumer l'imprimante, puis sudo systemctl restart p910nd"
-  check "Passerelle d'impression USB (127.0.0.1:9100)" "ss -ltn | grep -q '127.0.0.1:9100'" "sudo systemctl restart p910nd"
+if systemctl is-enabled --quiet tchop-usb-printer 2> /dev/null; then
+  check "Imprimante USB détectée" "[ -e /dev/usb/lp0 ]" "brancher et allumer l'imprimante, puis sudo systemctl restart tchop-usb-printer"
+  check "Passerelle d'impression USB (127.0.0.1:9100)" "ss -ltn | grep -q '127.0.0.1:9100'" "sudo systemctl restart tchop-usb-printer"
+  info "Dans Imprimantes, une ligne active par rôle (Caisse, Cuisine, Grill, Bar) : sinon le reçu ou le bon ne sort pas."
 fi
 
 echo "Sauvegardes"

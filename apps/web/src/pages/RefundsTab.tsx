@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatXaf, pickText, REFUND_METHODS, type RefundMethod, type Translated } from '@tchop/shared';
+import {
+  formatXaf,
+  newId,
+  pickText,
+  REFUND_METHODS,
+  type RefundMethod,
+  type Translated,
+} from '@tchop/shared';
 import { type FormEvent, useState } from 'react';
 import { api, ApiError } from '../api';
 import { useCustomers } from '../cash';
@@ -171,7 +178,7 @@ function RefundForm({
   const [reference, setReference] = useState('');
   const [reason, setReason] = useState('');
   const [restock, setRestock] = useState(false);
-  const [key] = useState(() => crypto.randomUUID());
+  const [key] = useState(() => newId());
   const [needsApproval, setNeedsApproval] = useState(false);
   const [approval, setApproval] = useState<ApprovalValue>({ userId: '', pin: '' });
   const [error, setError] = useState('');
