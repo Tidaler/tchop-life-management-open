@@ -170,6 +170,13 @@ export const fr = {
   'qrMode.order': 'Consultation et commande',
   'qrMode.menu': 'Consultation seule',
   'qrPrint.title': 'QR codes des tables',
+  'menuQr.title': 'Menu sans connexion',
+  'menuQr.help':
+    'La carte est écrite dans les QR codes : le client scanne avec l’appareil photo et la lit sur son téléphone, sans Internet ni Wi-Fi. Imprimez une carte par table (salle) et par salon VIP (prix VIP). Réimprimez après un changement de prix.',
+  'menuQr.room': 'Salle',
+  'menuQr.vip': 'Salons VIP',
+  'menuQr.scan': 'Scannez un QR code avec l’appareil photo : la carte s’affiche, sans Internet ni Wi-Fi',
+  'menuQr.foot': 'Prix en FCFA. Pour commander, appelez le personnel.',
   'qrPrint.print': 'Imprimer',
   'qrPrint.scan': 'Scannez pour voir le menu',
   'qrPrint.table': 'Table {label}',

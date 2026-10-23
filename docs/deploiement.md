@@ -74,7 +74,7 @@ sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
 cd /opt/tchop/app
 sudo -u tchop git fetch --tags        # indispensable si le dépôt a été cloné avant la publication de la version
-sudo -u tchop git checkout v1.0.6
+sudo -u tchop git checkout v1.0.7
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -87,7 +87,7 @@ sudo chown root:tchop /etc/tchop/tchop.env && sudo chmod 640 /etc/tchop/tchop.en
 openssl rand -hex 48   # valeur de JWT_SECRET (hexadécimal : jamais refusé au démarrage)
 sudo nano /etc/tchop/tchop.env   # DATABASE_URL (mot de passe de l'étape 3) et JWT_SECRET
 cd /opt/tchop/app && sudo -u tchop bash -c 'set -a && source /etc/tchop/tchop.env && set +a && pnpm --filter @tchop/db exec prisma migrate deploy'
-sudo /opt/tchop/app/infra/site/tchop.sh site:setup --name "TCHOP LIFE"   # recopier SITE_ID dans tchop.env
+sudo /opt/tchop/app/infra/site/tchop.sh site:setup --name "TCHOP LIFE"   # recopier SITE_ID ; crée aussi T1 à T11 et 2 salons VIP
 sudo /opt/tchop/app/infra/site/tchop.sh catalog:import   # boissons (avec photos des bouteilles) et menu
 sudo /opt/tchop/app/infra/site/tchop.sh user:add --username proprietaire --name "Nom du propriétaire" --role owner
 ```
@@ -138,22 +138,23 @@ Chaque ligne dit `OK` ou ce qu'il faut faire. À relancer après chaque correcti
 | Restauration | `sudo -u postgres pg_restore --clean --if-exists -d tchop /var/backups/tchop/tchop-AAAA-MM-JJ_HHMM.dump` puis redémarrer `tchop-api` |
 | Mise à jour | `sudo /opt/tchop/app/infra/site/update.sh v1.1.0` |
 | Nouveau compte | `sudo /opt/tchop/app/infra/site/tchop.sh user:add …` |
+| Menu des clients sans connexion | Application, Plan de salle, **Menu sans connexion**, Imprimer (à refaire après un changement de prix) |
 
 Sauvegardes : chaque jour à 7 h dans `/var/backups/tchop` (30 jours), copiées sur le disque USB monté sur `/mnt/sauvegarde` (90 jours).
 
-### Passer un serveur existant en v1.0.6
+### Passer un serveur existant en v1.0.7
 
 Depuis un serveur en **v1.0.5**, une seule commande :
 
 ```bash
-sudo /opt/tchop/app/infra/site/update.sh v1.0.6
+sudo /opt/tchop/app/infra/site/update.sh v1.0.7
 ```
 
 Depuis un serveur en **v1.0.4** (l'ancien script ne se relance pas sur la nouvelle version), une fois :
 
 ```bash
-cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.6
-sudo /opt/tchop/app/infra/site/update.sh v1.0.6
+cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.7
+sudo /opt/tchop/app/infra/site/update.sh v1.0.7
 sudo /opt/tchop/app/infra/site/setup-caisse.sh --usb-printer   # sans --usb-printer si l'imprimante est en réseau
 ```
 

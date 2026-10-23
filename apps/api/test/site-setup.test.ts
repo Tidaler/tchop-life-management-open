@@ -48,11 +48,25 @@ describe("installation d'un établissement", () => {
     expect(await db.cashRegister.count({ where: { siteId } })).toBe(1);
     expect(await db.stockLocation.count({ where: { siteId } })).toBe(4);
     expect(await db.expenseCategory.count({ where: { siteId } })).toBe(7);
+    const zones = await db.zone.findMany({
+      where: { siteId },
+      orderBy: { sortOrder: 'asc' },
+      include: { tables: { orderBy: [{ posY: 'asc' }, { posX: 'asc' }], include: { qrCodes: true } } },
+    });
+    expect(zones.map((z) => [z.name, z.vip, z.tables.map((t) => t.label)])).toEqual([
+      ['Salle', false, ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11']],
+      ['Salon VIP 1', true, ['VIP1']],
+      ['Salon VIP 2', true, ['VIP2']],
+    ]);
+    const qrs = zones.flatMap((z) => z.tables.flatMap((t) => t.qrCodes));
+    expect(qrs).toHaveLength(13);
+    expect(qrs.every((q) => q.mode === 'menu' && q.active && /^[\w-]{22}$/.test(q.token))).toBe(true);
 
     const again = run('setup-site', ['--name', establishment]);
     expect(again.out).toContain('déjà présent');
     expect(again.out).toContain(siteId);
     expect(await db.cashRegister.count({ where: { siteId } })).toBe(1);
+    expect(await db.diningTable.count({ where: { siteId } })).toBe(13);
   });
 
   it('refuse les mots de passe et PIN trop simples', () => {

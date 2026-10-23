@@ -13,3 +13,4 @@ export * from './stock.js';
 export * from './finance.js';
 export * from './vip.js';
 export * from './id.js';
+export * from './menu-text.js';

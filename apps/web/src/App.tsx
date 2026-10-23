@@ -24,6 +24,7 @@ const FloorSetupPage = lazy(() =>
 const DirectSalePage = lazy(() =>
   import('./pages/DirectSalePage').then((m) => ({ default: m.DirectSalePage })),
 );
+const MenuQrPage = lazy(() => import('./pages/MenuQrPage').then((m) => ({ default: m.MenuQrPage })));
 const KitchenPage = lazy(() => import('./pages/KitchenPage').then((m) => ({ default: m.KitchenPage })));
 const PrintersPage = lazy(() => import('./pages/PrintersPage').then((m) => ({ default: m.PrintersPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
@@ -129,6 +130,16 @@ const router = createBrowserRouter([
           <RequireScreen path="/cashier">
             <Suspense fallback={<Loading />}>
               <DirectSalePage />
+            </Suspense>
+          </RequireScreen>
+        ),
+      },
+      {
+        path: 'floor-setup/menu',
+        element: (
+          <RequireScreen path="/floor-setup">
+            <Suspense fallback={<Loading />}>
+              <MenuQrPage />
             </Suspense>
           </RequireScreen>
         ),

@@ -3,9 +3,12 @@
  *   pnpm --filter @tchop/api site:setup -- --name "TCHOP LIFE"
  *
  * Crée, si besoin : le client, le site, les rôles prédéfinis et leurs permissions, la caisse principale,
- * les magasins (Réserve, Bar, Cuisine, Grill) et les catégories de dépenses. Rejouable : ce qui existe
- * déjà est conservé. Affiche l'identifiant du site, à recopier dans SITE_ID.
+ * les magasins (Réserve, Bar, Cuisine, Grill), les catégories de dépenses et, sur un site sans plan de
+ * salle, le plan de TCHOP LIFE : 11 tables en salle (T1 à T11) et 2 salons VIP d'une table (VIP1, VIP2),
+ * QR codes en consultation seule. Rejouable : ce qui existe déjà est conservé. Affiche l'identifiant du
+ * site, à recopier dans SITE_ID.
  */
+import { randomBytes } from 'node:crypto';
 import { parseArgs } from 'node:util';
 import { createPrismaClient } from '@tchop/db';
 import { DEFAULT_ROLES, ROLE_CODES } from '@tchop/shared';
@@ -93,6 +96,33 @@ async function main(): Promise<void> {
             sortOrder,
           })),
         });
+      }
+      // Plan de salle de départ, seulement sur un site qui n'en a pas encore (installation neuve).
+      if (!(await tx.zone.count({ where: { siteId: site.id } }))) {
+        const plan = [
+          { name: 'Salle', vip: false, tables: Array.from({ length: 11 }, (_, i) => `T${i + 1}`) },
+          { name: 'Salon VIP 1', vip: true, tables: ['VIP1'] },
+          { name: 'Salon VIP 2', vip: true, tables: ['VIP2'] },
+        ];
+        for (const [sortOrder, z] of plan.entries()) {
+          const zone = await tx.zone.create({
+            data: { siteId: site.id, name: z.name, vip: z.vip, sortOrder },
+          });
+          for (const [i, label] of z.tables.entries()) {
+            const table = await tx.diningTable.create({
+              data: { siteId: site.id, zoneId: zone.id, label, posX: i % 6, posY: Math.floor(i / 6) },
+            });
+            // Jeton du QR code : 128 bits aléatoires ; consultation seule (pas de commande client).
+            await tx.qrCode.create({
+              data: {
+                siteId: site.id,
+                tableId: table.id,
+                token: randomBytes(16).toString('base64url'),
+                mode: 'menu',
+              },
+            });
+          }
+        }
       }
       if (!(await tx.expenseCategory.count({ where: { siteId: site.id } }))) {
         await tx.expenseCategory.createMany({

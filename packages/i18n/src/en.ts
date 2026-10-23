@@ -169,6 +169,13 @@ export const en: Messages = {
   'qrMode.order': 'Browse and order',
   'qrMode.menu': 'Browse only',
   'qrPrint.title': 'Table QR codes',
+  'menuQr.title': 'Offline menu',
+  'menuQr.help':
+    'The menu is written inside the QR codes: guests scan with the camera and read it on their phone, without Internet or Wi-Fi. Print one card per table (room) and per VIP lounge (VIP prices). Print again after a price change.',
+  'menuQr.room': 'Room',
+  'menuQr.vip': 'VIP lounges',
+  'menuQr.scan': 'Scan a QR code with your camera: the menu appears, without Internet or Wi-Fi',
+  'menuQr.foot': 'Prices in FCFA. To order, call the staff.',
   'qrPrint.print': 'Print',
   'qrPrint.scan': 'Scan to see the menu',
   'qrPrint.table': 'Table {label}',
