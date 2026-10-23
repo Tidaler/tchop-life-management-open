@@ -29,6 +29,13 @@ export default tseslint.config(
     files: ['apps/web/**/*.{ts,tsx}', 'apps/menu/**/*.{ts,tsx}'],
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': reactHooks },
-    rules: reactHooks.configs.recommended.rules,
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      // Absent des navigateurs anciens et des pages au certificat non reconnu : newId() de @tchop/shared.
+      'no-restricted-properties': [
+        'error',
+        { object: 'crypto', property: 'randomUUID', message: 'Utiliser newId() de @tchop/shared.' },
+      ],
+    },
   },
 );

@@ -1,5 +1,5 @@
 import { type Locale, type MessageKey, translate } from '@tchop/i18n';
-import { formatXaf, pickText, type QrClientStatus } from '@tchop/shared';
+import { formatXaf, newId, pickText, type QrClientStatus } from '@tchop/shared';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   type ClientRequest,
@@ -25,7 +25,7 @@ interface Cart {
   lines: CartLine[];
 }
 
-const newCart = (): Cart => ({ key: crypto.randomUUID(), lines: [] });
+const newCart = (): Cart => ({ key: newId(), lines: [] });
 const ACTIVE: QrClientStatus[] = ['pending', 'accepted', 'preparing', 'ready'];
 const STEPS: QrClientStatus[] = ['pending', 'accepted', 'preparing', 'ready', 'served'];
 const POLL_MS = 5_000;
@@ -178,7 +178,7 @@ function Menu({
         ...c,
         lines: [
           ...c.lines,
-          { uid: crypto.randomUUID(), productId, quantity, modifierIds: [...modifierIds].sort(), note },
+          { uid: newId(), productId, quantity, modifierIds: [...modifierIds].sort(), note },
         ],
       };
     });

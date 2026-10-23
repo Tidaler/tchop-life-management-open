@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatXaf, menuForZone, needsApproval, pickText, type Station } from '@tchop/shared';
+import { formatXaf, menuForZone, needsApproval, newId, pickText, type Station } from '@tchop/shared';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { api, ApiError } from '../api';
@@ -25,7 +25,7 @@ interface Draft {
   lines: DraftLine[];
 }
 
-export const newDraft = (): Draft => ({ key: crypto.randomUUID(), lines: [] });
+export const newDraft = (): Draft => ({ key: newId(), lines: [] });
 
 /** Saisie non envoyée, gardée sur la tablette (survit à un rechargement de la page). */
 export function useDraft(tableId: string) {
@@ -119,7 +119,7 @@ export function TableOrderPage() {
         ...d,
         lines: [
           ...d.lines,
-          { uid: crypto.randomUUID(), productId, quantity, modifierIds: [...modifierIds].sort(), note },
+          { uid: newId(), productId, quantity, modifierIds: [...modifierIds].sort(), note },
         ],
       };
     });

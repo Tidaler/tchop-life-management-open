@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { formatXaf, PAYMENT_METHODS, type PaymentMethod, pickText, SETTLEMENT_METHODS } from '@tchop/shared';
+import {
+  formatXaf,
+  newId,
+  PAYMENT_METHODS,
+  type PaymentMethod,
+  pickText,
+  SETTLEMENT_METHODS,
+} from '@tchop/shared';
 import { type FormEvent, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api';
@@ -727,7 +734,7 @@ function PaymentPanel({
   const [customerId, setCustomerId] = useState('');
   const [needApproval, setNeedApproval] = useState(false);
   const [approval, setApproval] = useState(noApproval);
-  const [key, setKey] = useState(() => crypto.randomUUID());
+  const [key, setKey] = useState(() => newId());
   const [error, setError] = useState<string | null>(null);
   const [voiding, setVoiding] = useState<string | null>(null);
 
@@ -740,7 +747,7 @@ function PaymentPanel({
     setReference('');
     setNeedApproval(false);
     setApproval(noApproval);
-    setKey(crypto.randomUUID());
+    setKey(newId());
   };
 
   const pay = useMutation({
@@ -773,7 +780,7 @@ function PaymentPanel({
     },
     onError: (e) => {
       if (needsApprovalError(e)) setNeedApproval(true);
-      else setKey(crypto.randomUUID());
+      else setKey(newId());
       setError(errorMessage(e, t));
     },
   });
@@ -1222,7 +1229,7 @@ function Settle({ customer, onClose }: { customer: Customer; onClose: () => void
   const [method, setMethod] = useState<(typeof SETTLEMENT_METHODS)[number]>('cash');
   const [amount, setAmount] = useState(customer.balanceXaf);
   const [reference, setReference] = useState('');
-  const [key] = useState(() => crypto.randomUUID());
+  const [key] = useState(() => newId());
   const [error, setError] = useState<string | null>(null);
   const settle = useMutation({
     mutationFn: () =>

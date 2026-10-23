@@ -35,8 +35,15 @@ main() {
   # Caddyfile de cette version, avec l'adresse actuelle du serveur (et la caisse locale https://localhost).
   "$APP/infra/site/set-ip.sh" > /dev/null
   if id caisse > /dev/null 2>&1; then
-    install -o caisse -g caisse -m 644 "$APP/infra/site/tchop-caisse.desktop" \
-      /home/caisse/.config/autostart/tchop-caisse.desktop
+    for dir in .config/autostart .local/share/applications; do
+      install -d -o caisse -g caisse "/home/caisse/$dir"
+      install -o caisse -g caisse -m 644 "$APP/infra/site/tchop-caisse.desktop" "/home/caisse/$dir/tchop-caisse.desktop"
+    done
+  fi
+  if [ -f /etc/systemd/system/tchop-usb-printer.service ]; then
+    cp "$APP/infra/site/tchop-usb-printer.service" /etc/systemd/system/tchop-usb-printer.service
+    systemctl daemon-reload
+    systemctl restart tchop-usb-printer
   fi
 
   echo "7/7 Redémarrage et contrôle"
