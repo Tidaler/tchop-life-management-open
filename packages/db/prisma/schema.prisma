@@ -364,24 +364,26 @@ enum Station {
 }
 
 model Product {
-  id          String    @id @default(uuid(7)) @db.Uuid
-  siteId      String    @map("site_id") @db.Uuid
-  categoryId  String    @map("category_id") @db.Uuid
-  name        Json
-  description Json?
-  imageUrl    String?   @map("image_url")
+  id              String    @id @default(uuid(7)) @db.Uuid
+  siteId          String    @map("site_id") @db.Uuid
+  categoryId      String    @map("category_id") @db.Uuid
+  name            Json
+  description     Json?
+  imageUrl        String?   @map("image_url")
   /// Prix TTC en FCFA.
-  priceXaf    Int       @map("price_xaf")
+  priceXaf        Int       @map("price_xaf")
   /// Taux de taxe en points de base (1925 = 19,25 %), à valider avec le comptable.
-  taxRateBp   Int       @default(0) @map("tax_rate_bp")
-  station     Station
-  available   Boolean   @default(true)
-  visibleOnQr Boolean   @default(true) @map("visible_on_qr")
-  sortOrder   Int       @default(0) @map("sort_order")
-  archivedAt  DateTime? @map("archived_at") @db.Timestamptz(3)
-  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-  version     Int       @default(1)
+  taxRateBp       Int       @default(0) @map("tax_rate_bp")
+  station         Station
+  /// Supplément Salon VIP propre au produit ; null : celui de sa catégorie.
+  vipSurchargeXaf Int?      @map("vip_surcharge_xaf")
+  available       Boolean   @default(true)
+  visibleOnQr     Boolean   @default(true) @map("visible_on_qr")
+  sortOrder       Int       @default(0) @map("sort_order")
+  archivedAt      DateTime? @map("archived_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  version         Int       @default(1)
 
   site           Site                   @relation(fields: [siteId], references: [id])
   category       Category               @relation(fields: [categoryId], references: [id])

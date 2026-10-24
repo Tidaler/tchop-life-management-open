@@ -112,6 +112,8 @@ export const fr = {
   'catalog.visibleOnQr': 'Visible sur le menu QR',
   'catalog.vip': 'Salon VIP',
   'catalog.vipOffered': 'Proposée dans les salons VIP',
+  'catalog.productVipSurcharge': 'Supplément Salon VIP (FCFA)',
+  'catalog.productVipHint': 'Vide : celui de la catégorie.',
   'catalog.vipSurcharge': 'Supplément VIP par produit (FCFA)',
   'catalog.hiddenOnQr': 'Masqué sur le menu QR',
   'catalog.optionGroups': 'Groupes d’options',
@@ -391,7 +393,17 @@ export const fr = {
   'customers.inactive': 'Désactivé',
   'customers.privacy': 'Données réduites au strict nécessaire : nom, téléphone facultatif, plafond.',
   'cash.noSessionCode': 'Ouvrez d’abord votre session de caisse.',
-  'cash.sessionAlreadyOpen': 'Une session est déjà ouverte sur cette caisse ou pour vous.',
+  'cash.sessionAlreadyOpen':
+    'Une session est déjà ouverte sur cette caisse ou pour vous : voir Sessions ouvertes, ci-dessous.',
+  'cash.otherSessions': 'Sessions ouvertes',
+  'cash.otherSessionsHelp':
+    'Une session restée ouverte bloque sa caisse. Comptez le tiroir, puis clôturez-la avec le PIN du gérant : le rapport Z s’imprime, et vous pouvez ouvrir votre caisse.',
+  'cash.sessionOf': '{register} · {cashier} · ouverte le {time}',
+  'cash.inactiveAccount': 'compte désactivé',
+  'cash.closeOther': 'Clôturer cette session',
+  'cash.closeOtherTitle': 'Clôturer la session de {cashier}',
+  'cash.closedOther':
+    'Session de {cashier} clôturée. Écart : {amount}. Rapport Z imprimé. Vous pouvez ouvrir votre caisse.',
   'cash.overpayment': 'Montant supérieur au reste à payer.',
   'cash.referenceUsed': 'Cette référence de transaction a déjà été enregistrée.',
   'cash.alreadyBilled': 'Ces articles figurent déjà sur une autre addition.',

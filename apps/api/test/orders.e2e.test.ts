@@ -397,6 +397,98 @@ describe('impression des bons', () => {
     }
   });
 
+  it('longue commande mixte : cuisine, grill et bar impriment seuls, chacun ses lignes', async () => {
+    // Comme la carte du site : les brochettes sont rangées dans Plats mais partent au grill.
+    const { body: dishes } = await as(manager, http().post('/api/catalog/categories'))
+      .send({ name: { fr: `Plats ${tag()}` }, vipSurchargeXaf: 500 })
+      .expect(201);
+    const create = async (name: string, priceXaf: number, station: string, extra: object = {}) =>
+      (
+        await as(manager, http().post('/api/catalog/products'))
+          .send({ categoryId: dishes.id, name: { fr: name }, priceXaf, station, ...extra })
+          .expect(201)
+      ).body.id as string;
+    const chicken = await create('1/4 poulet rôti frites', 2500, 'kitchen');
+    const pork = await create('Brochette de porc', 200, 'grill', { vipSurchargeXaf: 100 });
+    const beef = await create('Brochette de viande', 200, 'grill', { vipSurchargeXaf: 100 });
+    const juice = await create('Djino', 1000, 'bar');
+
+    const printers = { kitchen: await fakePrinter(), grill: await fakePrinter(), bar: await fakePrinter() };
+    const ids: string[] = [];
+    for (const [role, printer] of Object.entries(printers)) {
+      const { body } = await as(manager, http().post('/api/printers'))
+        .send({ name: `${role} ${tag()}`, host: '127.0.0.1', port: printer.port, role })
+        .expect(201);
+      ids.push(body.id);
+    }
+    try {
+      const table = await newTable();
+      const { body: order } = await send(waiter, table.id, [
+        { productId: products.stew, quantity: 3 },
+        { productId: products.beer, quantity: 6 },
+        { productId: pork, quantity: 10, note: 'bien pimenté' },
+        { productId: chicken, quantity: 2 },
+        { productId: juice, quantity: 4 },
+        fishLine(),
+        { productId: beef, quantity: 8 },
+        { productId: products.stew, quantity: 1, note: 'sans piment' },
+        { productId: products.beer, quantity: 2 },
+        { productId: chicken, quantity: 1 },
+        { productId: pork, quantity: 5 },
+        { productId: juice, quantity: 2 },
+      ]).expect(200);
+      expect(order.lines).toHaveLength(12);
+
+      // Aucune relance manuelle : l'envoi déclenche l'impression.
+      const ticket = async (printer: { received: Buffer[] }) =>
+        iconv.decode(await waitFor(async () => printer.received[0]), 'cp858');
+      const kitchenTicket = await ticket(printers.kitchen);
+      const grillTicket = await ticket(printers.grill);
+      const barTicket = await ticket(printers.bar);
+
+      expect(kitchenTicket).toContain('CUISINE');
+      expect(kitchenTicket).toContain(`Table ${table.label}`);
+      expect(kitchenTicket).toContain('3 x Ndolé');
+      expect(kitchenTicket).toContain('1 x Ndolé');
+      expect(kitchenTicket).toContain('! sans piment');
+      expect(kitchenTicket).toContain('2 x 1/4 poulet rôti frites');
+      for (const other of ['Brochette', 'Poisson', 'Castel', 'Djino'])
+        expect(kitchenTicket).not.toContain(other);
+
+      expect(grillTicket).toContain('GRILL');
+      expect(grillTicket).toContain('10 x Brochette de porc');
+      expect(grillTicket).toContain('! bien pimenté');
+      expect(grillTicket).toContain('5 x Brochette de porc');
+      expect(grillTicket).toContain('8 x Brochette de viande');
+      expect(grillTicket).toContain('2 x Poisson braisé');
+      for (const other of ['Ndolé', 'poulet', 'Castel', 'Djino']) expect(grillTicket).not.toContain(other);
+
+      expect(barTicket).toContain('BAR');
+      expect(barTicket).toContain('6 x Castel 65 cl');
+      expect(barTicket).toContain('2 x Castel 65 cl');
+      expect(barTicket).toContain('4 x Djino');
+      for (const other of ['Ndolé', 'Brochette', 'Poisson', 'poulet']) expect(barTicket).not.toContain(other);
+
+      const jobs = await waitFor(async () => {
+        const found = await db.printJob.findMany({ where: { printerId: { in: ids } } });
+        return found.length === 3 && found.every((j) => j.status === 'printed') ? found : null;
+      });
+      expect(jobs).toHaveLength(3);
+
+      // Ajout à la commande : seul le poste concerné reçoit un nouveau bon, avec les seules lignes ajoutées.
+      await send(waiter, table.id, [{ productId: products.beer, quantity: 3 }]).expect(200);
+      const extra = iconv.decode(await waitFor(async () => printers.bar.received[1]), 'cp858');
+      expect(extra).toContain('3 x Castel 65 cl');
+      expect(extra).not.toContain('Djino');
+      await new Promise((r) => setTimeout(r, 300));
+      expect(printers.kitchen.received).toHaveLength(1);
+      expect(printers.grill.received).toHaveLength(1);
+    } finally {
+      for (const id of ids) await as(manager, http().post(`/api/printers/${id}/archive`)).expect(204);
+      for (const printer of Object.values(printers)) printer.server.close();
+    }
+  });
+
   it('réessaie puis signale l’échec quand l’imprimante ne répond pas', async () => {
     const dead = await fakePrinter();
     const port = dead.port;

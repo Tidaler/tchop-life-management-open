@@ -1,5 +1,5 @@
 {
-  "description": "Menu de TCHOP LIFE : plats et accompagnements (prix TTC en FCFA). Les recettes (ingrédients par portion) se saisissent ensuite dans Stocks, Recettes. Salon VIP : plats et accompagnements + 500 F, brochettes à 300 F (+ 100 F).",
+  "description": "Menu de TCHOP LIFE : plats et accompagnements (prix TTC en FCFA). Les recettes (ingrédients par portion) se saisissent ensuite dans Stocks, Recettes. Salon VIP : plats et accompagnements + 500 F, brochettes à 300 F (+ 100 F). Les brochettes sont rangées dans Plats et gardent leur ticket Grill.",
   "station": "kitchen",
   "stockLocation": "Cuisine",
   "firstSortOrder": 0,
@@ -45,27 +45,16 @@
           },
           "priceXaf": 1000,
           "stock": false
-        }
-      ]
-    },
-    {
-      "name": {
-        "fr": "Grillades",
-        "en": "Grills"
-      },
-      "station": "grill",
-      "vip": {
-        "offered": true,
-        "surchargeXaf": 100
-      },
-      "products": [
+        },
         {
           "name": {
             "fr": "Brochette de porc",
             "en": "Pork skewer"
           },
           "priceXaf": 200,
-          "stock": false
+          "stock": false,
+          "station": "grill",
+          "vipSurchargeXaf": 100
         },
         {
           "name": {
@@ -73,7 +62,9 @@
             "en": "Beef skewer"
           },
           "priceXaf": 200,
-          "stock": false
+          "stock": false,
+          "station": "grill",
+          "vipSurchargeXaf": 100
         }
       ]
     },
@@ -105,5 +96,6 @@
         }
       ]
     }
-  ]
+  ],
+  "archiveCategories": ["Grillades"]
 }

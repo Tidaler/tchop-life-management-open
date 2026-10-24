@@ -33,6 +33,7 @@ const toProduct = (p: ProductRow) => ({
   priceXaf: p.priceXaf,
   taxRateBp: p.taxRateBp,
   station: p.station,
+  vipSurchargeXaf: p.vipSurchargeXaf,
   available: p.available,
   visibleOnQr: p.visibleOnQr,
   sortOrder: p.sortOrder,
@@ -172,11 +173,10 @@ export class CatalogService {
       });
       if (!before) throw notFound('Produit');
 
-      if (
-        data.priceXaf !== undefined &&
-        data.priceXaf !== before.priceXaf &&
-        !can(auth.grants, 'price.edit')
-      ) {
+      const priceChanged =
+        (data.priceXaf !== undefined && data.priceXaf !== before.priceXaf) ||
+        (data.vipSurchargeXaf !== undefined && data.vipSurchargeXaf !== before.vipSurchargeXaf);
+      if (priceChanged && !can(auth.grants, 'price.edit')) {
         throw new ForbiddenException({
           code: 'FORBIDDEN',
           message: "Vous n'avez pas le droit de modifier un prix",

@@ -141,3 +141,52 @@ describe('salon VIP', () => {
       .expect(200);
   });
 });
+
+describe('supplément VIP propre à un produit', () => {
+  it('brochette rangée dans Plats : +100 F en VIP (au lieu des +500 F des plats), ticket Grill', async () => {
+    const { body: dishes } = await as(manager, http().post('/api/catalog/categories'))
+      .send({ name: { fr: `Plats ${tag()}` }, vipSurchargeXaf: 500 })
+      .expect(201);
+    const create = async (body: object) =>
+      (
+        await as(manager, http().post('/api/catalog/products'))
+          .send({ categoryId: dishes.id, ...body })
+          .expect(201)
+      ).body as { id: string; version: number; vipSurchargeXaf: number | null; station: string };
+    const dish = await create({ name: { fr: `Poulet ${tag()}` }, priceXaf: 2500, station: 'kitchen' });
+    const skewer = await create({
+      name: { fr: `Brochette ${tag()}` },
+      priceXaf: 200,
+      station: 'grill',
+      vipSurchargeXaf: 100,
+    });
+    expect(dish.vipSurchargeXaf).toBeNull();
+    expect(skewer).toMatchObject({ vipSurchargeXaf: 100, station: 'grill' });
+
+    const { body: zone } = await as(manager, http().post('/api/floor/zones'))
+      .send({ name: `Salon VIP ${tag()}`, vip: true })
+      .expect(201);
+    const vip = await newTable(zone.id);
+    const { body: order } = await send(vip.id, skewer.id).expect(200);
+    expect(order.lines[0].unitPriceXaf).toBe(300);
+    const { body: again } = await send(vip.id, dish.id).expect(200);
+    const dishLine = again.lines.find((l: { productId: string }) => l.productId === dish.id);
+    expect(dishLine.unitPriceXaf).toBe(3000);
+
+    const { body: menu } = await http().get(`/api/public/menu/${vip.token}`).expect(200);
+    expect(menu.products.find((p: { id: string }) => p.id === skewer.id).priceXaf).toBe(300);
+    expect(JSON.stringify(menu)).not.toContain('vipSurcharge');
+
+    // Retour au supplément de la catégorie : le champ vide (null) s'applique.
+    const { body: reset } = await as(manager, http().patch(`/api/catalog/products/${skewer.id}`))
+      .send({ version: skewer.version, vipSurchargeXaf: null })
+      .expect(200);
+    expect(reset.vipSurchargeXaf).toBeNull();
+    const { body: later } = await send(vip.id, skewer.id).expect(200);
+    const prices = later.lines
+      .filter((l: { productId: string }) => l.productId === skewer.id)
+      .map((l: { unitPriceXaf: number }) => l.unitPriceXaf)
+      .sort();
+    expect(prices).toEqual([300, 700].sort());
+  });
+});

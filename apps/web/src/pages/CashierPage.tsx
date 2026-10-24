@@ -15,9 +15,11 @@ import {
   type Billable,
   type CashSession,
   type Customer,
+  type OpenCashSession,
   useCashSession,
   useCustomers,
   useOpenBills,
+  useOpenSessions,
 } from '../cash';
 import { approvalBody, ApprovalFields, type ApprovalValue } from '../components/ApprovalFields';
 import { errorMessage, Modal } from '../components/common';
@@ -85,7 +87,10 @@ export function CashierPage() {
       ) : session.data ? (
         <SessionBar session={session.data} onNotice={setNotice} />
       ) : (
-        <OpenSession onNotice={setNotice} />
+        <>
+          <OpenSession onNotice={setNotice} />
+          <OtherSessions onNotice={setNotice} />
+        </>
       )}
       {tab === 'bills' && <BillsTab sessionOpen={!!session.data} onNotice={setNotice} />}
       {tab === 'customers' && canCustomers && (
@@ -168,6 +173,54 @@ function OpenSession({ onNotice }: { onNotice: (n: Notice) => void }) {
   );
 }
 
+const dateTime = (iso: string, locale: string) =>
+  new Date(iso).toLocaleString(locale === 'fr' ? 'fr-FR' : 'en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+/**
+ * Sessions restées ouvertes par d'autres comptes (caissier absent, compte remplacé ou désactivé) :
+ * chacune bloque sa caisse. On compte le tiroir et on la clôture avec le PIN du gérant, puis on ouvre la sienne.
+ */
+function OtherSessions({ onNotice }: { onNotice: (n: Notice) => void }) {
+  const { t, locale } = useI18n();
+  const sessions = useOpenSessions();
+  const [closing, setClosing] = useState<OpenCashSession | null>(null);
+  const others = sessions.data?.filter((s) => !s.mine) ?? [];
+  if (others.length === 0) return null;
+  return (
+    <div className="card session-card">
+      <div className="section-label">{t('cash.otherSessions')}</div>
+      <p className="muted" style={{ marginTop: 0 }}>
+        {t('cash.otherSessionsHelp')}
+      </p>
+      {others.map((s) => (
+        <div key={s.id} className="session-row">
+          <span className="pill warn">●</span>
+          <span>
+            {t('cash.sessionOf', {
+              register: s.register.name,
+              cashier: s.cashierName,
+              time: dateTime(s.openedAt, locale),
+            })}
+            {!s.cashierActive && <span className="muted"> ({t('cash.inactiveAccount')})</span>}
+          </span>
+          <span style={{ flex: 1 }} />
+          <button className="btn" onClick={() => setClosing(s)}>
+            {t('cash.closeOther')}
+          </button>
+        </div>
+      ))}
+      {closing && (
+        <CloseSession session={closing} other onClose={() => setClosing(null)} onNotice={onNotice} />
+      )}
+    </div>
+  );
+}
+
 function SessionBar({ session, onNotice }: { session: CashSession; onNotice: (n: Notice) => void }) {
   const { t, locale } = useI18n();
   const [closing, setClosing] = useState(false);
@@ -210,18 +263,24 @@ function SessionBar({ session, onNotice }: { session: CashSession; onNotice: (n:
 
 function CloseSession({
   session,
+  other = false,
   onClose,
   onNotice,
 }: {
   session: CashSession;
+  /** Session d'un autre compte : le PIN d'un gérant est demandé (sauf si l'on est soi-même gérant). */
+  other?: boolean;
   onClose: () => void;
   onNotice: (n: Notice) => void;
 }) {
   const { t, locale } = useI18n();
+  const { can } = useSession();
   const queryClient = useQueryClient();
   const [counted, setCounted] = useState('');
   const [comment, setComment] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [needApproval, setNeedApproval] = useState(other && !can('approval.grant'));
+  const [approval, setApproval] = useState<ApprovalValue>(noApproval);
   const countedXaf = counted === '' ? null : Math.max(0, Math.round(Number(counted)));
   const difference = countedXaf === null ? null : countedXaf - session.expectedCashXaf;
 
@@ -229,21 +288,43 @@ function CloseSession({
     mutationFn: () =>
       api<CashSession>(`/cash/sessions/${session.id}/close`, {
         method: 'POST',
-        body: { countedCashXaf: countedXaf, ...(comment.trim() ? { comment: comment.trim() } : {}) },
+        body: {
+          countedCashXaf: countedXaf,
+          ...(comment.trim() ? { comment: comment.trim() } : {}),
+          ...approvalBody(needApproval, approval),
+        },
       }),
     onSuccess: (closed) => {
+      const amount = formatXaf(closed.differenceXaf ?? 0, locale);
       onNotice({
         kind: 'ok',
-        text: t('cash.closed', { amount: formatXaf(closed.differenceXaf ?? 0, locale) }),
+        text: other
+          ? t('cash.closedOther', { cashier: closed.cashierName, amount })
+          : t('cash.closed', { amount }),
       });
       void queryClient.invalidateQueries({ queryKey: ['cash'] });
       onClose();
     },
-    onError: (e) => setError(errorMessage(e, t)),
+    onError: (e) => {
+      if (needsApprovalError(e)) setNeedApproval(true);
+      setError(errorMessage(e, t));
+    },
   });
 
   return (
-    <Modal title={t('cash.close')} onClose={onClose}>
+    <Modal
+      title={other ? t('cash.closeOtherTitle', { cashier: session.cashierName }) : t('cash.close')}
+      onClose={onClose}
+    >
+      {other && (
+        <p className="muted" style={{ marginTop: 0 }}>
+          {t('cash.sessionOf', {
+            register: session.register.name,
+            cashier: session.cashierName,
+            time: dateTime(session.openedAt, locale),
+          })}
+        </p>
+      )}
       <table className="grid">
         <tbody>
           {PAYMENT_METHODS.map((m) => (
@@ -314,12 +395,18 @@ function CloseSession({
             onChange={(e) => setComment(e.target.value)}
           />
         </div>
+        {needApproval && <ApprovalFields value={approval} onChange={setApproval} />}
         {error && <div className="alert danger">{error}</div>}
         <div className="modal-foot">
           <span />
           <button
             className="btn primary"
-            disabled={close.isPending || countedXaf === null || (!!difference && comment.trim().length < 3)}
+            disabled={
+              close.isPending ||
+              countedXaf === null ||
+              (!!difference && comment.trim().length < 3) ||
+              (needApproval && approval.pin.length < 4)
+            }
           >
             {t('cash.closeConfirm')}
           </button>

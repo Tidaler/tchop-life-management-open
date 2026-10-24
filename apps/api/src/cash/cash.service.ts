@@ -1,6 +1,7 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { type PaymentMethod, type Prisma } from '@tchop/db';
 import { can, type CloseSessionInput, type OpenSessionInput, PAYMENT_METHODS } from '@tchop/shared';
+import { ApprovalService } from '../approval/approval.service.js';
 import { AuditService } from '../audit/audit.service.js';
 import { isUniqueViolation, notFound } from '../common/errors.js';
 import { type AuthContext } from '../common/request-context.js';
@@ -28,6 +29,7 @@ export class CashService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly print: PrintService,
+    private readonly approval: ApprovalService,
   ) {}
 
   async registers(auth: AuthContext): Promise<{ id: string; name: string }[]> {
@@ -45,6 +47,32 @@ export class CashService {
       include: { register: true },
     });
     return session ? this.summary(session.id) : null;
+  }
+
+  /**
+   * Toutes les sessions ouvertes du site, avec leurs totaux : permet de retrouver et de clôturer une
+   * session qui bloque la caisse (caissier absent, compte remplacé ou désactivé).
+   */
+  async openSessions(auth: AuthContext) {
+    const sessions = await this.prisma.cashSession.findMany({
+      where: { siteId: auth.siteId, status: 'open' },
+      orderBy: { openedAt: 'asc' },
+      select: { id: true, cashierId: true },
+    });
+    const inactive = await this.prisma.user.findMany({
+      where: { id: { in: sessions.map((s) => s.cashierId) }, active: false },
+      select: { id: true },
+    });
+    const off = new Set(inactive.map((u) => u.id));
+    const rows = [];
+    for (const s of sessions) {
+      rows.push({
+        ...(await this.summary(s.id)),
+        mine: s.cashierId === auth.userId,
+        cashierActive: !off.has(s.cashierId),
+      });
+    }
+    return rows;
   }
 
   /** Session ouverte du caissier : obligatoire pour tout encaissement. */
@@ -80,9 +108,29 @@ export class CashService {
       return this.summary(session.id);
     } catch (error) {
       if (isUniqueViolation(error)) {
+        // Le message nomme la personne qui tient la caisse : la clôturer depuis l'écran Caisse.
+        const holder = await this.prisma.cashSession.findFirst({
+          where: {
+            siteId: auth.siteId,
+            status: 'open',
+            OR: [{ registerId: input.registerId }, { cashierId: auth.userId }],
+          },
+          select: { cashierId: true },
+        });
+        const name = holder
+          ? (
+              await this.prisma.user.findUnique({
+                where: { id: holder.cashierId },
+                select: { displayName: true },
+              })
+            )?.displayName
+          : undefined;
         throw new ConflictException({
           code: 'SESSION_ALREADY_OPEN',
-          message: 'Une session est déjà ouverte sur cette caisse ou pour vous',
+          message:
+            !holder || holder.cashierId === auth.userId
+              ? 'Vous avez déjà une session ouverte'
+              : `Une session est déjà ouverte sur cette caisse par ${name ?? 'un autre caissier'} : clôturez-la depuis l'écran Caisse`,
         });
       }
       throw error;
@@ -161,7 +209,7 @@ export class CashService {
 
   /**
    * Clôture : écart = espèces comptées − espèces attendues. Commentaire obligatoire si écart.
-   * Clôturer la session d'un autre caissier demande les droits d'approbation (gérant).
+   * La session d'un autre caissier : un gérant la clôture seul ; un caissier, avec le PIN d'un gérant.
    */
   async close(auth: AuthContext, sessionId: string, input: CloseSessionInput) {
     const result = await this.prisma.$transaction(async (tx) => {
@@ -170,12 +218,10 @@ export class CashService {
       if (session.status !== 'open') {
         throw new ConflictException({ code: 'SESSION_CLOSED', message: 'Session déjà clôturée' });
       }
-      if (session.cashierId !== auth.userId && !can(auth.grants, 'approval.grant')) {
-        throw new ForbiddenException({
-          code: 'FORBIDDEN',
-          message: 'Seul le caissier ou un gérant peut clôturer',
-        });
-      }
+      const approvedBy =
+        session.cashierId === auth.userId || can(auth.grants, 'approval.grant')
+          ? null
+          : await this.approval.requireApprover(auth, input.approval, tx);
       // Verrou : plus aucun paiement ne peut entrer dans la session pendant la clôture.
       await tx.$queryRaw`SELECT 1 FROM "cash_session" WHERE "id" = ${sessionId}::uuid FOR UPDATE`;
       const totals = await this.summary(sessionId, tx);
@@ -211,8 +257,10 @@ export class CashService {
           countedCashXaf: input.countedCashXaf,
           differenceXaf: difference,
           byMethod: totals.byMethod,
+          ...(session.cashierId === auth.userId ? {} : { cashierName: totals.cashierName }),
         },
         input.comment,
+        approvedBy,
       );
 
       const site = await tx.site.findUniqueOrThrow({ where: { id: auth.siteId } });
@@ -242,12 +290,21 @@ export class CashService {
     return result;
   }
 
-  private log(tx: Tx, auth: AuthContext, action: string, id: string, after?: object, reason?: string) {
+  private log(
+    tx: Tx,
+    auth: AuthContext,
+    action: string,
+    id: string,
+    after?: object,
+    reason?: string,
+    approverId?: string | null,
+  ) {
     return this.audit.log(
       {
         tenantId: auth.tenantId,
         siteId: auth.siteId,
         actorId: auth.userId,
+        approverId,
         deviceId: auth.deviceId,
         action,
         entity: 'cash_session',

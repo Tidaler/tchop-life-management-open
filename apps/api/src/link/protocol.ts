@@ -39,6 +39,7 @@ export const snapshotSchema = z.object({
             .regex(/^\/api\/media\/[0-9a-f-]{36}\.webp$/)
             .nullable(),
           priceXaf: z.number().int().min(0),
+          vipSurchargeXaf: z.number().int().min(0).max(VIP_SURCHARGE_MAX_XAF).nullable().default(null),
           available: z.boolean(),
           modifierGroupIds: z.array(z.uuid()).max(20),
         }),

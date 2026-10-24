@@ -72,6 +72,13 @@ export class CashController {
     return this.cash.current(auth);
   }
 
+  /** Sessions ouvertes du site : retrouver et clôturer celle qui bloque une caisse. */
+  @Get('sessions/open')
+  @RequirePermission('cash_session.manage', 'read')
+  openSessions(@CurrentAuth() auth: AuthContext) {
+    return this.cash.openSessions(auth);
+  }
+
   @Post('sessions')
   @RequirePermission('cash_session.manage')
   open(@CurrentAuth() auth: AuthContext, @Body(new ZodPipe(openSessionSchema)) body: OpenSessionInput) {

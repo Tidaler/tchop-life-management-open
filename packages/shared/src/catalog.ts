@@ -47,6 +47,8 @@ export const productCreateSchema = z.object({
   /** Points de base : 1925 = 19,25 %. */
   taxRateBp: z.number().int().min(0).max(10_000).default(0),
   station: z.enum(STATIONS),
+  /** Supplément Salon VIP propre au produit ; null ou absent : celui de sa catégorie. */
+  vipSurchargeXaf: vipSurchargeXaf.nullable().default(null),
   available: z.boolean().default(true),
   visibleOnQr: z.boolean().default(true),
   sortOrder: z.number().int().min(0).default(0),
@@ -62,6 +64,7 @@ export const productUpdateSchema = z.object({
   priceXaf: priceXaf.optional(),
   taxRateBp: z.number().int().min(0).max(10_000).optional(),
   station: z.enum(STATIONS).optional(),
+  vipSurchargeXaf: vipSurchargeXaf.nullable().optional(),
   available: z.boolean().optional(),
   visibleOnQr: z.boolean().optional(),
   sortOrder: z.number().int().min(0).optional(),
