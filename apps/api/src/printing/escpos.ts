@@ -189,14 +189,13 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
     cmd(CMD.sizeNormal);
     cmd(CMD.boldOff);
     for (const p of doc.payments) {
-      text(
-        columns(
-          p.reference ? `${p.label} (${p.reference})` : p.label,
-          money(p.tenderedXaf ?? p.amountXaf),
-          cols,
-        ),
-      );
-      if (p.changeXaf > 0) text(columns('Monnaie rendue', money(p.changeXaf), cols));
+      // Espèces : montant reçu et reliquat rendu toujours imprimés (reliquat à 0 F si compte juste).
+      if (p.tenderedXaf !== null) {
+        text(columns(`${p.label} reçues`, money(p.tenderedXaf), cols));
+        text(columns('Reliquat rendu', money(p.changeXaf), cols));
+        continue;
+      }
+      text(columns(p.reference ? `${p.label} (${p.reference})` : p.label, money(p.amountXaf), cols));
     }
     rule();
     cmd(CMD.alignCenter);

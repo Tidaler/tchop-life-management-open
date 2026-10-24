@@ -770,6 +770,27 @@ table.grid tr:last-child td {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+.menu-table {
+  margin-left: auto;
+  display: grid;
+  justify-items: center;
+  min-width: 96px;
+  padding: 6px 14px;
+  border: 3px solid #c2410c;
+  border-radius: 14px;
+  color: #c2410c;
+  line-height: 1.1;
+}
+.menu-table span {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.menu-table b {
+  font-size: 34px;
+  font-weight: 800;
+}
 .menu-scan {
   text-align: center;
   margin: 16px 0 8px;
@@ -798,6 +819,19 @@ table.grid tr:last-child td {
   text-align: left;
   font-size: 11px;
   white-space: pre-wrap;
+}
+.menu-list-head {
+  display: none;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 3px solid #c2410c;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 800;
+}
+.menu-list-head b {
+  color: #c2410c;
 }
 .menu-list {
   columns: 2;
@@ -839,10 +873,26 @@ table.grid tr:last-child td {
     padding: 0;
     break-after: page;
   }
-  /* Trois QR codes sur une ligne d'A4 : 5 cm chacun, toujours lisibles par un téléphone. */
+  /* Recto : la table et ses QR codes, trois par ligne d'A4 (5 cm chacun, toujours lisibles par un
+     téléphone), à la ligne au-delà. Verso : la carte imprimée, sous le nom de la table. */
   .menu-qr-row {
-    gap: 0.4cm;
-    flex-wrap: nowrap;
+    gap: 0.4cm 0.6cm;
+  }
+  .menu-list-head {
+    display: flex;
+    break-before: page;
+  }
+  /* Verso sur une seule page : une longue catégorie (whiskies) continue dans la colonne suivante. */
+  .menu-cat {
+    break-inside: auto;
+  }
+  .menu-cat h3 {
+    break-after: avoid;
+  }
+  .menu-item {
+    font-size: 12px;
+    line-height: 1.4;
+    break-inside: avoid;
   }
   .menu-qr {
     width: 5.6cm;

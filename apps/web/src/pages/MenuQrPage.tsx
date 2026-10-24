@@ -8,30 +8,46 @@ import { api } from '../api';
 import { useCatalog } from '../catalog';
 import { errorMessage } from '../components/common';
 import { useI18n } from '../i18n';
-import { type QrCodeRow } from './FloorSetupPage';
+import { type FloorZone, type QrCodeRow } from './FloorSetupPage';
 
 /**
  * Menu sans connexion : la carte est écrite dans les QR codes eux-mêmes. Le client scanne avec l'appareil
- * photo et lit la carte sur son téléphone, sans Internet ni Wi-Fi. La carte imprimée autour des QR codes
- * présente le même menu, mis en page. Une carte pour la salle, une autre aux prix VIP.
+ * photo et lit la carte sur son téléphone, sans Internet ni Wi-Fi. Une carte par table, à son nom et aux
+ * prix de sa zone (prix VIP dans les salons VIP) : une table ajoutée au plan de salle a aussitôt la sienne.
+ * Tout est recalculé depuis le catalogue à chaque ouverture : il suffit de réimprimer après un changement.
  */
 export function MenuQrPage() {
   const { t } = useI18n();
   const catalog = useCatalog();
+  const floor = useQuery({ queryKey: ['floor'], queryFn: () => api<FloorZone[]>('/floor') });
   const site = useQuery({
     queryKey: ['qr-codes'],
     queryFn: () => api<{ siteName: string; codes: QrCodeRow[] }>('/floor/qr-codes'),
   });
   const siteName = site.data?.siteName ?? 'TCHOP LIFE';
+  const [only, setOnly] = useState('');
 
   // Seuls les produits et catégories visibles sur le menu client y figurent.
-  const visible = useMemo(() => {
+  const menus = useMemo(() => {
     if (!catalog.data) return null;
     const categories = catalog.data.categories.filter((c) => c.visibleOnQr);
     const ids = new Set(categories.map((c) => c.id));
     const products = catalog.data.products.filter((p) => p.visibleOnQr && ids.has(p.categoryId));
-    return { categories, products };
+    return {
+      room: menuForZone({ categories, products }, false),
+      vip: menuForZone({ categories, products }, true),
+    };
   }, [catalog.data]);
+
+  const tables = useMemo(
+    () =>
+      (floor.data ?? []).flatMap((zone) =>
+        zone.tables.map((table) => ({ id: table.id, label: table.label, zone: zone.name, vip: zone.vip })),
+      ),
+    [floor.data],
+  );
+  const shown = only ? tables.filter((table) => table.id === only) : tables;
+  const error = catalog.error ?? floor.error;
 
   return (
     <>
@@ -41,22 +57,39 @@ export function MenuQrPage() {
           <p className="muted">{t('menuQr.help')}</p>
         </div>
         <div className="confirm">
+          <select aria-label={t('menuQr.which')} value={only} onChange={(e) => setOnly(e.target.value)}>
+            <option value="">{t('menuQr.allTables', { count: tables.length })}</option>
+            {tables.map((table) => (
+              <option key={table.id} value={table.id}>
+                {table.label} · {table.zone}
+              </option>
+            ))}
+          </select>
           <Link className="btn ghost" to="/floor-setup">
             ← {t('common.back')}
           </Link>
-          <button className="btn primary" onClick={() => window.print()} disabled={!visible}>
+          <button
+            className="btn primary"
+            onClick={() => window.print()}
+            disabled={!menus || shown.length === 0}
+          >
             🖨 {t('qrPrint.print')}
           </button>
         </div>
       </div>
-      {catalog.isPending && <p className="muted">{t('common.loading')}</p>}
-      {catalog.isError && <div className="alert danger">{errorMessage(catalog.error, t)}</div>}
-      {visible && (
-        <>
-          <MenuCard menu={menuForZone(visible, false)} siteName={siteName} zone={t('menuQr.room')} />
-          <MenuCard menu={menuForZone(visible, true)} siteName={siteName} zone={t('menuQr.vip')} />
-        </>
-      )}
+      {(catalog.isPending || floor.isPending) && <p className="muted">{t('common.loading')}</p>}
+      {error && <div className="alert danger">{errorMessage(error, t)}</div>}
+      {menus && floor.data && shown.length === 0 && <p className="muted">{t('menuQr.noTable')}</p>}
+      {menus &&
+        shown.map((table) => (
+          <MenuCard
+            key={table.id}
+            menu={table.vip ? menus.vip : menus.room}
+            siteName={siteName}
+            table={table.label}
+            zone={table.zone}
+          />
+        ))}
     </>
   );
 }
@@ -66,11 +99,22 @@ type Menu = {
   products: { id: string; categoryId: string; name: { fr: string; en?: string }; priceXaf: number }[];
 };
 
-function MenuCard({ menu, siteName, zone }: { menu: Menu; siteName: string; zone: string }) {
+function MenuCard({
+  menu,
+  siteName,
+  table,
+  zone,
+}: {
+  menu: Menu;
+  siteName: string;
+  table: string;
+  zone: string;
+}) {
   const { t } = useI18n();
+  // Le nom de la table est aussi écrit dans les QR codes : le client le voit en tête de la carte.
   const parts = useMemo(
-    () => textMenuParts(menu, { title: `${siteName} - Menu ${zone}` }),
-    [menu, siteName, zone],
+    () => textMenuParts(menu, { title: `${siteName} - Table ${table} (${zone})` }),
+    [menu, siteName, table, zone],
   );
 
   return (
@@ -80,6 +124,10 @@ function MenuCard({ menu, siteName, zone }: { menu: Menu; siteName: string; zone
         <div>
           <div className="menu-site">{siteName}</div>
           <div className="menu-zone">{zone}</div>
+        </div>
+        <div className="menu-table">
+          <span>Table</span>
+          <b>{table}</b>
         </div>
       </div>
       <p className="menu-scan">
@@ -91,6 +139,12 @@ function MenuCard({ menu, siteName, zone }: { menu: Menu; siteName: string; zone
         {parts.map((part, i) => (
           <MenuQr key={i} part={part} index={i} count={parts.length} />
         ))}
+      </div>
+      <div className="menu-list-head">
+        <span>{siteName}</span>
+        <b>
+          Table {table} · {zone}
+        </b>
       </div>
       <div className="menu-list">
         {menu.categories
@@ -109,7 +163,7 @@ function MenuCard({ menu, siteName, zone }: { menu: Menu; siteName: string; zone
             </div>
           ))}
       </div>
-      <p className="menu-foot muted">{t('menuQr.foot')}</p>
+      <p className="menu-foot muted">{t('menuQr.foot', { table })}</p>
     </section>
   );
 }

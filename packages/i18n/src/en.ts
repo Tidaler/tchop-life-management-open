@@ -173,11 +173,14 @@ export const en: Messages = {
   'qrPrint.title': 'Table QR codes',
   'menuQr.title': 'Offline menu',
   'menuQr.help':
-    'The menu is written inside the QR codes: guests scan with the camera and read it on their phone, without Internet or Wi-Fi. Print one card per table (room) and per VIP lounge (VIP prices). Print again after a price change.',
+    'The menu is written inside the QR codes: customers scan with the camera and read it on their phone, without Internet or Wi-Fi. One card per table, with its name and its zone prices (VIP prices in the lounges). It follows the catalogue by itself: print again after a price change or a new table.',
+  'menuQr.which': 'Cards to print',
+  'menuQr.allTables': 'All tables ({count})',
+  'menuQr.noTable': 'No table yet: add some in the floor plan.',
   'menuQr.room': 'Room',
   'menuQr.vip': 'VIP lounges',
   'menuQr.scan': 'Scan a QR code with your camera: the menu appears, without Internet or Wi-Fi',
-  'menuQr.foot': 'Prices in FCFA. To order, call the staff.',
+  'menuQr.foot': 'Prices in FCFA. To order, call the staff and give the table number: {table}.',
   'qrPrint.print': 'Print',
   'qrPrint.scan': 'Scan to see the menu',
   'qrPrint.table': 'Table {label}',
@@ -394,6 +397,8 @@ export const en: Messages = {
   'cash.sessionAlreadyOpen':
     'A session is already open on this register or for you: see Open sessions, below.',
   'cash.otherSessions': 'Open sessions',
+  'cash.cashReceived': '{method} received',
+  'cash.changeGiven': 'Change given',
   'cash.otherSessionsHelp':
     'A session left open blocks its register. Count the drawer, then close it with the manager’s PIN: the Z report prints, and you can open your register.',
   'cash.sessionOf': '{register} · {cashier} · opened {time}',
