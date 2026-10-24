@@ -6,6 +6,8 @@
 #   sudo /opt/tchop/app/infra/site/acces-distant.sh --arreter  couper l'accès à distance
 # La connexion au compte Tailscale se fait dans le navigateur (lien affiché) : aucun secret en argument.
 set -euo pipefail
+# shellcheck source=infra/site/lib-tailscale.sh
+. "$(dirname "$0")/lib-tailscale.sh"
 SITE=/etc/caddy/acces-distant.caddy
 HOST=tchop-serveur
 
@@ -60,7 +62,18 @@ if [[ $NAME != *.ts.net ]]; then
   exit 1
 fi
 
-echo "4/5 Serveur web (Caddy) : https://$NAME"
+echo "4/5 Certificat HTTPS et serveur web (Caddy) : https://$NAME"
+# Le certificat doit être délivré avant de publier l'adresse (juste après « Enable HTTPS », il faut
+# parfois patienter un peu). Sinon le navigateur afficherait « connexion non sécurisée ».
+for attempt in $(seq 1 12); do
+  problem=$(ts_cert_problem "$NAME") && break
+  [ "$attempt" -lt 12 ] && sleep 10
+done
+if [ -n "${problem:-}" ]; then
+  echo "$problem" >&2
+  echo "Puis relancez : sudo $0" >&2
+  exit 1
+fi
 cat > "$SITE" << EOF
 # Accès à distance par Tailscale (écrit par infra/site/acces-distant.sh). Certificat fourni par Tailscale.
 https://$NAME {
@@ -70,7 +83,10 @@ https://$NAME {
 	import personnel
 }
 EOF
-reload_caddy
+caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile > /dev/null
+# Un ancien certificat local pour cette adresse (essais précédents) ne doit plus jamais être servi.
+rm -rf "/var/lib/caddy/.local/share/caddy/certificates/local/$NAME"
+systemctl restart caddy
 # SSH d'administration aussi par le réseau privé (le pare-feu le limitait au réseau local).
 if command -v ufw > /dev/null && LC_ALL=C ufw status | grep -q '^Status: active'; then
   ufw allow in on tailscale0 to any port 22 proto tcp comment 'TCHOP acces distant' > /dev/null
@@ -88,8 +104,7 @@ if probe; then
   echo "Terminé. Sur votre téléphone ou ordinateur : application Tailscale, même compte, puis https://$NAME"
   echo "Administration : ssh tchop-admin@$HOST"
 else
-  echo "Le certificat n'est pas encore disponible. Dans la console Tailscale (login.tailscale.com/admin/dns)," >&2
-  echo "activez « HTTPS Certificates », patientez une minute, puis relancez : sudo $0" >&2
-  echo "Détail : journalctl -u caddy -n 30" >&2
+  echo "Le certificat est délivré mais l'application ne répond pas sur https://$NAME." >&2
+  echo "Détail : journalctl -u caddy -n 30 ; puis relancez : sudo $0" >&2
   exit 1
 fi

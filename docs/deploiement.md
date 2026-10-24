@@ -74,7 +74,7 @@ sudo cat /opt/tchop/.ssh/id_ed25519.pub
 sudo -u tchop git clone git@github.com:Tidaler/tchop-life-management.git /opt/tchop/app
 cd /opt/tchop/app
 sudo -u tchop git fetch --tags        # indispensable si le dépôt a été cloné avant la publication de la version
-sudo -u tchop git checkout v1.0.11
+sudo -u tchop git checkout v1.0.12
 sudo -u tchop pnpm install --frozen-lockfile
 sudo -u tchop pnpm build
 ```
@@ -159,26 +159,28 @@ sudo /opt/tchop/app/infra/site/acces-distant.sh
    Ouvrir le lien affiché et se connecter au compte. Le script affiche l'adresse privée, par exemple `https://tchop-serveur.tail1234.ts.net`.
 4. Sur le téléphone ou l'ordinateur : application **Tailscale** (Play Store, App Store, Windows), même compte, puis ouvrir l'adresse privée. Connexion par mot de passe (propriétaire, gérant, comptable).
 
+« Connexion non sécurisée » sur l'adresse privée : `sudo /opt/tchop/app/infra/site/check.sh` affiche la réponse exacte de Tailscale et ce qu'il faut faire ; le script refuse de publier l'adresse tant que le certificat n'est pas délivré.
+
 Administration à distance : `ssh tchop-admin@tchop-serveur` depuis un ordinateur connecté à Tailscale. Couper l'accès : `sudo /opt/tchop/app/infra/site/acces-distant.sh --arreter`, ou retirer un appareil perdu dans la console Tailscale (page **Machines**). Seuls les appareils de votre compte peuvent joindre le serveur.
 
 Sauvegardes : chaque jour à 7 h dans `/var/backups/tchop` (30 jours), copiées sur le disque USB monté sur `/mnt/sauvegarde` (90 jours).
 
-### Passer un serveur existant en v1.0.11
+### Passer un serveur existant en v1.0.12
 
 Depuis un serveur en **v1.0.5** ou plus récent :
 
 ```bash
-sudo /opt/tchop/app/infra/site/update.sh v1.0.11
+sudo /opt/tchop/app/infra/site/update.sh v1.0.12
 sudo /opt/tchop/app/infra/site/tchop.sh catalog:import
 ```
 
-La seconde commande met les cartes à jour : en v1.0.9, brochettes dans Plats (ticket Grill et prix VIP inchangés), « Jus (Soda) », boissons aromatisées dans Bières, cognacs et liqueurs dans Whiskies ; en v1.0.11, nouveaux prix des whiskies, vins et champagnes (bières inchangées). Les anciennes catégories vides sont archivées, rien n'est supprimé. Puis refaire le **Menu sans connexion** (Plan de salle) et l'imprimer.
+La seconde commande met les cartes à jour : en v1.0.9, brochettes dans Plats (ticket Grill et prix VIP inchangés), « Jus (Soda) », boissons aromatisées dans Bières, cognacs et liqueurs dans Whiskies ; en v1.0.12, nouveaux prix des whiskies, vins et champagnes (bières inchangées). Les anciennes catégories vides sont archivées, rien n'est supprimé. Puis refaire le **Menu sans connexion** (Plan de salle) et l'imprimer.
 
 Depuis un serveur en **v1.0.4** (l'ancien script ne se relance pas sur la nouvelle version), une fois :
 
 ```bash
-cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.11
-sudo /opt/tchop/app/infra/site/update.sh v1.0.11
+cd /opt/tchop/app && sudo -u tchop git fetch --tags && sudo -u tchop git checkout v1.0.12
+sudo /opt/tchop/app/infra/site/update.sh v1.0.12
 sudo /opt/tchop/app/infra/site/setup-caisse.sh --usb-printer   # sans --usb-printer si l'imprimante est en réseau
 ```
 

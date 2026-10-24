@@ -68,9 +68,15 @@ if [ -f /etc/caddy/acces-distant.caddy ]; then
   echo "Accès à distance (Tailscale)"
   REMOTE=$(sed -nE 's#^https://([^ ]+\.ts\.net) \{#\1#p' /etc/caddy/acces-distant.caddy | head -1)
   check "Tailscale connecté" "tailscale status" "sudo $APP/infra/site/acces-distant.sh"
-  check "Application à distance (https://$REMOTE)" \
-    "curl -fsS -o /dev/null --resolve $REMOTE:443:\$(tailscale ip -4) https://$REMOTE/api/health" \
-    "console Tailscale : MagicDNS et HTTPS Certificates activés, puis sudo $APP/infra/site/acces-distant.sh"
+  # shellcheck source=infra/site/lib-tailscale.sh
+  . "$APP/infra/site/lib-tailscale.sh"
+  if curl -fsS -o /dev/null --resolve "$REMOTE:443:$(tailscale ip -4)" "https://$REMOTE/api/health" > /dev/null 2>&1; then
+    ok "Application à distance avec certificat valide (https://$REMOTE)"
+  elif problem=$(ts_cert_problem "$REMOTE"); then
+    ko "Application à distance (https://$REMOTE)" "certificat délivré mais pas encore servi : sudo $APP/infra/site/acces-distant.sh"
+  else
+    ko "Certificat HTTPS de Tailscale (https://$REMOTE)" "$problem"
+  fi
 fi
 
 echo "Poste de caisse"
