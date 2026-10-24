@@ -64,6 +64,15 @@ echo "Pare-feu"
 check "Pare-feu actif" "ufw status | grep -q 'Status: active\|État : actif'" "sudo ufw enable"
 check "Ports 80, 443 et 8443 ouverts aux tablettes" "ufw status | grep -q '80,443,8443/tcp'" "sudo ufw allow 80,443,8443/tcp"
 
+if [ -f /etc/caddy/acces-distant.caddy ]; then
+  echo "Accès à distance (Tailscale)"
+  REMOTE=$(sed -nE 's#^https://([^ ]+\.ts\.net) \{#\1#p' /etc/caddy/acces-distant.caddy | head -1)
+  check "Tailscale connecté" "tailscale status" "sudo $APP/infra/site/acces-distant.sh"
+  check "Application à distance (https://$REMOTE)" \
+    "curl -fsS -o /dev/null --resolve $REMOTE:443:\$(tailscale ip -4) https://$REMOTE/api/health" \
+    "console Tailscale : MagicDNS et HTTPS Certificates activés, puis sudo $APP/infra/site/acces-distant.sh"
+fi
+
 echo "Poste de caisse"
 if id caisse > /dev/null 2>&1; then
   check "Session caisse sans droits d'administration" "! id -nG caisse | tr ' ' '\n' | grep -qx sudo" "sudo gpasswd -d caisse sudo"

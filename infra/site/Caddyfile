@@ -59,6 +59,9 @@ https://SERVER_IP:8443 {
 	}
 }
 
+# Accès à distance par Tailscale, s'il est activé (infra/site/acces-distant.sh) : aucun fichier sinon.
+import /etc/caddy/acces-distant*.caddy
+
 # En clair, une seule chose : le certificat de l'autorité locale, à installer une fois sur chaque tablette.
 http://SERVER_IP {
 	handle /tchop-ca.crt {
