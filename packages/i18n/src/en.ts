@@ -111,6 +111,8 @@ export const en: Messages = {
   'catalog.unavailable': 'Sold out',
   'catalog.vip': 'VIP lounge',
   'catalog.vipOffered': 'Offered in VIP lounges',
+  'catalog.productVipSurcharge': 'VIP lounge surcharge (FCFA)',
+  'catalog.productVipHint': 'Empty: the category’s one.',
   'catalog.vipSurcharge': 'VIP surcharge per product (FCFA)',
   'catalog.visibleOnQr': 'Shown on the QR menu',
   'catalog.hiddenOnQr': 'Hidden on the QR menu',
@@ -389,7 +391,17 @@ export const en: Messages = {
   'customers.inactive': 'Disabled',
   'customers.privacy': 'Data kept to the minimum: name, optional phone, limit.',
   'cash.noSessionCode': 'Open your cash session first.',
-  'cash.sessionAlreadyOpen': 'A session is already open on this register or for you.',
+  'cash.sessionAlreadyOpen':
+    'A session is already open on this register or for you: see Open sessions, below.',
+  'cash.otherSessions': 'Open sessions',
+  'cash.otherSessionsHelp':
+    'A session left open blocks its register. Count the drawer, then close it with the manager’s PIN: the Z report prints, and you can open your register.',
+  'cash.sessionOf': '{register} · {cashier} · opened {time}',
+  'cash.inactiveAccount': 'deactivated account',
+  'cash.closeOther': 'Close this session',
+  'cash.closeOtherTitle': 'Close {cashier}’s session',
+  'cash.closedOther':
+    '{cashier}’s session closed. Difference: {amount}. Z report printed. You can open your register.',
   'cash.overpayment': 'Amount higher than what is due.',
   'cash.referenceUsed': 'This transaction reference was already recorded.',
   'cash.alreadyBilled': 'These items are already on another bill.',

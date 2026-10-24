@@ -22,6 +22,8 @@ export interface Product {
   priceXaf: number;
   taxRateBp: number;
   station: Station;
+  /** Supplément Salon VIP propre au produit ; null : celui de sa catégorie. */
+  vipSurchargeXaf: number | null;
   available: boolean;
   visibleOnQr: boolean;
   sortOrder: number;

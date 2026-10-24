@@ -342,6 +342,8 @@ function ProductEditor({
     priceXaf: product?.priceXaf ?? 0,
     taxPercent: (product?.taxRateBp ?? 0) / 100,
     station: product?.station ?? ('kitchen' as Station),
+    // Vide : le supplément VIP de la catégorie s'applique.
+    vipSurcharge: product?.vipSurchargeXaf == null ? '' : String(product.vipSurchargeXaf),
     available: product?.available ?? true,
     visibleOnQr: product?.visibleOnQr ?? true,
     modifierGroupIds: product?.modifierGroupIds ?? [],
@@ -352,8 +354,12 @@ function ProductEditor({
 
   const save = useMutation({
     mutationFn: () => {
-      const { taxPercent, ...rest } = form;
-      const body = { ...rest, taxRateBp: Math.round(taxPercent * 100) };
+      const { taxPercent, vipSurcharge, ...rest } = form;
+      const body = {
+        ...rest,
+        taxRateBp: Math.round(taxPercent * 100),
+        vipSurchargeXaf: vipSurcharge === '' ? null : Math.max(0, Math.round(Number(vipSurcharge))),
+      };
       return product
         ? api(`/catalog/products/${product.id}`, {
             method: 'PATCH',
@@ -465,6 +471,24 @@ function ProductEditor({
                 </option>
               ))}
             </select>
+          </div>
+          <div className="field">
+            <label htmlFor="product-vip">{t('catalog.productVipSurcharge')}</label>
+            <input
+              id="product-vip"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={1_000_000}
+              step={100}
+              disabled={!canEditPrice && !!product}
+              placeholder={String(
+                catalog.categories.find((c) => c.id === form.categoryId)?.vipSurchargeXaf ?? 0,
+              )}
+              value={form.vipSurcharge}
+              onChange={(e) => set('vipSurcharge', e.target.value)}
+            />
+            <span className="hint">{t('catalog.productVipHint')}</span>
           </div>
         </div>
         <label className="check">

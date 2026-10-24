@@ -147,6 +147,7 @@ export class QrRequestsService implements OnApplicationBootstrap, OnApplicationS
         description: p.description,
         imageUrl: p.imageUrl,
         priceXaf: p.priceXaf,
+        vipSurchargeXaf: p.vipSurchargeXaf,
         available: p.available,
         modifierGroupIds: p.modifierGroups.map((g) => g.groupId),
       })),

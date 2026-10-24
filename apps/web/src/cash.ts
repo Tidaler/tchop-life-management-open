@@ -71,6 +71,20 @@ export interface Customer {
   version: number;
 }
 
+/** Session ouverte du site, vue depuis l'écran Caisse : la sienne ou celle d'un autre compte. */
+export interface OpenCashSession extends CashSession {
+  cashierId: string;
+  mine: boolean;
+  cashierActive: boolean;
+}
+
+export const useOpenSessions = (enabled = true) =>
+  useQuery({
+    queryKey: ['cash', 'open-sessions'],
+    queryFn: () => api<OpenCashSession[]>('/cash/sessions/open'),
+    enabled,
+  });
+
 export const useCashSession = (enabled = true) =>
   useQuery({
     queryKey: ['cash', 'session'],

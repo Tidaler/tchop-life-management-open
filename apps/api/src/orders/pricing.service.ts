@@ -72,7 +72,7 @@ export class PricingService {
     return lines.map((line) => {
       const product = byId.get(line.productId);
       if (!product) throw notFound('Produit');
-      const basePriceXaf = zonePriceXaf(product.priceXaf, product.category, vip);
+      const basePriceXaf = zonePriceXaf(product.priceXaf, product.category, vip, product.vipSurchargeXaf);
       if (basePriceXaf === null) {
         // Menu QR : un produit absent du menu de la table est traité comme inexistant.
         if (options.publicOnly) throw notFound('Produit');

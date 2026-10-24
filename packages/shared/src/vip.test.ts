@@ -30,4 +30,19 @@ describe('salon VIP', () => {
     expect(standard.categories).toEqual([{ id: 'b' }, { id: 'w' }]);
     expect(standard.products.map((p) => p.priceXaf)).toEqual([1000, 8000]);
   });
+
+  it('supplément propre au produit : remplace celui de la catégorie, jamais exposé', () => {
+    expect(zonePriceXaf(200, wines, true, 100)).toBe(300);
+    expect(zonePriceXaf(200, wines, true, null)).toBe(5200);
+    expect(zonePriceXaf(200, wines, false, 100)).toBe(200);
+    expect(zonePriceXaf(200, beers, true, 100)).toBeNull();
+    const vip = menuForZone(
+      {
+        categories: [wines],
+        products: [{ id: 'brochette', categoryId: 'w', priceXaf: 200, vipSurchargeXaf: 100 }],
+      },
+      true,
+    );
+    expect(vip.products).toEqual([{ id: 'brochette', categoryId: 'w', priceXaf: 300 }]);
+  });
 });

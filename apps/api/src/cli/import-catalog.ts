@@ -48,6 +48,10 @@ const catalogSchema = z.object({
               priceXaf: z.number().int().min(0).max(10_000_000),
               aliases: z.array(z.string()).default([]),
               stock: z.boolean().default(true),
+              /** Poste du produit, s'il diffère de celui de sa catégorie (ex. brochettes dans Plats : grill). */
+              station: z.enum(STATIONS).optional(),
+              /** Supplément Salon VIP propre au produit ; absent : celui de sa catégorie. */
+              vipSurchargeXaf: z.number().int().min(0).max(VIP_SURCHARGE_MAX_XAF).optional(),
               /** Photo du produit, rangée à côté de la carte (ex. images/heineken.webp). */
               image: z
                 .string()
@@ -194,6 +198,8 @@ async function importFile(url: string, siteId: string, file: string): Promise<vo
             }
 
             for (const [pi, item] of cat.products.entries()) {
+              const itemStation = (item.station ?? station) as Station;
+              const itemVip = item.vipSurchargeXaf ?? null;
               const existingId = await findByName(tx, 'product', siteId, [item.name.fr, ...item.aliases]);
               let productId: string;
               if (existingId) {
@@ -203,7 +209,8 @@ async function importFile(url: string, siteId: string, file: string): Promise<vo
                   (before.name as { en?: string }).en === item.name.en &&
                   before.priceXaf === item.priceXaf &&
                   before.categoryId === categoryId &&
-                  before.station === station &&
+                  before.station === itemStation &&
+                  before.vipSurchargeXaf === itemVip &&
                   before.sortOrder === pi;
                 if (same) report.unchanged += 1;
                 else {
@@ -213,14 +220,18 @@ async function importFile(url: string, siteId: string, file: string): Promise<vo
                       name: item.name,
                       priceXaf: item.priceXaf,
                       categoryId,
-                      station,
+                      station: itemStation,
+                      vipSurchargeXaf: itemVip,
                       sortOrder: pi,
                       version: { increment: 1 },
                     },
                   });
                   const was = (before.name as { fr: string }).fr;
+                  const label = was === item.name.fr ? item.name.fr : `${was} → ${item.name.fr}`;
                   report.updated.push(
-                    `${was === item.name.fr ? item.name.fr : `${was} → ${item.name.fr}`} (${before.priceXaf} → ${item.priceXaf} FCFA)`,
+                    before.priceXaf === item.priceXaf
+                      ? `${label} (catégorie, poste ou ordre)`
+                      : `${label} (${before.priceXaf} → ${item.priceXaf} FCFA)`,
                   );
                 }
                 productId = existingId;
@@ -232,7 +243,8 @@ async function importFile(url: string, siteId: string, file: string): Promise<vo
                       categoryId,
                       name: item.name,
                       priceXaf: item.priceXaf,
-                      station,
+                      station: itemStation,
+                      vipSurchargeXaf: itemVip,
                       sortOrder: pi,
                     },
                   })

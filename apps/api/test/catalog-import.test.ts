@@ -168,6 +168,53 @@ describe("import d'une carte", () => {
     expect((await category()).archivedAt).not.toBeNull();
   });
 
+  it('produit déplacé dans une autre catégorie : garde son poste et son supplément VIP', async () => {
+    const dish = `Plat ${tag}`;
+    const skewer = `Brochette déplacée ${tag}`;
+    const run = (categories: object[], archiveCategories: string[] = []) => {
+      const file = join(dir, `${randomUUID()}.json`);
+      writeFileSync(
+        file,
+        JSON.stringify({ station: 'kitchen', stockLocation: 'Cuisine', categories, archiveCategories }),
+      );
+      return execFileSync(process.execPath, [script, '--', '--file', file, '--site', DEMO_SITE_ID], {
+        env: { ...process.env, DATABASE_URL: process.env.TEST_DATABASE_URL },
+        encoding: 'utf8',
+      });
+    };
+    const dishes = {
+      name: { fr: `Plats ${tag}`, en: 'Dishes' },
+      vip: { offered: true, surchargeXaf: 500 },
+      products: [{ name: { fr: dish, en: dish }, priceXaf: 2500, stock: false }],
+    };
+    const grills = `Grillades ${tag}`;
+    run([
+      dishes,
+      {
+        name: { fr: grills, en: 'Grills' },
+        station: 'grill',
+        vip: { offered: true, surchargeXaf: 100 },
+        products: [{ name: { fr: skewer, en: skewer }, priceXaf: 200, stock: false }],
+      },
+    ]);
+    const before = await product(skewer);
+
+    const moved = { name: { fr: skewer, en: skewer }, priceXaf: 200, stock: false };
+    run(
+      [{ ...dishes, products: [...dishes.products, { ...moved, station: 'grill', vipSurchargeXaf: 100 }] }],
+      [grills],
+    );
+    const after = await product(skewer);
+    const plats = await product(dish);
+    expect(after!.id).toBe(before!.id);
+    expect(after).toMatchObject({ categoryId: plats!.categoryId, station: 'grill', vipSurchargeXaf: 100 });
+    expect(plats).toMatchObject({ station: 'kitchen', vipSurchargeXaf: null });
+    const old = await db.category.findFirstOrThrow({
+      where: { siteId: DEMO_SITE_ID, name: { path: ['fr'], equals: grills } },
+    });
+    expect(old.archivedAt).not.toBeNull();
+  });
+
   it('les cartes du dépôt sont valides et leurs photos existent', () => {
     for (const name of ['boissons.json', 'menu.json']) {
       const out = execFileSync(

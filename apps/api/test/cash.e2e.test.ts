@@ -3,7 +3,16 @@ import { type INestApplication } from '@nestjs/common';
 import { type PrismaClient } from '@tchop/db';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { DEMO, enrollDevice, passwordLogin, pinLogin, startApp, testDb, userIdByName } from './helpers.js';
+import {
+  DEMO,
+  DEMO_SITE_ID,
+  enrollDevice,
+  passwordLogin,
+  pinLogin,
+  startApp,
+  testDb,
+  userIdByName,
+} from './helpers.js';
 
 type Who = { token: string; device?: string };
 
@@ -14,6 +23,7 @@ let waiter: Who;
 let cashier: Who;
 let accountant: Who;
 let managerId: string;
+let waiterId: string;
 let registerId: string;
 let sessionId: string;
 const product = { fish: '', beer: '' };
@@ -67,6 +77,7 @@ beforeAll(async () => {
   waiter = { token: (await pinLogin(app, deviceToken, DEMO.waiterPin)).accessToken, device: deviceToken };
   cashier = { token: (await pinLogin(app, deviceToken, DEMO.cashierPin)).accessToken, device: deviceToken };
   managerId = await userIdByName(app, deviceToken, 'Paul (gérant)');
+  waiterId = await userIdByName(app, deviceToken, DEMO.waiterPin.displayName);
 
   const { body: category } = await as(manager, http().post('/api/catalog/categories'))
     .send({ name: { fr: `Caisse ${tag()}` } })
@@ -405,5 +416,55 @@ describe('clôture', () => {
     const { body: b } = await bill(cashier, order.id).expect(201);
     const after = await pay(cashier, b.id, { method: 'cash', tenderedXaf: 10_000 }).expect(409);
     expect(after.body.code).toBe('NO_OPEN_SESSION');
+  });
+});
+
+describe('session laissée ouverte par un autre compte', () => {
+  it('la caissière la voit, la clôture avec le PIN du gérant, puis ouvre la sienne', async () => {
+    // Session oubliée par un autre compte (ex. ancien caissier) : elle bloque la caisse.
+    const stuck = await db.cashSession.create({
+      data: { siteId: DEMO_SITE_ID, registerId, cashierId: waiterId, openingFloatXaf: 10_000 },
+    });
+    const blocked = await as(cashier, http().post('/api/cash/sessions'))
+      .send({ registerId, openingFloatXaf: 0 })
+      .expect(409);
+    expect(blocked.body.code).toBe('SESSION_ALREADY_OPEN');
+    expect(blocked.body.message).toContain(DEMO.waiterPin.displayName);
+
+    const { body: open } = await as(cashier, http().get('/api/cash/sessions/open')).expect(200);
+    const row = open.find((s: { id: string }) => s.id === stuck.id);
+    expect(row).toMatchObject({ mine: false, cashierActive: true, expectedCashXaf: 10_000 });
+    expect(row.cashierName).toBe(DEMO.waiterPin.displayName);
+    await as(waiter, http().get('/api/cash/sessions/open')).expect(403);
+
+    const close = (body: object) =>
+      as(cashier, http().post(`/api/cash/sessions/${stuck.id}/close`)).send(body);
+    expect((await close({ countedCashXaf: 10_000 }).expect(403)).body.code).toBe('APPROVAL_REQUIRED');
+    const wrong = await close({
+      countedCashXaf: 10_000,
+      approval: { userId: managerId, pin: '0000' },
+    }).expect(403);
+    expect(wrong.body.code).toBe('APPROVAL_INVALID');
+    await as(waiter, http().post(`/api/cash/sessions/${stuck.id}/close`))
+      .send({ countedCashXaf: 10_000, approval: approval() })
+      .expect(403);
+
+    const { body: closed } = await close({ countedCashXaf: 10_000, approval: approval() }).expect(200);
+    expect(closed).toMatchObject({ status: 'closed', differenceXaf: 0 });
+    const log = await db.auditLog.findFirstOrThrow({
+      where: { entityId: stuck.id, action: 'cash.session_closed' },
+    });
+    expect(log.approverId).toBe(managerId);
+
+    const { body: mine } = await as(cashier, http().post('/api/cash/sessions'))
+      .send({ registerId, openingFloatXaf: 5_000 })
+      .expect(201);
+    const { body: current } = await as(cashier, http().get('/api/cash/sessions/current')).expect(200);
+    expect(current.id).toBe(mine.id);
+
+    // Un gérant clôture sans PIN supplémentaire.
+    await as(manager, http().post(`/api/cash/sessions/${mine.id}/close`))
+      .send({ countedCashXaf: 5_000 })
+      .expect(200);
   });
 });
