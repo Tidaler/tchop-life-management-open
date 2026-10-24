@@ -174,11 +174,14 @@ export const fr = {
   'qrPrint.title': 'QR codes des tables',
   'menuQr.title': 'Menu sans connexion',
   'menuQr.help':
-    'La carte est écrite dans les QR codes : le client scanne avec l’appareil photo et la lit sur son téléphone, sans Internet ni Wi-Fi. Imprimez une carte par table (salle) et par salon VIP (prix VIP). Réimprimez après un changement de prix.',
+    'La carte est écrite dans les QR codes : le client scanne avec l’appareil photo et la lit sur son téléphone, sans Internet ni Wi-Fi. Une carte par table, à son nom et aux prix de sa zone (prix VIP dans les salons). Elle suit le catalogue toute seule : réimprimez après un changement de prix ou l’ajout d’une table.',
+  'menuQr.which': 'Cartes à imprimer',
+  'menuQr.allTables': 'Toutes les tables ({count})',
+  'menuQr.noTable': 'Aucune table : ajoutez-en dans le plan de salle.',
   'menuQr.room': 'Salle',
   'menuQr.vip': 'Salons VIP',
   'menuQr.scan': 'Scannez un QR code avec l’appareil photo : la carte s’affiche, sans Internet ni Wi-Fi',
-  'menuQr.foot': 'Prix en FCFA. Pour commander, appelez le personnel.',
+  'menuQr.foot': 'Prix en FCFA. Pour commander, appelez le personnel et donnez le numéro de table : {table}.',
   'qrPrint.print': 'Imprimer',
   'qrPrint.scan': 'Scannez pour voir le menu',
   'qrPrint.table': 'Table {label}',
@@ -396,6 +399,8 @@ export const fr = {
   'cash.sessionAlreadyOpen':
     'Une session est déjà ouverte sur cette caisse ou pour vous : voir Sessions ouvertes, ci-dessous.',
   'cash.otherSessions': 'Sessions ouvertes',
+  'cash.cashReceived': '{method} reçues',
+  'cash.changeGiven': 'Reliquat rendu',
   'cash.otherSessionsHelp':
     'Une session restée ouverte bloque sa caisse. Comptez le tiroir, puis clôturez-la avec le PIN du gérant : le rapport Z s’imprime, et vous pouvez ouvrir votre caisse.',
   'cash.sessionOf': '{register} · {cashier} · ouverte le {time}',

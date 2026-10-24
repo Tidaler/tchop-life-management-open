@@ -7,7 +7,7 @@ import {
   pickText,
   SETTLEMENT_METHODS,
 } from '@tchop/shared';
-import { type FormEvent, useMemo, useState } from 'react';
+import { type FormEvent, Fragment, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { api, ApiError } from '../api';
 import {
@@ -1132,25 +1132,28 @@ function ReceiptModal({ receiptId, onClose }: { receiptId: string; onClose: () =
             <b>TOTAL</b>
             <b>{formatXaf(r.totalXaf, locale)}</b>
           </div>
-          {r.payments.map((p, i) => (
-            <div key={i} className="r">
-              <span>
-                {p.label}
-                {p.reference ? ` (${p.reference})` : ''}
-              </span>
-              <span>{formatXaf(p.tenderedXaf ?? p.amountXaf, locale)}</span>
-            </div>
-          ))}
-          {r.payments.some((p) => p.changeXaf > 0) && (
-            <div className="r">
-              <span>Monnaie rendue</span>
-              <span>
-                {formatXaf(
-                  r.payments.reduce((s, p) => s + p.changeXaf, 0),
-                  locale,
-                )}
-              </span>
-            </div>
+          {r.payments.map((p, i) =>
+            // Espèces : montant reçu et reliquat rendu, comme sur le reçu imprimé.
+            p.tenderedXaf !== null ? (
+              <Fragment key={i}>
+                <div className="r">
+                  <span>{t('cash.cashReceived', { method: p.label })}</span>
+                  <span>{formatXaf(p.tenderedXaf, locale)}</span>
+                </div>
+                <div className="r">
+                  <b>{t('cash.changeGiven')}</b>
+                  <b>{formatXaf(p.changeXaf, locale)}</b>
+                </div>
+              </Fragment>
+            ) : (
+              <div key={i} className="r">
+                <span>
+                  {p.label}
+                  {p.reference ? ` (${p.reference})` : ''}
+                </span>
+                <span>{formatXaf(p.amountXaf, locale)}</span>
+              </div>
+            ),
           )}
         </div>
       )}

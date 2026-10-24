@@ -1,5 +1,5 @@
 {
-  "description": "Carte des boissons de TCHOP LIFE (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et carte des spiritueux et bouteilles de l'établissement ; photos découpées dans la carte des spiritueux. Les boissons aromatisées sont rangées avec les bières, les cognacs et liqueurs avec les whiskies. Salon VIP : bières non proposées ; jus (soda) et boissons fraîches + 500 F, vins + 5 000 F, spiritueux et liqueurs + 10 000 F.",
+  "description": "Carte des boissons de TCHOP LIFE (prix TTC en FCFA, vendus à la bouteille ou à l'unité). Sources : carte des boissons et carte des spiritueux et bouteilles de l'établissement ; photos découpées dans la carte des spiritueux. Les boissons aromatisées sont rangées avec les bières, les cognacs et liqueurs avec les whiskies. Salon VIP : bières non proposées ; jus (soda) et boissons fraîches + 500 F, vins et champagnes + 5 000 F, spiritueux et liqueurs + 10 000 F.",
   "station": "bar",
   "stockLocation": "Bar",
   "firstSortOrder": 10,
@@ -245,6 +245,22 @@
         },
         {
           "name": {
+            "fr": "Grant's 6 ans",
+            "en": "Grant's 6 years"
+          },
+          "priceXaf": 25000,
+          "aliases": ["Grant 6 ans"]
+        },
+        {
+          "name": {
+            "fr": "Ballantine's Brasil",
+            "en": "Ballantine's Brasil"
+          },
+          "priceXaf": 30000,
+          "aliases": ["Ballentine Brazil", "Ballantine's Brazil"]
+        },
+        {
+          "name": {
             "fr": "Johnnie Walker Black Label",
             "en": "Johnnie Walker Black Label"
           },
@@ -297,6 +313,29 @@
         },
         {
           "name": {
+            "fr": "Jack Daniel's Honey",
+            "en": "Jack Daniel's Honey"
+          },
+          "priceXaf": 40000,
+          "aliases": ["Jack Daniel honey"]
+        },
+        {
+          "name": {
+            "fr": "Monkey Shoulder 70 cl",
+            "en": "Monkey Shoulder 70 cl"
+          },
+          "priceXaf": 40000,
+          "aliases": ["Monkey Shoulder"]
+        },
+        {
+          "name": {
+            "fr": "Singleton 12 ans",
+            "en": "Singleton 12 years"
+          },
+          "priceXaf": 45000
+        },
+        {
+          "name": {
             "fr": "Glenlivet 18 ans",
             "en": "Glenlivet 18 years"
           },
@@ -312,14 +351,6 @@
           "priceXaf": 65000,
           "aliases": ["Glenfiddich 15 ans"],
           "image": "images/glenfiddich-15-75cl.webp"
-        },
-        {
-          "name": {
-            "fr": "Glenfiddich 15 ans 1 L",
-            "en": "Glenfiddich 15 years 1 L"
-          },
-          "priceXaf": 70000,
-          "image": "images/glenfiddich-15-1l.webp"
         },
         {
           "name": {
@@ -339,20 +370,28 @@
         },
         {
           "name": {
+            "fr": "Johnnie Walker Gold Label 18 ans",
+            "en": "Johnnie Walker Gold Label 18 years"
+          },
+          "priceXaf": 65000,
+          "aliases": ["Johnnie Walker Gold Label", "Gold Label"],
+          "image": "images/jw-gold-label.webp"
+        },
+        {
+          "name": {
+            "fr": "Glenfiddich 15 ans 1 L",
+            "en": "Glenfiddich 15 years 1 L"
+          },
+          "priceXaf": 70000,
+          "image": "images/glenfiddich-15-1l.webp"
+        },
+        {
+          "name": {
             "fr": "Glenfiddich 18 ans",
             "en": "Glenfiddich 18 years"
           },
           "priceXaf": 70000,
           "image": "images/glenfiddich-18.webp"
-        },
-        {
-          "name": {
-            "fr": "Johnnie Walker Gold Label 18 ans",
-            "en": "Johnnie Walker Gold Label 18 years"
-          },
-          "priceXaf": 70000,
-          "aliases": ["Johnnie Walker Gold Label", "Gold Label"],
-          "image": "images/jw-gold-label.webp"
         },
         {
           "name": {
@@ -392,7 +431,7 @@
             "fr": "Hennessy VS",
             "en": "Hennessy VS"
           },
-          "priceXaf": 50000,
+          "priceXaf": 45000,
           "aliases": ["Hennessy"],
           "image": "images/hennessy-vs.webp"
         },
@@ -401,7 +440,7 @@
             "fr": "Martell VS",
             "en": "Martell VS"
           },
-          "priceXaf": 60000,
+          "priceXaf": 45000,
           "image": "images/martell-vs.webp"
         },
         {
@@ -434,7 +473,7 @@
             "fr": "Baileys",
             "en": "Baileys"
           },
-          "priceXaf": 25000,
+          "priceXaf": 20000,
           "aliases": ["Bailey's"],
           "image": "images/baileys.webp"
         }
@@ -490,7 +529,7 @@
     {
       "name": {
         "fr": "Vins",
-        "en": "Wines"
+        "en": "Wines and champagnes"
       },
       "vip": {
         "offered": true,
@@ -507,12 +546,79 @@
         },
         {
           "name": {
-            "fr": "Tour de Cantelou",
-            "en": "Tour de Cantelou"
+            "fr": "Vieux Moulin blanc",
+            "en": "Vieux Moulin white"
           },
-          "priceXaf": 8000,
-          "aliases": ["Cantelou"],
+          "priceXaf": 5000,
+          "aliases": ["Le vieux moulin blanc"]
+        },
+        {
+          "name": {
+            "fr": "Tour de Cantelou rouge",
+            "en": "Tour de Cantelou red"
+          },
+          "priceXaf": 10000,
+          "aliases": ["Tour de Cantelou", "Cantelou"],
           "image": "images/tour-de-cantelou.webp"
+        },
+        {
+          "name": {
+            "fr": "Tour de Cantelou moelleux",
+            "en": "Tour de Cantelou sweet"
+          },
+          "priceXaf": 10000,
+          "image": "images/tour-de-cantelou.webp"
+        },
+        {
+          "name": {
+            "fr": "Princesse Moscato",
+            "en": "Princesse Moscato"
+          },
+          "priceXaf": 15000
+        },
+        {
+          "name": {
+            "fr": "Louis Eschenauer",
+            "en": "Louis Eschenauer"
+          },
+          "priceXaf": 15000
+        },
+        {
+          "name": {
+            "fr": "Calvet blanc",
+            "en": "Calvet white"
+          },
+          "priceXaf": 20000
+        },
+        {
+          "name": {
+            "fr": "Carillonard blanc",
+            "en": "Carillonard white"
+          },
+          "priceXaf": 20000
+        },
+        {
+          "name": {
+            "fr": "Moët Nectar Impérial",
+            "en": "Moët Nectar Impérial"
+          },
+          "priceXaf": 75000,
+          "aliases": ["Moet nectar imperial"]
+        },
+        {
+          "name": {
+            "fr": "Veuve Clicquot Brut",
+            "en": "Veuve Clicquot Brut"
+          },
+          "priceXaf": 75000
+        },
+        {
+          "name": {
+            "fr": "Ruinart Blanc de Blancs",
+            "en": "Ruinart Blanc de Blancs"
+          },
+          "priceXaf": 95000,
+          "aliases": ["Ruinart blanc"]
         }
       ]
     }
@@ -522,12 +628,9 @@
     "Beaufort",
     "Johnnie Walker Black Label 1 L (Freeshop)",
     "Chivas Regal 1 L (Freeshop)",
-    "Ballantine's Brasil",
-    "Grant's 6 ans",
     "Grant's 1 L",
     "Grant's 12 ans",
     "Jack Daniel's 1 L",
-    "Jack Daniel's Honey",
     "Glenfiddich 12 ans",
     "Monkey Shoulder 75 cl",
     "Monkey Shoulder 1 L",
@@ -537,13 +640,11 @@
     "Moët Nectar",
     "Veuve Clicquot",
     "Ruinart Brut",
-    "Ruinart Blanc de Blancs",
     "Vieux Moulin",
     "Isabelle de France",
     "Consigna",
     "Moscato Comparero",
     "Moscato Nua",
-    "Louis Eschenauer",
     "Cavet rouge",
     "Cavet blanc",
     "Monbazillac",
