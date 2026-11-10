@@ -248,15 +248,16 @@ describe('sécurité du lien', () => {
   it('refuse un site inconnu ou un mauvais secret', async () => {
     const bad = rawLink(DEMO_SITE_ID, newOpaqueToken());
     const unknown = rawLink(randomUUID(), secret);
+    // Les deux connexions sont surveillées dès leur ouverture : le serveur peut couper la seconde
+    // pendant qu'on attend encore la première.
+    const kicked = (socket: typeof bad) =>
+      new Promise<boolean>((resolve) => {
+        socket.on('disconnect', () => resolve(true));
+        socket.on('connect_error', () => resolve(true));
+        setTimeout(() => resolve(false), 5_000);
+      });
     try {
-      for (const socket of [bad, unknown]) {
-        const kicked = await new Promise<boolean>((resolve) => {
-          socket.on('disconnect', () => resolve(true));
-          socket.on('connect_error', () => resolve(true));
-          setTimeout(() => resolve(false), 3_000);
-        });
-        expect(kicked).toBe(true);
-      }
+      expect(await Promise.all([kicked(bad), kicked(unknown)])).toEqual([true, true]);
     } finally {
       bad.close();
       unknown.close();

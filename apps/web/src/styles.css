@@ -223,6 +223,8 @@ h3 {
 .brand small {
   display: block;
   font-weight: 500;
+  font-style: italic;
+  letter-spacing: 0;
   color: var(--muted);
   font-size: 12px;
 }
@@ -362,7 +364,7 @@ h3 {
   margin: 0;
 }
 .topbar .brand small {
-  color: #bfb5aa;
+  color: #d9c7f0;
 }
 .nav {
   display: flex;

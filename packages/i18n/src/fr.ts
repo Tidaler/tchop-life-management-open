@@ -1,6 +1,7 @@
 /** Textes de référence (français). Toute clé ajoutée ici doit être traduite dans en.ts. */
 export const fr = {
   'app.name': 'TidalEx Resto',
+  'app.slogan': 'Servez mieux, encaissez juste',
   'common.loading': 'Chargement…',
   'common.retry': 'Réessayer',
   'common.cancel': 'Annuler',
