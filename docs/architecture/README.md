@@ -9,6 +9,7 @@ Version 0.1 · octobre 2026 · à valider avant le démarrage du développement.
 3. [Synchronisation site ↔ cloud](03-synchronisation.md) : autorité des données, flux d'événements, commandes QR, sauvegardes, supervision
 4. [Sécurité](04-securite.md) : menaces, authentification, approbation du gérant, QR code, intégrité, serveur local
 5. [Rôles et permissions](05-roles-permissions.md) : rôles prédéfinis, matrice complète, seuils
+6. [TidalEx Resto en ligne](06-plan-en-ligne.md) : hébergement, une base par établissement, relais local hors ligne, étapes de réalisation
 
 ## Décisions structurantes
 
