@@ -1,4 +1,4 @@
-# /etc/caddy/Caddyfile - serveur local TCHOP LIFE.
+# /etc/caddy/Caddyfile - serveur local TidalEx Resto.
 # SERVER_IP : adresse fixe du serveur (ex. 192.168.0.10), remplacée par infra/site/set-ip.sh.
 {
 	# Aucun accès Internet nécessaire : certificats émis par l'autorité de certification locale de Caddy.

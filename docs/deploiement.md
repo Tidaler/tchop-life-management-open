@@ -1,6 +1,6 @@
 # Installation sur le serveur local
 
-Référence des commandes pour installer TCHOP LIFE MANAGEMENT sur le serveur de l'établissement (Ubuntu Desktop 24.04 LTS : le serveur sert aussi de poste de caisse). Le guide détaillé, pas à pas, est remis à part au format Word.
+Référence des commandes pour installer TidalEx Resto sur le serveur de l'établissement (Ubuntu Desktop 24.04 LTS : le serveur sert aussi de poste de caisse). Le guide détaillé, pas à pas, est remis à part au format Word.
 
 ## Ce qu'on obtient
 

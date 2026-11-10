@@ -521,7 +521,7 @@ function Notice({ text }: { text: string }) {
   return (
     <div className="app">
       <header className="head">
-        <div className="site">TCHOP LIFE</div>
+        <div className="site">TidalEx Resto</div>
       </header>
       <p className="notice">{text}</p>
     </div>

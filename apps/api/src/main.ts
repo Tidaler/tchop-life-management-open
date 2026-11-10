@@ -6,5 +6,5 @@ const config = loadConfig();
 const app = await createApp(config);
 await app.listen(config.API_PORT, config.API_HOST);
 new Logger('Bootstrap').log(
-  `API TCHOP LIFE (mode ${config.API_MODE}) sur http://${config.API_HOST}:${config.API_PORT}/api`,
+  `API TidalEx Resto (mode ${config.API_MODE}) sur http://${config.API_HOST}:${config.API_PORT}/api`,
 );

@@ -405,7 +405,7 @@
   display: inline-block;
   margin-left: 6px;
   background: #ffd43b;
-  color: #1f1a16;
+  color: #202020;
   font-size: 11px;
   font-weight: 800;
   border-radius: 10px;
@@ -538,7 +538,7 @@
 }
 .receipt hr {
   border: 0;
-  border-top: 1px dashed #b9ae9f;
+  border-top: 1px dashed #cbc3d1;
   margin: 8px 0;
 }
 .receipt .r {

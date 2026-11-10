@@ -1,6 +1,6 @@
 # /etc/systemd/system/tchop-backup.timer - tous les jours à 7 h (après la bascule de la journée à 6 h).
 [Unit]
-Description=TCHOP LIFE - sauvegarde quotidienne
+Description=TidalEx Resto - sauvegarde quotidienne
 
 [Timer]
 OnCalendar=*-*-* 07:00:00

@@ -5,9 +5,21 @@ import { api, ApiError } from '../api';
 import { useI18n } from '../i18n';
 
 /**
- * Logo et nom de l'application. Le sous-titre (site, appareil) omet ce qui répète déjà le nom affiché :
- * l'établissement s'appelle lui aussi TCHOP LIFE.
+ * Logo et nom de l'application. Le sous-titre (établissement, appareil) omet ce qui répète déjà le nom
+ * affiché.
  */
+/** Logo TidalEx : quatre cercles violets. */
+export function LogoMark() {
+  return (
+    <svg viewBox="80 83 340 340" focusable="false">
+      <circle cx="172.5" cy="158.5" r="63.5" fill="#d292fc" />
+      <circle cx="306.5" cy="195.5" r="69.5" fill="#e596fd" />
+      <circle cx="180" cy="310" r="88" fill="#b362e2" />
+      <circle cx="337.5" cy="335" r="69.5" fill="#e2bdff" />
+    </svg>
+  );
+}
+
 export function Brand({ subtitle }: { subtitle?: (string | undefined)[] }) {
   const { t } = useI18n();
   const name = t('app.name');
@@ -17,7 +29,7 @@ export function Brand({ subtitle }: { subtitle?: (string | undefined)[] }) {
   return (
     <div className="brand">
       <div className="mark" aria-hidden>
-        TL
+        <LogoMark />
       </div>
       <div>
         {name}

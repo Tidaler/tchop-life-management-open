@@ -1,6 +1,6 @@
 /** Textes de référence (français). Toute clé ajoutée ici doit être traduite dans en.ts. */
 export const fr = {
-  'app.name': 'TCHOP LIFE',
+  'app.name': 'TidalEx Resto',
   'common.loading': 'Chargement…',
   'common.retry': 'Réessayer',
   'common.cancel': 'Annuler',

@@ -4,7 +4,7 @@
  *
  * Crée, si besoin : le client, le site, les rôles prédéfinis et leurs permissions, la caisse principale,
  * les magasins (Réserve, Bar, Cuisine, Grill), les catégories de dépenses et, sur un site sans plan de
- * salle, le plan de TCHOP LIFE : 11 tables en salle (T1 à T11) et 2 salons VIP d'une table (VIP1, VIP2),
+ * salle, le plan de départ : 11 tables en salle (T1 à T11) et 2 salons VIP d'une table (VIP1, VIP2),
  * QR codes en consultation seule. Rejouable : ce qui existe déjà est conservé. Affiche l'identifiant du
  * site, à recopier dans SITE_ID.
  */

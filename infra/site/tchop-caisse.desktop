@@ -2,6 +2,6 @@
 # Adresse interne au serveur : la caisse fonctionne même si le réseau local est en panne.
 [Desktop Entry]
 Type=Application
-Name=TCHOP LIFE - Caisse
+Name=TidalEx Resto - Caisse
 Exec=google-chrome --app=https://localhost --start-fullscreen --no-first-run
 X-GNOME-Autostart-enabled=true

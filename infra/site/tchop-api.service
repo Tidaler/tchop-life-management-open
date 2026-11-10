@@ -1,6 +1,6 @@
 # /etc/systemd/system/tchop-api.service - API TCHOP LIFE du serveur local.
 [Unit]
-Description=TCHOP LIFE - API du serveur local
+Description=TidalEx Resto - API du serveur local
 After=network-online.target postgresql.service
 Wants=network-online.target
 Requires=postgresql.service
