@@ -88,7 +88,7 @@ export function PinLoginPage() {
 
   return (
     <AuthLayout wide={!selected}>
-      <Brand subtitle={[info.data?.site.name, info.data?.device.name]} />
+      <Brand />
       {info.isPending && <p className="muted">{t('common.loading')}</p>}
       {info.isError && (
         <div className="alert danger">

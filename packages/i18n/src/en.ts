@@ -2,6 +2,7 @@ import { type Messages } from './fr.js';
 
 export const en: Messages = {
   'app.name': 'TidalEx Resto',
+  'app.slogan': 'Serve better, cash up right',
   'common.loading': 'Loading…',
   'common.retry': 'Retry',
   'common.cancel': 'Cancel',

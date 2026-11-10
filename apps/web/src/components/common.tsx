@@ -4,10 +4,6 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { api, ApiError } from '../api';
 import { useI18n } from '../i18n';
 
-/**
- * Logo et nom de l'application. Le sous-titre (établissement, appareil) omet ce qui répète déjà le nom
- * affiché.
- */
 /** Logo TidalEx : quatre cercles violets. */
 export function LogoMark() {
   return (
@@ -20,20 +16,20 @@ export function LogoMark() {
   );
 }
 
-export function Brand({ subtitle }: { subtitle?: (string | undefined)[] }) {
+/**
+ * Logo, nom et slogan de l'application. Le nom de l'établissement n'y figure pas : il reste sur les reçus
+ * et les cartes de menu, destinés à ses clients.
+ */
+export function Brand() {
   const { t } = useI18n();
-  const name = t('app.name');
-  const rest = (subtitle ?? []).filter(
-    (part): part is string => !!part && part.toLowerCase() !== name.toLowerCase(),
-  );
   return (
     <div className="brand">
       <div className="mark" aria-hidden>
         <LogoMark />
       </div>
       <div>
-        {name}
-        {rest.length > 0 && <small>{rest.join(' · ')}</small>}
+        {t('app.name')}
+        <small>{t('app.slogan')}</small>
       </div>
     </div>
   );

@@ -30,7 +30,7 @@ export function Shell() {
       <header>
         <OfflineBanner />
         <div className="topbar">
-          <Brand subtitle={[me.site.name]} />
+          <Brand />
           <nav className="nav" ref={nav}>
             <NavLink to="/" end>
               {t('nav.home')}
