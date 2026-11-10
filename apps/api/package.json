@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test",
     "test": "vitest run",
+    "cloud:establishments": "node --env-file-if-exists=../../.env dist/cli/list-establishments.js",
+    "cloud:new-establishment": "node --env-file-if-exists=../../.env dist/cli/new-establishment.js",
     "cloud:register-site": "node --env-file-if-exists=../../.env dist/cli/register-site.js",
     "catalog:import": "node --env-file-if-exists=../../.env dist/cli/import-catalog.js",
     "site:setup": "node --env-file-if-exists=../../.env dist/cli/setup-site.js",

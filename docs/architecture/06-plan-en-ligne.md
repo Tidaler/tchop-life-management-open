@@ -47,7 +47,7 @@ Chaque étape est livrée, testée et mise en service avant la suivante. Le serv
 
 | Étape | Contenu | Résultat visible |
 |---|---|---|
-| **1. Plateforme en ligne** | Serveur hébergé (Ubuntu, Caddy, PostgreSQL, sauvegardes), base de pilotage, commande « nouvel établissement » qui crée une base vide, applique les tables, crée le compte propriétaire et un code d'activation | Un nouvel établissement est créé en ligne en une commande |
+| **1. Plateforme en ligne** (faite, v1.1.0 : [Serveur en ligne](../hebergement-en-ligne.md)) | Serveur hébergé (Ubuntu, Caddy, PostgreSQL, sauvegardes), base de pilotage, commande « nouvel établissement » qui crée une base vide, applique les tables, crée le compte propriétaire et un code d'activation | Un nouvel établissement est créé en ligne en une commande |
 | **2. File d'attente locale** | Sur le relais, chaque opération écrit aussi un événement numéroté dans la même transaction (modèle « outbox ») | Rien ne se perd entre deux synchronisations |
 | **3. Synchronisation montante** | Envoi des événements par lots sur la connexion sécurisée existante, réception idempotente, reprise après coupure, détection des trous | Le serveur en ligne a une copie à jour ; elle se rattrape seule au retour d'Internet |
 | **4. Accès à distance par le serveur en ligne** | Tableau de bord, rapports, caisse et stock en lecture depuis le serveur en ligne | Le propriétaire suit son établissement de partout, sans Tailscale |

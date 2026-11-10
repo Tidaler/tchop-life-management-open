@@ -817,6 +817,28 @@ model CustomerLedgerEntry {
 // ---------------------------------------------------------------- Cloud (relais du menu QR)
 // Ces tables ne servent que dans la base du cloud (API_MODE=cloud).
 
+enum EstablishmentStatus {
+  active
+  suspended
+  closed
+}
+
+/// Établissement hébergé en ligne : chacun a sa propre base de données (« etab_<code> »), créée vide.
+/// Le code d'activation, à usage unique, n'est conservé que sous forme d'empreinte.
+model Establishment {
+  id                 String              @id @default(uuid(7)) @db.Uuid
+  code               String              @unique
+  name               String
+  databaseName       String              @unique @map("database_name")
+  siteId             String              @map("site_id") @db.Uuid
+  status             EstablishmentStatus @default(active)
+  activationCodeHash String?             @map("activation_code_hash")
+  activatedAt        DateTime?           @map("activated_at") @db.Timestamptz(3)
+  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@map("establishment")
+}
+
 /// Serveur local autorisé à se connecter au cloud. Le secret n'est conservé que sous forme d'empreinte.
 model SiteLink {
   siteId     String    @id @map("site_id") @db.Uuid

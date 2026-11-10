@@ -1,0 +1,8 @@
+# /etc/systemd/system/tidalex-sauvegarde.service - lancé par tidalex-sauvegarde.timer.
+[Unit]
+Description=TidalEx Resto - sauvegarde du serveur en ligne
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/tidalex/app/infra/cloud/sauvegarde.sh

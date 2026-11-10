@@ -1,0 +1,31 @@
+# /etc/systemd/system/tidalex-cloud.service - API du serveur en ligne TidalEx Resto.
+[Unit]
+Description=TidalEx Resto - API du serveur en ligne
+After=network-online.target postgresql.service
+Wants=network-online.target
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=tidalex
+Group=tidalex
+WorkingDirectory=/opt/tidalex/app/apps/api
+EnvironmentFile=/etc/tidalex/cloud.env
+ExecStart=/usr/bin/node dist/main.js
+Restart=always
+RestartSec=3
+
+# Durcissement : le service ne peut écrire que dans ses données.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tidalex
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
