@@ -1,11 +1,11 @@
 /* Menu client : léger, lisible sur un téléphone modeste, sans ressource externe. */
 :root {
-  --brand: #d9480f;
-  --brand-ink: #9a3412;
-  --text: #1f1a16;
-  --muted: #6f655c;
-  --border: #ece6de;
-  --soft: #faf3ec;
+  --brand: #be00a0;
+  --brand-ink: #74005a;
+  --text: #202020;
+  --muted: #66606b;
+  --border: #ebe5ef;
+  --soft: #fbf3f9;
   --warn: #c77c02;
   --warn-soft: #fff4d6;
   --ok: #2b8a3e;
@@ -43,7 +43,7 @@ button {
   padding-bottom: 96px;
 }
 .head {
-  background: linear-gradient(135deg, #d9480f, #9a3412);
+  background: linear-gradient(135deg, #be00a0, #74005a);
   color: #fff;
   padding: 22px 16px 14px;
   display: flex;

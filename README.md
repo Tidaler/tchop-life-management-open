@@ -1,4 +1,4 @@
-# TCHOP LIFE MANAGEMENT
+# TidalEx Resto
 
 Application de gestion pour snack-bar, lounge, bar et grill : commandes par QR code, prise de commande en salle, écran cuisine/bar, caisse, stocks, recettes, dépenses et rapports.
 

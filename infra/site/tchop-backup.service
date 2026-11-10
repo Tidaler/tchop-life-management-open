@@ -1,6 +1,6 @@
 # /etc/systemd/system/tchop-backup.service - sauvegarde quotidienne (lancée par tchop-backup.timer).
 [Unit]
-Description=TCHOP LIFE - sauvegarde de la base et des fichiers
+Description=TidalEx Resto - sauvegarde de la base et des fichiers
 After=postgresql.service
 
 [Service]

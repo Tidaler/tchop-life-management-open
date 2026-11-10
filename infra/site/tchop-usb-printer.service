@@ -1,7 +1,7 @@
 # /etc/systemd/system/tchop-usb-printer.service - imprimante branchée en USB sur le serveur, rendue
 # joignable par l'application comme une imprimante réseau : adresse 127.0.0.1, port 9100.
 [Unit]
-Description=TCHOP LIFE - imprimante USB sur 127.0.0.1:9100
+Description=TidalEx Resto - imprimante USB sur 127.0.0.1:9100
 After=network.target
 
 [Service]

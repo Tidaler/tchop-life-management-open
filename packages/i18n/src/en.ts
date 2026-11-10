@@ -1,7 +1,7 @@
 import { type Messages } from './fr.js';
 
 export const en: Messages = {
-  'app.name': 'TCHOP LIFE',
+  'app.name': 'TidalEx Resto',
   'common.loading': 'Loading…',
   'common.retry': 'Retry',
   'common.cancel': 'Cancel',

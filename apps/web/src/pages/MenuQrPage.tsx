@@ -24,7 +24,7 @@ export function MenuQrPage() {
     queryKey: ['qr-codes'],
     queryFn: () => api<{ siteName: string; codes: QrCodeRow[] }>('/floor/qr-codes'),
   });
-  const siteName = site.data?.siteName ?? 'TCHOP LIFE';
+  const siteName = site.data?.siteName ?? '';
   const [only, setOnly] = useState('');
 
   // Seuls les produits et catégories visibles sur le menu client y figurent.
@@ -94,6 +94,15 @@ export function MenuQrPage() {
   );
 }
 
+/** Initiales de l'établissement pour le logo de la carte (ex. « Chez Mama Africa » : CM). */
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter((w) => /^\p{L}/u.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('') || 'TR';
+
 type Menu = {
   categories: { id: string; name: { fr: string; en?: string } }[];
   products: { id: string; categoryId: string; name: { fr: string; en?: string }; priceXaf: number }[];
@@ -120,7 +129,7 @@ function MenuCard({
   return (
     <section className="menu-card">
       <div className="menu-card-head">
-        <span className="menu-logo">TL</span>
+        <span className="menu-logo">{initials(siteName)}</span>
         <div>
           <div className="menu-site">{siteName}</div>
           <div className="menu-zone">{zone}</div>

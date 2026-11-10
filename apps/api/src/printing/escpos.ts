@@ -277,7 +277,7 @@ export function renderEscPos(doc: PrintDoc, paperWidth: number): Buffer {
   if (doc.kind === 'test_page') {
     cmd(CMD.alignCenter);
     cmd(CMD.sizeDouble);
-    text('TCHOP LIFE');
+    text('TidalEx Resto');
     cmd(CMD.sizeNormal);
     text("Test d'impression");
     rule();
