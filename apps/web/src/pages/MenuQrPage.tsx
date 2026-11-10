@@ -94,11 +94,14 @@ export function MenuQrPage() {
   );
 }
 
-/** Initiales de l'établissement pour le logo de la carte (ex. « Chez Mama Africa » : CM). */
+/**
+ * Initiales de l'établissement pour le logo de la carte, sans les petits mots (« Restaurant Le Baobab » :
+ * RB, « Chez Mama Africa » : CM).
+ */
 const initials = (name: string) =>
   name
     .split(/\s+/)
-    .filter((w) => /^\p{L}/u.test(w))
+    .filter((w) => /^\p{L}/u.test(w) && w.length > 2)
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join('') || 'TR';
