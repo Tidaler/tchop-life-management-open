@@ -1,0 +1,27 @@
+# /etc/caddy/Caddyfile - serveur en ligne TidalEx Resto.
+# DOMAINE : nom de domaine du serveur (ex. app.tidalex.cm), remplacé par installer-serveur.sh.
+# Certificat HTTPS reconnu partout, obtenu et renouvelé automatiquement (Let's Encrypt) : le nom de
+# domaine doit pointer sur l'adresse du serveur avant l'installation.
+
+DOMAINE {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+	encode zstd gzip
+	handle /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	# Connexion des relais locaux (WebSocket sortant depuis chaque établissement).
+	handle /socket.io/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+	handle {
+		root * /opt/tidalex/app/apps/menu/dist
+		try_files {path} /index.html
+		file_server
+	}
+}

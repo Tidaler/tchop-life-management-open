@@ -1,0 +1,10 @@
+# /etc/systemd/system/tidalex-sauvegarde.timer - tous les jours à 2 h UTC (3 h au Cameroun).
+[Unit]
+Description=TidalEx Resto - sauvegarde quotidienne du serveur en ligne
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
